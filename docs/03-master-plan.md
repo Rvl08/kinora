@@ -57,7 +57,7 @@ dengan AI yang berjalan di perangkat pengguna — dan dipasang semudah *Next →
 | UI | **Svelte 5 + TypeScript + Vite** | Runtime sangat kecil, reaktivitas granular cocok untuk inspector besar | React (lebih berat, re-render timeline); Vue (setara, ekosistem editor lebih kecil) |
 | Timeline & kanvas UI | Canvas 2D / WebGL kustom, virtualisasi | DOM tidak sanggup ribuan klip + waveform | Library timeline pihak ketiga (kurang kontrol) |
 | Engine inti | **Rust** (crate workspace milik sendiri) | Performa native, aman memori, satu bahasa dengan Tauri | C++ (risiko memori), Go (interop media lemah) |
-| Media I/O | **FFmpeg 7** (link dinamis via `ffmpeg-next`/`rsmpeg`), build **LGPL shared** | Semua format; HW decode D3D11VA/NVDEC/QSV; HW encode NVENC/QSV/AMF | Spawn `ffmpeg.exe` (lambat untuk preview, sulit kontrol) |
+| Media I/O | **FFmpeg 8.1** (link dinamis via `ffmpeg-next`/`ffmpeg-the-third`), build **LGPL shared** | Semua format; HW decode D3D11VA/NVDEC/QSV; HW encode NVENC/QSV/AMF | Spawn `ffmpeg.exe` (lambat untuk preview, sulit kontrol) |
 | Compositor | **wgpu** (DX12/Vulkan) + shader **WGSL** | Cepat, lintas vendor GPU; WGSL dipakai juga oleh WebGPU di preview | OpenGL (usang di Windows) |
 | Preview | **WebCodecs + WebGPU** di WebView2 (Opsi A) — lihat §5.3 | Decode HW di browser engine, paket terenkode kecil dikirim dari Rust | Kirim frame mentah via IPC (4K mustahil) |
 | Audio | Mixer Rust + `cpal` (WASAPI) sebagai **master clock** | Mixer yang sama untuk playback & ekspor | Web Audio (beda hasil dengan ekspor) |

@@ -11,7 +11,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "licenses:check": "node scripts/check-js-licenses.mjs"
+    "licenses:check": "node scripts/check-js-licenses.mjs",
+    "ffmpeg:fetch": "node scripts/ffmpeg/fetch.mjs",
+    "ffmpeg:verify": "node scripts/ffmpeg/verify.mjs",
+    "ffmpeg:verify:ship": "node scripts/ffmpeg/verify.mjs --ship"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

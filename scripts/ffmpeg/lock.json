@@ -1,0 +1,16 @@
+{
+  "$comment": "The FFmpeg build Kinora links against. Change only together with ADR-0005 and a fresh `pnpm run ffmpeg:fetch` + `ffmpeg:verify`. `mirrors` are tried before `source`; the project mirror is added once the GitHub repository exists.",
+  "version": "8.1.3",
+  "upstream_commit": "46d899d7a0",
+  "variant": "win64-lgpl-shared",
+  "file": "ffmpeg-n8.1.3-18-g46d899d7a0-win64-lgpl-shared-8.1.zip",
+  "bytes": 80993109,
+  "sha256": "638dd2a073cc1838cb668e736a822a1a58a3ca5405a109b0eca41c5ee03ec9a1",
+  "source": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-19-13-06/ffmpeg-n8.1.3-18-g46d899d7a0-win64-lgpl-shared-8.1.zip",
+  "builder": {
+    "repository": "https://github.com/BtbN/FFmpeg-Builds",
+    "commit": "63ac3265b0789ea16c7b1f8351cd2ad195a28722",
+    "license": "MIT"
+  },
+  "mirrors": []
+}

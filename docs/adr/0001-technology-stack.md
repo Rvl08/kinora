@@ -15,7 +15,7 @@ CapCut memakai Qt6 + CEF (±1,6 GB). Concat memakai Rust + Slint (iterasi UI lam
 | UI | Svelte 5 + TypeScript (strict) + Vite | Svelte 5.x |
 | Paket JS | pnpm (via `corepack`) | — |
 | Engine | Rust edition 2024, workspace multi-crate | toolchain stable dipin di `rust-toolchain.toml` |
-| Media | FFmpeg 7.x LGPL shared via `ffmpeg-next` atau `rsmpeg` (dipilih di Spike S2) | — |
+| Media | FFmpeg 8.1 LGPL shared via `ffmpeg-next` atau `ffmpeg-the-third` (dipilih di Spike S2; lihat ADR-0005 Amandemen 1) | 8.1.3 |
 | GPU | wgpu (DX12 utama, Vulkan cadangan), shader WGSL | — |
 | Audio | `cpal` (WASAPI) | — |
 | AI | `ort` (ONNX Runtime + DirectML), `whisper-rs` (whisper.cpp), sherpa-onnx (TTS) | — |

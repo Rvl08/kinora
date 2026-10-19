@@ -29,7 +29,9 @@
 | Svelte 5, Vite | MIT | 🟢 | |
 | wgpu, naga | MIT/Apache-2.0 | 🟢 | |
 | cpal | Apache-2.0 | 🟢 | |
-| FFmpeg 7 (build LGPL) | LGPL-2.1+ | 🟡 | DLL dinamis; skrip build dipublikasikan |
+| FFmpeg 8.1 (build LGPL, `--enable-version3`) | LGPL-3.0+ | 🟡 | DLL dinamis yang dapat diganti; diverifikasi `pnpm run ffmpeg:verify` |
+| libzvbi (di dalam build FFmpeg BtbN) | GPL-2.0+ (sebagian file LGPL) | 🔴 untuk rilis | Hanya untuk dev; dibuang dari build rilis (ADR-0005 Amandemen 1) |
+| OpenH264 dibangun dari source | BSD-2, **tanpa** lisensi paten Cisco | 🔴 untuk rilis | Rilis memakai DLL resmi Cisco yang diunduh saat runtime, atau OpenH264 dihapus |
 | `ffmpeg-next` / `rsmpeg` | WTFPL / MIT | 🟢 | binding |
 | ONNX Runtime + DirectML | MIT | 🟢 | DirectML redistributable — cek ketentuan redistribusi |
 | whisper.cpp / whisper-rs | MIT / Unlicense | 🟢 | |

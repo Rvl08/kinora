@@ -23,7 +23,7 @@ Fase 0 selesai bila:
 | GitHub CLI `gh` | tidak ada | ⚠️ | Opsional; dibutuhkan untuk otomatisasi rilis |
 | CMake | 4.5.0-rc1 | ⚠️ | Versi RC; whisper.cpp mungkin perlu CMake stabil → pin 3.31/4.x stabil bila build gagal |
 | LLVM / libclang | `D:\LLVM\bin` | ✅ | Untuk bindgen |
-| FFmpeg | `FFMPEG_DIR` → build **GPL** | ❌ untuk Kinora | Siapkan build **LGPL shared** terpisah; set per-proyek, jangan ubah variabel global (Concat masih memakainya) |
+| FFmpeg | `FFMPEG_DIR` global → build **GPL** | ✅ diatasi (P0-05) | Repo memaksa `FFMPEG_DIR=vendor/ffmpeg-lgpl` (`.cargo/config.toml`, `force = true`); variabel global tidak diubah (Concat masih memakainya) |
 | NSIS | tidak ada | ✅ | Tauri mengunduh NSIS otomatis saat bundling |
 | WebView2 | 155.0.4283.62 | ✅ | WebCodecs + WebGPU tersedia |
 | GPU | NVIDIA RTX 5070 Ti (driver 32.0.16.1742) | ✅ | NVENC/NVDEC (H.264, HEVC, AV1) |
@@ -39,7 +39,8 @@ Fase 0 selesai bila:
 | P0-02 | Buat repo `kinora` (monorepo sesuai 03 §5.5), `LICENSE-MIT`, `LICENSE-APACHE`, `README`, `CONTRIBUTING` (DCO), template PR dengan pernyataan clean-room | 0,5 h | P0-01 | Repo publik/privat siap; struktur folder sesuai |
 | P0-03 | Toolchain pin: `rust-toolchain.toml`, `.nvmrc`, `corepack` pnpm, `.editorconfig`, rustfmt/clippy, Biome/ESLint+Prettier | 0,5 h | P0-02 | `cargo fmt/clippy` & lint JS lulus di repo kosong |
 | P0-04 | CI GitHub Actions `windows-latest`: build, test, `cargo-deny`, pemeriksa lisensi JS | 1 h | P0-03 | CI hijau pada PR kosong |
-| P0-05 | Build **FFmpeg 7 LGPL shared** reproducible (skrip + workflow, codec minimal per ADR-0005), artefak di-cache | 2 h | P0-04 | `ffmpeg -buildconf` tanpa `--enable-gpl`; ukuran DLL tercatat |
+| P0-05 | **FFmpeg 8.1 LGPL shared** untuk dev: build terpin + skrip fetch/verifikasi lisensi + job CI | 1 h | P0-04 | `ffmpeg -buildconf` tanpa `--enable-gpl`; ukuran DLL tercatat |
+| P0-05b | Build FFmpeg **rilis** milik Kinora di CI: dipangkas ke codec dari hasil S2, tanpa `libzvbi`, OpenH264 via DLL Cisco saat runtime, di-mirror ke GitHub Release proyek | 2 h | S2, remote GitHub | Lulus `pnpm run ffmpeg:verify:ship`; DLL terkompresi ≤ 30 MB |
 | P0-06 | Pengadaan code signing (Azure Trusted Signing: verifikasi identitas/organisasi) | 1–5 h kerja (menunggu verifikasi) | — | Dapat menandatangani biner uji |
 | P0-07 | **Spike S1** — pipeline preview | 5 h | P0-05 | Laporan S1 (§4) |
 | P0-08 | **Spike S2** — media & encode HW | 3 h | P0-05 | Laporan S2 |
@@ -57,6 +58,7 @@ Fase 0 selesai bila:
 | P0-02 | ✅ Selesai (19 Okt 2026) | Repo lokal `kinora/` (git `main`, belum ada commit), struktur monorepo, `LICENSE-MIT` + `LICENSE-APACHE` (teks resmi apache.org, SHA-256 `cfc7749b…3d30`), README, CONTRIBUTING (DCO + aturan clean-room), SECURITY, template PR & issue. Belum ada remote GitHub. |
 | P0-03 | ✅ Selesai (19 Okt 2026) | Rust 1.99.1 dipin (`rust-toolchain.toml`), workspace edition 2024 + lint workspace, `rustfmt.toml`, `.cargo/config.toml` memaksa `FFMPEG_DIR=vendor/ffmpeg-lgpl`. JS: pnpm 12.14.0 (Corepack), ESLint 10 + typescript-eslint + eslint-plugin-svelte, Prettier 3 + plugin Svelte, TypeScript **6.0.3** (typescript-eslint belum mendukung TS 7). Semua pemeriksaan lulus: `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test`, `pnpm lint`, `pnpm format:check`. Prettier sengaja tidak memformat `*.md`. |
 | P0-04 | 🟡 Selesai lokal (19 Okt 2026) | `.github/workflows/ci.yml` berisi 5 job: `rust` (Windows: fmt, clippy `-D warnings`, test, `--locked`), `web` (lint, format, lisensi JS), `cargo-deny` (lisensi/bans/sources memblokir; advisories tidak memblokir PR), `dco` (setiap commit PR wajib `Signed-off-by`), `workflows` (actionlint). Semua action dipin ke SHA commit; Dependabot memperbarui action, cargo, npm. Diverifikasi lokal: actionlint 1.7.12 bersih, pemeriksa lisensi JS (129 paket OK + uji negatif GPL/NC ditolak), logika DCO diuji di repo sementara. **Kriteria "CI hijau di GitHub" belum terbukti** karena repo belum punya remote. |
+| P0-05 | ✅ Selesai (19 Okt 2026) | **FFmpeg 8.1.3**, bukan 7.x (BtbN tidak lagi menerbitkan 7.x; semua binding Rust mendukung 8.1) — ADR-0005 Amandemen 1. `scripts/ffmpeg/lock.json` (SHA-256 `638dd2a0…ec9a1`), `pnpm run ffmpeg:fetch` (unduh + verifikasi hash + ekstrak ke `vendor/ffmpeg-lgpl`, idempoten), `pnpm run ffmpeg:verify` (dev) / `ffmpeg:verify:ship` (rilis). Hasil: tanpa `--enable-gpl`/`--enable-nonfree`, **LGPL v3** (`--enable-version3`), 7 DLL = 159,1 MB mentah / ±66 MB zip, encoder 18/18, decoder 6/6, hwaccel 5/5, filter 5/5. Mode `--ship` **gagal dengan sengaja**: `libzvbi` (GPL-2.0+) dan OpenH264 statis (tanpa lisensi paten Cisco) → diselesaikan di P0-05b. Job CI `ffmpeg` (Windows, cache arsip) ditambahkan. |
 
 *(h = hari kerja satu developer.)* Jalur kritis: P0-02 → P0-03 → P0-05 → S1 → Gate. S3 dan S4 berjalan paralel.
 
@@ -73,7 +75,8 @@ Fase 0 selesai bila:
 - **Hipotesis:** FFmpeg LGPL + encoder HW cukup untuk ekspor cepat tanpa komponen GPL.
 - **Prototipe:** CLI Rust: probe → decode HW (D3D11VA/NVDEC) → (pass-through wgpu) → encode NVENC/QSV/AMF/OpenH264/SVT-AV1 → mux MP4; mixer audio sederhana; pembuatan proxy & thumbnail strip.
 - **Ukur:** kecepatan ekspor (× realtime) per encoder, kualitas (VMAF/PSNR pada bitrate sama), ukuran total DLL FFmpeg, waktu probe encoder saat start, kebenaran warna (BT.709/BT.2020, full/limited range).
-- **Verifikasi lisensi:** `-buildconf`, daftar filter yang tersedia (`deshake`), OpenH264 diunduh dari Cisco saat runtime.
+- **Verifikasi lisensi:** `pnpm run ffmpeg:verify` (sudah ada sejak P0-05). Tambahan S2: buktikan OpenH264 dapat dimuat dari DLL resmi Cisco saat runtime (delay-load/`LoadLibrary`) tanpa membuat `avcodec` gagal dimuat bila DLL itu belum ada.
+- **Masukan untuk P0-05b:** daftar codec/format/filter yang benar-benar dipakai → konfigurasi build rilis yang dipangkas.
 - **Lulus:** 1080p H.264 HW ≥ 2× realtime; 4K HEVC HW ≥ 1× realtime; DLL FFmpeg ≤ 60 MB terkompresi.
 
 ### S3 — Runtime AI lokal

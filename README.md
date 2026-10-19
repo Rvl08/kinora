@@ -37,7 +37,9 @@ Prerequisites (developers only; end users just run the installer):
 - Rust: pinned by [`rust-toolchain.toml`](rust-toolchain.toml); run `rustup toolchain install` in the repository root
 - Node.js 24 ([`.nvmrc`](.nvmrc)) with Corepack, which provides the pinned pnpm
 - Visual Studio Build Tools (MSVC) and the Windows SDK
-- An **LGPL** FFmpeg 7 shared build in `vendor/ffmpeg-lgpl` (see [ADR-0005](docs/adr/0005-codec-and-ffmpeg-policy.md))
+- An **LGPL** FFmpeg 8.1 shared build in `vendor/ffmpeg-lgpl`: run `corepack pnpm run ffmpeg:fetch`, which downloads the
+  build pinned in [`scripts/ffmpeg/lock.json`](scripts/ffmpeg/lock.json), checks its SHA-256 and verifies its licence
+  (see [ADR-0005](docs/adr/0005-codec-and-ffmpeg-policy.md)). `.cargo/config.toml` points `FFMPEG_DIR` there.
 
 ```sh
 corepack pnpm install        # JS tooling

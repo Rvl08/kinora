@@ -15,6 +15,6 @@
 | [0002](adr/0002-license-and-clean-room.md) | Lisensi MIT OR Apache-2.0 & clean-room | Accepted |
 | [0003](adr/0003-preview-pipeline.md) | Pipeline preview WebCodecs + WebGPU | Proposed (Spike S1) |
 | [0004](adr/0004-project-format-and-commands.md) | Format proyek, waktu rasional, Command | Accepted |
-| [0005](adr/0005-codec-and-ffmpeg-policy.md) | FFmpeg LGPL & kebijakan codec | Accepted |
+| [0005](adr/0005-codec-and-ffmpeg-policy.md) | FFmpeg 8.1 LGPL & kebijakan codec | Accepted (Amandemen 1) |
 
-Status: **Fase 0 berjalan. P0-02 (repo) dan P0-03 (toolchain) selesai; P0-04 (CI) selesai secara lokal dan menunggu remote GitHub. Berikutnya P0-05 (FFmpeg LGPL) dan P0-06 (code signing). P0-01 (nama) ditunda.**
+Status: **Fase 0 berjalan. P0-02, P0-03, dan P0-05 (FFmpeg 8.1 LGPL untuk dev) selesai; P0-04 (CI) selesai secara lokal dan menunggu remote GitHub. Berikutnya P0-06 (code signing) dan spike S1–S4. P0-05b (build FFmpeg rilis) menunggu S2. P0-01 (nama) ditunda.**

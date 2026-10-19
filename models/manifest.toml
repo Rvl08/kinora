@@ -1,0 +1,21 @@
+# AI models Kinora downloads on demand.
+#
+# The installer ships no model weights. A model is fetched the first time a
+# feature needs it, then verified against `sha256`; a download with no digest
+# is refused. Every entry must carry a licence from the allowed classes in
+# docs/05-license-compliance.md.
+#
+# Entry shape:
+#
+# [[model]]
+# id = "whisper-base"            # stable id referenced by the engine
+# family = "whisper"             # whisper | tts | cutout | vad | ...
+# file = "ggml-base.bin"
+# bytes = 0
+# sha256 = ""
+# license = "MIT"
+# license_url = ""
+# upstream = ""                  # pinned to a commit or release, never `main`
+# upstream_commit = ""
+
+schema = 1

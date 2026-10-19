@@ -1,0 +1,6 @@
+# FFmpeg for Kinora is an LGPL shared build kept inside the repository
+# (git-ignored). `force` overrides a machine-wide FFMPEG_DIR, which may point
+# at a GPL build used by other projects; linking that would break the licence
+# policy in docs/adr/0005-codec-and-ffmpeg-policy.md.
+[env]
+FFMPEG_DIR = { value = "vendor/ffmpeg-lgpl", relative = true, force = true }

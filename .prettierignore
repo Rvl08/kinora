@@ -1,0 +1,10 @@
+target/
+node_modules/
+dist/
+vendor/
+spikes/
+pnpm-lock.yaml
+Cargo.lock
+
+# Markdown is written by hand (wide tables in the planning documents).
+*.md

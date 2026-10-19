@@ -1,0 +1,29 @@
+# Rust
+/target/
+**/target/
+
+# JS
+node_modules/
+dist/
+.svelte-kit/
+*.tsbuildinfo
+
+# Native dependencies (FFmpeg LGPL build, ONNX Runtime, ...)
+/vendor/
+
+# Test media and downloaded models (fetched by script, verified by hash)
+/tests/media/
+/models/cache/
+
+# Tauri bundles
+/apps/desktop/src-tauri/gen/
+
+# Local and editor files
+.env
+.env.*
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

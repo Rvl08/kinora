@@ -1,0 +1,27 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+# Phase 0 prototypes are throwaway and build on their own.
+exclude = ["spikes"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.99"
+license = "MIT OR Apache-2.0"
+# `repository` is added once the GitHub home is chosen (P0-01).
+publish = false
+
+[workspace.dependencies]
+kinora-core = { path = "crates/kinora-core" }
+
+[workspace.lints.rust]
+missing_docs = "warn"
+unsafe_op_in_unsafe_fn = "deny"
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "warn"
+undocumented_unsafe_blocks = "deny"
+unwrap_used = "warn"

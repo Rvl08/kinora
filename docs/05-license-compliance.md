@@ -7,14 +7,15 @@
 
 | Kelas | Contoh | Kode/biner yang di-link | Model/aset yang dibundel atau diunduh |
 |---|---|---|---|
-| 🟢 **Diizinkan** | MIT, Apache-2.0, BSD-2/3, ISC, Zlib, Unicode, MPL-2.0 (file-level), OFL-1.1 (font), CC0, CC-BY-4.0 (atribusi) | ✅ | ✅ (atribusi dicatat) |
+| 🟢 **Diizinkan** | MIT, MIT-0, Apache-2.0 (± LLVM-exception), BSD-2/3, 0BSD, ISC, Zlib, Unicode-3.0, BSL-1.0, BlueOak-1.0.0, Unlicense, Python-2.0 (tooling JS), MPL-2.0 (file-level), OFL-1.1 (font), CC0, CC-BY-4.0 (atribusi) | ✅ | ✅ (atribusi dicatat) |
 | 🟡 **Bersyarat** | LGPL-2.1/3.0 | ✅ hanya **link dinamis** (DLL dapat diganti) + notice + tautan source | ✅ dengan notice |
 | 🟡 **Bersyarat** | CC-BY-SA-4.0 | ❌ | ⚠️ hanya aset, tidak dimodifikasi, notice SA |
 | 🔴 **Dilarang** | GPL-2/3, AGPL-3, SSPL, CC-BY-NC(-*), "research only", lisensi custom non-komersial, tanpa lisensi | ❌ | ❌ |
 
-## 2. Penegakan otomatis (dipasang di Fase 0)
-- **Rust:** `cargo-deny` (`deny.toml`: allow-list kelas 🟢 + LGPL hanya untuk crate binding dinamis yang terdaftar) → wajib lulus di CI.
-- **JS:** `license-checker-rseidelsohn` / `pnpm licenses list` dengan allow-list yang sama → wajib lulus di CI.
+## 2. Penegakan otomatis (aktif sejak P0-04)
+- **Rust:** `cargo-deny` dengan [`deny.toml`](../deny.toml): allow-list kelas 🟢, larangan eksplisit crate GPL (x264, x265, espeak), sumber hanya crates.io. FFmpeg (LGPL) adalah DLL, bukan crate, jadi tidak muncul di sini. CI job `cargo-deny`.
+- **JS:** [`scripts/check-js-licenses.mjs`](../scripts/check-js-licenses.mjs) (`pnpm run licenses:check`) membaca `pnpm licenses list` dan mengevaluasi ekspresi SPDX (`OR`/`AND`). CI job `web`.
+- **Advisory keamanan:** `cargo deny check advisories` tiap push ke `main` dan mingguan; tidak memblokir PR yang tidak terkait.
 - **Model:** `models/manifest.toml` wajib berisi `license`, `license_url`, `sha256`, `upstream_commit`; CI menolak entri tanpa lisensi 🟢 (atau 🟡 yang disetujui).
 - **Aset:** `assets/**/LICENSE.json` per pack; CI menolak file aset tanpa entri.
 - `THIRD_PARTY_NOTICES.md` dibangkitkan otomatis (cargo-about + skrip JS + manifest model) dan ikut di installer (halaman "Tentang → Lisensi").

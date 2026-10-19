@@ -46,7 +46,11 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 corepack pnpm run lint       # ESLint
 corepack pnpm run format:check
+corepack pnpm run licenses:check   # npm licence policy
+cargo deny check             # Rust licence, source and advisory policy (cargo install cargo-deny)
 ```
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the same checks, plus actionlint and a DCO sign-off check on pull requests.
 
 ## License
 

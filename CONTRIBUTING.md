@@ -39,6 +39,8 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 corepack pnpm run lint
 corepack pnpm run format:check
+corepack pnpm run licenses:check
+cargo deny check
 ```
 
 ## 5. Conventions

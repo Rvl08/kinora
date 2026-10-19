@@ -1,0 +1,55 @@
+# cargo-deny policy: enforces docs/05-license-compliance.md for Rust crates.
+# Run locally with `cargo deny check`.
+
+[graph]
+# Kinora ships for Windows x86_64 first; dependencies of other platforms are
+# not part of the shipped binary.
+targets = ["x86_64-pc-windows-msvc"]
+all-features = true
+
+[advisories]
+# A RustSec advisory fails the check unless it is listed here with a reason.
+ignore = []
+
+[licenses]
+# Green class only. LGPL is allowed solely through FFmpeg loaded as a DLL,
+# which is not a Rust crate and so never appears here. GPL, AGPL and
+# non-commercial licences are rejected by omission.
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "MPL-2.0",
+    "CC0-1.0",
+    "BSL-1.0",
+]
+confidence-threshold = 0.9
+# The allow-list is policy, not an inventory: entries no dependency uses yet are expected.
+unused-allowed-license = "allow"
+
+[licenses.private]
+# Workspace crates are covered by the repository licence.
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Path dependencies inside the workspace are not wildcards.
+allow-wildcard-paths = true
+deny = [
+    # Copyleft media and speech components (ADR-0005, docs/05 §4).
+    { crate = "x264", reason = "GPL-2.0; use hardware encoders or OpenH264" },
+    { crate = "x265", reason = "GPL-2.0; use hardware encoders" },
+    { crate = "espeak-rs", reason = "binds espeak-ng (GPL-3.0)" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

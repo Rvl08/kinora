@@ -183,6 +183,15 @@ kinora/
 - Tidak ada telemetri default; laporan crash opt-in.
 - Semua unduhan model diverifikasi SHA-256; mirror milik proyek + fallback upstream.
 
+### 6.6 Desain UI/UX
+- **Prioritas:** ramah pengguna untuk orang awam *dan* profesional, dengan gaya clean, estetis, dan menarik — bukan "AI slop" (gradien ungu generik, kartu seragam, ikon dekoratif tanpa fungsi).
+- **Alat wajib:** skill [Impeccable](https://impeccable.style) dipakai sejak baris UI pertama (Fase 1), bukan di akhir:
+  1. `npx impeccable install` di root repo.
+  2. `/impeccable init` untuk memberi konteks produk & arah desain (persona §1, prinsip di bawah).
+  3. `/impeccable hooks on` agar pemeriksaan desain otomatis berjalan saat agen bekerja. Hook perlu disetujui pemilik repo di pengaturan hooks Claude Code.
+- **Prinsip produk:** progressive disclosure (mode sederhana di depan, kontrol pro satu klik di belakang); setiap aksi umum ≤ 2 klik; status job AI selalu terlihat dan jujur (ETA, bisa dibatalkan); dark & light theme; kontras WCAG AA; keyboard-first untuk pro; bahasa UI Indonesia yang natural, bukan terjemahan kaku.
+- **Validasi:** uji kegunaan singkat dengan 3 persona (kreator awam, podcaster, editor pro) di setiap akhir fase.
+
 ## 7. Roadmap bertahap
 
 > Asumsi: 2 developer full-stack (Rust + TS) dibantu AI. Estimasi kasar; dikalibrasi ulang setelah Fase 0.
@@ -196,7 +205,7 @@ kinora/
 - **Gate:** jika S1 gagal → pakai Opsi B (§5.3) dan revisi estimasi.
 
 ### Fase 1 — MVP Editor Inti (±8–10 minggu) → rilis *Alpha*
-Impor & media bin, proxy, timeline multi-track (split/trim/ripple/magnetic/snap), undo/redo + jurnal + autosave,
+Langkah pertama sebelum menulis UI: pasang & inisialisasi Impeccable (§6.6). Lalu impor & media bin, proxy, timeline multi-track (split/trim/ripple/magnetic/snap), undo/redo + jurnal + autosave,
 preview, transform/crop/rotate/opacity, teks dasar + font, volume/fade/waveform, ekspor H.264/HEVC hingga 4K + preset platform,
 i18n ID/EN, profil performa otomatis, installer signed.
 **Exit:** pengguna awam dapat membuat & mengekspor video 9:16 dengan teks & musik dalam < 10 menit tanpa crash.

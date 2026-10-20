@@ -36,7 +36,8 @@
 | ONNX Runtime + DirectML | MIT | 🟢 | DirectML redistributable — cek ketentuan redistribusi |
 | whisper.cpp / whisper-rs | MIT / Unlicense | 🟢 | |
 | sherpa-onnx | Apache-2.0 | 🟢 / ⚠️ | **Bergantung pada espeak-ng (GPL-3.0)** untuk sebagian model TTS → lihat §4 |
-| OpenH264 | BSD-2 (+ lisensi paten Cisco bila biner diunduh dari Cisco) | 🟢 | Unduh saat runtime |
+| OpenH264 (biner resmi Cisco 2.6.0) | Biner: [lisensi biner Cisco](http://www.openh264.org/BINARY_LICENSE.txt) + paten ditanggung Cisco; kode: BSD-2 | 🟢 | **Diunduh saat dibutuhkan, tidak dibundel**; MD5 + SHA-256 + Authenticode diverifikasi (S2) |
+| Crate `openh264` / `openh264-sys2` 0.9.9 (`libloading`) | BSD-2-Clause | 🟢 | Memuat DLL Cisco saat runtime; menolak DLL di luar allow-list SHA-256 |
 | SVT-AV1, dav1d, libvpx, libopus | BSD | 🟢 | |
 | libmp3lame | LGPL | 🟡 | via FFmpeg dinamis |
 | x264, x265, libvidstab, espeak-ng | GPL | 🔴 | **Tidak dipakai** |

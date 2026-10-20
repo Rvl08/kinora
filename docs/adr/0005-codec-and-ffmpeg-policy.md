@@ -1,6 +1,6 @@
 # ADR-0005 — Kebijakan codec & build FFmpeg
 
-- **Status:** Accepted (19 Okt 2026), **diamandemen** 19 Okt 2026 setelah P0-05 (lihat §Amandemen 1) · **Keputusan terkait:** D2
+- **Status:** Accepted (19 Okt 2026), **diamandemen** 19 Okt 2026 (Amandemen 1, P0-05) dan 20 Okt 2026 (Amandemen 2, Spike S2) · **Keputusan terkait:** D2
 
 ## Konteks
 Lisensi proyek permisif (ADR-0002) melarang komponen GPL. FFmpeg berlisensi LGPL-2.1+ bila dibangun tanpa
@@ -49,3 +49,15 @@ Lisensi proyek permisif (ADR-0002) melarang komponen GPL. FFmpeg berlisensi LGPL
    - **Dev/spike:** build BtbN yang dipin di `scripts/ffmpeg/lock.json` (SHA-256 diverifikasi), dipasang dengan `pnpm run ffmpeg:fetch`. Tidak pernah didistribusikan.
    - **Rilis:** build Kinora sendiri (**P0-05b**), dipangkas ke codec yang terbukti dibutuhkan oleh Spike S2, **tanpa `libzvbi`**, dan OpenH264 dimuat dari DLL Cisco saat runtime (atau dihapus). Build ini wajib lulus `pnpm run ffmpeg:verify:ship`.
 3. Lisensi FFmpeg dicatat sebagai **LGPL-3.0-or-later** di `THIRD_PARTY_NOTICES` selama `--enable-version3` aktif.
+
+## Amandemen 2 — hasil Spike S2 (20 Okt 2026)
+
+Dasar: [S2-report.md](../spikes/S2-report.md).
+
+1. **H.264 software fallback = OpenH264 dari DLL resmi Cisco, dimuat saat runtime oleh crate Rust `openh264` (`libloading`)**, **bukan** lewat `--enable-libopenh264`. FFmpeg rilis tidak menautkan OpenH264 sama sekali.
+   DLL diunduh saat dibutuhkan dan diverifikasi tiga lapis: MD5 Cisco, SHA-256 allow-list, Authenticode (status valid + timestamp).
+2. **Jalur ekspor:** decode D3D11VA → composite wgpu bila ada efek → encoder hardware; tanpa efek, **zero-copy** D3D11 → encoder. Decode software hanya sebagai fallback.
+3. **Encoder default:** H.264 hardware; HEVC/AV1 hardware opsional, 10-bit dipertahankan. Fallback tanpa GPU: SVT-AV1 (AV1) dan OpenH264-Cisco (H.264, mode kualitas). VP9 hanya untuk ekspor WebM eksplisit (0,5× realtime di 1080p).
+4. **Wajib di exporter:** reset `pict_type`/flag key setiap frame; time base encoder = 1/fps dengan rescale timestamp **dan** durasi; `av_frame_ref`, bukan deep copy; `get_format` eksplisit; VBV hanya untuk encoder hardware.
+5. **Build rilis (P0-05b):** komponen sesuai [`scripts/ffmpeg/release-components.json`](../../scripts/ffmpeg/release-components.json), divalidasi `scripts/ffmpeg/check-components.py`; tanpa protokol jaringan, tanpa filter berat (efek dikerjakan compositor WGSL).
+6. **Belum teruji:** QSV & AMF (tidak ada perangkat), decode CUDA lewat API. Keduanya wajib diuji sebelum rilis; tabel encoder §3 tetap berlaku sebagai kebijakan.

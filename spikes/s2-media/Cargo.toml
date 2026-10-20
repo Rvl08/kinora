@@ -1,0 +1,23 @@
+[package]
+name = "s2-media"
+description = "Phase 0 Spike S2: decode/encode paths, encoder matrix, proxies, thumbnails. Throwaway."
+version = "0.0.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+# Standalone: not a member of the repository workspace.
+[workspace]
+
+[dependencies]
+ffmpeg-next = { version = "8.1.0", default-features = false, features = ["codec", "format", "software-scaling", "software-resampling"] }
+openh264 = { version = "0.9.9", default-features = false, features = ["libloading"] }
+wgpu = "30.0.1"
+pollster = "1.0.1"
+bytemuck = { version = "1.25.2", features = ["derive"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sysinfo = "0.37"
+
+[profile.release]
+debug = 1

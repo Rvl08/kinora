@@ -1,0 +1,8 @@
+{
+  "report": "../../../tests/media/s1-reports/smoke.json",
+  "runs": [
+    { "name": "smoke-1080p30-h264-3layers-fx-text", "files": ["1080p30-h264.mp4", "1080p30-h264.mp4", "1080p30-h264.mp4"], "effects": true, "text": true, "playSeconds": 5, "seeks": 3 },
+    { "name": "smoke-prores-support", "files": ["2160p30-prores.mov"], "playSeconds": 1, "seeks": 0 }
+  ],
+  "parity": { "file": "1080p30-h264.mp4", "tUs": [10000000], "variants": ["plain", "fx"] }
+}

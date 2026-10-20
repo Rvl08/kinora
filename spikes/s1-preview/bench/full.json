@@ -1,0 +1,106 @@
+{
+  "report": "../../../tests/media/s1-reports/full.json",
+  "runs": [
+    {
+      "name": "1080p30-h264-1layer",
+      "files": [
+        "1080p30-h264.mp4"
+      ],
+      "playSeconds": 30,
+      "seeks": 20
+    },
+    {
+      "name": "1080p30-h264-3layers-fx-text",
+      "files": [
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 50,
+      "seeks": 20
+    },
+    {
+      "name": "1080p30-h264-gop10-3layers-proxylike",
+      "files": [
+        "1080p30-h264-gop10.mp4",
+        "1080p30-h264-gop10.mp4",
+        "1080p30-h264-gop10.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 20,
+      "seeks": 30
+    },
+    {
+      "name": "1080p30-h264-3layers-fx-text-swdecode",
+      "files": [
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4"
+      ],
+      "hw": "prefer-software",
+      "effects": true,
+      "text": true,
+      "playSeconds": 30,
+      "seeks": 20
+    },
+    {
+      "name": "2160p60-hevc10-1layer",
+      "files": [
+        "2160p60-hevc10.mp4"
+      ],
+      "playSeconds": 30,
+      "seeks": 20
+    },
+    {
+      "name": "2160p60-hevc10-3layers-fx-text",
+      "files": [
+        "2160p60-hevc10.mp4",
+        "2160p60-hevc10.mp4",
+        "2160p60-hevc10.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 30,
+      "seeks": 20
+    },
+    {
+      "name": "1080p-vfr-h264-1layer",
+      "files": [
+        "1080p-vfr-h264.mp4"
+      ],
+      "playSeconds": 30,
+      "seeks": 20
+    },
+    {
+      "name": "1080p30-av1-1layer",
+      "files": [
+        "1080p30-av1.mp4"
+      ],
+      "playSeconds": 20,
+      "seeks": 20
+    },
+    {
+      "name": "2160p30-prores-support",
+      "files": [
+        "2160p30-prores.mov"
+      ],
+      "playSeconds": 1,
+      "seeks": 0
+    }
+  ],
+  "parity": {
+    "file": "1080p30-h264.mp4",
+    "tUs": [
+      10000000,
+      33366667,
+      47000000
+    ],
+    "variants": [
+      "plain",
+      "fx"
+    ]
+  }
+}

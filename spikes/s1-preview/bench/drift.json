@@ -1,0 +1,6 @@
+{
+  "report": "../../../tests/media/s1-reports/drift.json",
+  "runs": [
+    { "name": "drift-1080p30-h264-10min", "files": ["1080p30-h264-11min.mp4"], "playSeconds": 600, "seeks": 0 }
+  ]
+}

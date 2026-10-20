@@ -1,0 +1,73 @@
+{
+  "report": "../../../tests/media/s1-reports/followup.json",
+  "runs": [
+    {
+      "name": "1080p-vfr-h264-1layer",
+      "files": [
+        "1080p-vfr-h264.mp4"
+      ],
+      "playSeconds": 30,
+      "seeks": 30
+    },
+    {
+      "name": "leakcheck-1",
+      "files": [
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 20,
+      "seeks": 5
+    },
+    {
+      "name": "leakcheck-2",
+      "files": [
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 20,
+      "seeks": 5
+    },
+    {
+      "name": "leakcheck-3",
+      "files": [
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 20,
+      "seeks": 5
+    },
+    {
+      "name": "leakcheck-4",
+      "files": [
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 20,
+      "seeks": 5
+    },
+    {
+      "name": "leakcheck-5",
+      "files": [
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4",
+        "1080p30-h264.mp4"
+      ],
+      "effects": true,
+      "text": true,
+      "playSeconds": 20,
+      "seeks": 5
+    }
+  ]
+}

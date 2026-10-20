@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kinora S1 preview spike</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #111;
+        color: #ddd;
+        font: 13px/1.4 ui-monospace, Consolas, monospace;
+      }
+      body {
+        display: grid;
+        grid-template-rows: 1fr auto;
+      }
+      #stage {
+        display: grid;
+        place-items: center;
+        min-height: 0;
+      }
+      canvas {
+        max-width: 100%;
+        max-height: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+      }
+      #bar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 8px 12px;
+        background: #1b1b1b;
+      }
+      #hud {
+        white-space: pre;
+        flex: 1;
+      }
+      input[type='range'] {
+        width: 280px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"><canvas id="view" width="1920" height="1080"></canvas></div>
+    <div id="bar">
+      <button id="play">Play</button>
+      <input id="seek" type="range" min="0" max="1000" value="0" />
+      <div id="hud">starting…</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

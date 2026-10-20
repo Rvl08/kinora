@@ -15,8 +15,9 @@ dist/
 /tests/media/
 /models/cache/
 
-# Tauri bundles
+# Tauri generated schemas
 /apps/desktop/src-tauri/gen/
+/spikes/*/src-tauri/gen/
 
 # Local and editor files
 .env

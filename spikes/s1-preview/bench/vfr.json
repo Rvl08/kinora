@@ -1,0 +1,21 @@
+{
+  "report": "../../../tests/media/s1-reports/vfr.json",
+  "runs": [
+    {
+      "name": "1080p-vfr-h264-1layer-60seeks",
+      "files": [
+        "1080p-vfr-h264.mp4"
+      ],
+      "playSeconds": 10,
+      "seeks": 60
+    },
+    {
+      "name": "1080p30-h264-1layer-60seeks",
+      "files": [
+        "1080p30-h264.mp4"
+      ],
+      "playSeconds": 10,
+      "seeks": 60
+    }
+  ]
+}

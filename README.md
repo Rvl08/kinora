@@ -1,9 +1,8 @@
 # Kinora
 
-> **Working name.** The final product name is decided in Phase 0 (task P0-01).
-
 A free, offline, lightweight desktop video editor for Windows: the editing and on-device AI people open CapCut for,
-with **no watermark, no account, no subscription, no upload**, installed through a single signed `setup.exe`.
+with **no watermark, no account, no subscription, no upload**, installed from the Microsoft Store or through a
+signed `setup.exe`. Free, and free of charge to build and distribute: no paid service is required anywhere.
 
 **Status:** Phase 0 (foundations and de-risking). No product code yet. See [`docs/`](docs/README.md).
 
@@ -53,6 +52,27 @@ cargo deny check             # Rust licence, source and advisory policy (cargo i
 ```
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the same checks, plus actionlint and a DCO sign-off check on pull requests.
+
+## Code signing policy
+
+Every executable and DLL Kinora ships is Authenticode-signed, or comes signed by its vendor (Microsoft, Cisco)
+and is shipped unchanged; the release fails otherwise ([ADR-0007](docs/adr/0007-code-signing.md)).
+
+- **Microsoft Store:** the MSIX package is signed by Microsoft after Store certification.
+- **GitHub Releases (`setup.exe`):** free code signing provided by [SignPath.io](https://about.signpath.io/),
+  certificate by [SignPath Foundation](https://signpath.org/), once the project's application is approved.
+  Until then, preview installers are unsigned and say so on the release page.
+
+Roles (all with multi-factor authentication):
+
+| Role | Members |
+|---|---|
+| Committers and reviewers | [Rvl08](https://github.com/Rvl08) |
+| Approvers (each signing request) | [Rvl08](https://github.com/Rvl08) |
+
+Only artifacts built by this repository's CI from this repository's source are signed.
+Privacy: see [PRIVACY.md](PRIVACY.md). Kinora collects no data and connects to the internet only to download
+what you ask for.
 
 ## License
 

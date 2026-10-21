@@ -12,7 +12,7 @@ dengan lisensi permisif agar bebas dipakai, didistribusikan, dan dikembangkan ta
    - ❌ Dilarang menyalin kode, shader WGSL, preset, manifest efek, teks UI, atau dokumentasi dari Concat.
    - ❌ Dilarang memakai aset/biner/model/string/merek/ikon CapCut, dan dilarang mendekompilasi DLL CapCut.
    - ✅ Boleh: daftar fitur, perilaku yang dapat diamati, dan pola arsitektur umum (mis. *command pattern*, waktu rasional) — ide tidak dilindungi hak cipta.
-   - ✅ Laporan RE (`docs/01`, `docs/02`) menjadi satu-satunya jembatan pengetahuan; developer yang mengimplementasikan efek tidak membuka source Concat selama implementasi.
+   - ✅ Matriks fitur (`docs/02`; catatan analisis internal `docs/01` tidak dipublikasikan) menjadi satu-satunya jembatan pengetahuan; developer yang mengimplementasikan efek tidak membuka source Concat selama implementasi.
 3. **Setiap dependensi & model** wajib lolos kebijakan di [05-license-compliance.md](../05-license-compliance.md) sebelum di-merge.
 4. **CLA tidak dipakai;** kontribusi memakai **DCO** (`Signed-off-by`) di bawah lisensi yang sama.
 

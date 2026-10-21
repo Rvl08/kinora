@@ -9,7 +9,7 @@ version = "0.0.0"
 edition = "2024"
 rust-version = "1.99"
 license = "MIT OR Apache-2.0"
-# `repository` is added once the GitHub home is chosen (P0-01).
+repository = "https://github.com/Rvl08/kinora"
 publish = false
 
 [workspace.dependencies]

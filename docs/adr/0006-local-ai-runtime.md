@@ -1,6 +1,6 @@
 # ADR-0006 — Runtime AI lokal
 
-- **Status:** Accepted (21 Okt 2026), berdasarkan [Laporan Spike S3](../spikes/S3-report.md); §7 diperbarui oleh [S3b](../spikes/S3b-report.md) pada hari yang sama · **Menggantikan sebagian:** baris "AI" di [ADR-0001](0001-technology-stack.md) (sherpa-onnx dihapus)
+- **Status:** Accepted (21 Okt 2026), berdasarkan [Laporan Spike S3](../spikes/S3-report.md); §7 diperbarui oleh [S3b](../spikes/S3b-report.md) pada hari yang sama; §2 dan §9 diamandemen 21 Okt 2026 (distribusi tanpa biaya, di bawah) · **Menggantikan sebagian:** baris "AI" di [ADR-0001](0001-technology-stack.md) (sherpa-onnx dihapus)
 
 ## Konteks
 Kinora menjanjikan fitur AI yang berjalan sepenuhnya di perangkat: caption otomatis, hapus latar, TTS, dan deteksi jeda.
@@ -53,3 +53,12 @@ Spike S3 menguji ORT + DirectML, whisper.cpp (Vulkan/CPU), Kokoro, Silero VAD, d
 - Export BiRefNet yang cepat di DirectML (varian `GridSample` atau DeformConv fp16), lihat S3b §5a.
 - Sumber suara TTS Indonesia berlisensi permisif.
 - Validasi di iGPU Intel/AMD dan perangkat 8 GB RAM (perangkat belum ada).
+
+## Amandemen 1 — Tata letak rilis untuk distribusi tanpa biaya (21 Okt 2026)
+Mengikuti [ADR-0007](0007-code-signing.md) Amandemen 1 (SignPath hanya menandatangani artefak dari source kita):
+
+- **§2 (backend ggml):** Vulkan dan CPU ditautkan statis ke `kinora.exe`, atau dibangun dari source kita sebagai DLL sendiri yang ikut ditandatangani SignPath. Tidak ada DLL ggml pihak ketiga.
+- **§9 (VC++ runtime):** utamakan CRT statis (`-C target-feature=+crt-static`, CMake `/MT`). Bila ada dependensi biner yang mewajibkan `/MD`, runtime app-local tetap dipakai (bertanda tangan Microsoft; konfirmasi ke SignPath sebagai system library).
+- **`DirectML.dll` tidak dibundel.** Library ini diunduh oleh pengelola model saat fitur AI GPU pertama kali dipakai, dari paket NuGet Microsoft yang dipin.
+  - SHA-256 dipin, dan tanda tangan Authenticode Microsoft diverifikasi sebelum dimuat; polanya sama dengan OpenH264 Cisco (ADR-0005 Amandemen 2).
+  - Selama belum terunduh, AI berjalan di CPU.

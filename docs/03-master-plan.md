@@ -3,7 +3,7 @@
 > Dokumen perencanaan. **Belum ada satu baris kode pun.** Semua pilihan teknis di sini masih
 > berstatus *proposal* sampai keputusan di §9 disetujui dan spike Fase 0 lulus.
 >
-> Dasar: [01-reverse-engineering-report.md](01-reverse-engineering-report.md) · [02-feature-matrix.md](02-feature-matrix.md)
+> Dasar: catatan analisis internal 01 (tidak dipublikasikan) · [02-feature-matrix.md](02-feature-matrix.md)
 
 ---
 

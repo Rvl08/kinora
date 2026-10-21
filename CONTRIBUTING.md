@@ -9,8 +9,8 @@ Kinora is an independent implementation. It is **not** derived from CapCut or fr
 - Do not copy, port or translate code, shaders, effect presets, UI text, documentation or assets from
   CapCut, Concat (AGPL-3.0) or any other editor whose licence is not in the allowed list.
 - Do not use CapCut binaries, models, fonts, stickers, LUTs, string tables, names or icons.
-- Feature ideas and observable behaviour are fine; the shared knowledge is in
-  [`docs/01`](docs/01-reverse-engineering-report.md) and [`docs/02`](docs/02-feature-matrix.md).
+- Feature ideas and observable behaviour are fine; the shared knowledge is the feature matrix in
+  [`docs/02`](docs/02-feature-matrix.md). (The maintainers' internal analysis notes, docs/01, are not published.)
 - While implementing an effect or feature, do not open the source code of a GPL/AGPL editor that implements it.
 
 Every pull request confirms this in its template.

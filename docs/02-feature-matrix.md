@@ -3,7 +3,7 @@
 Kode nama kerja aplikasi: **"Kinora"** *(placeholder — nama final ditentukan di Fase 0, lihat 03 §9)*.
 
 **Legenda**
-- CapCut: ✅ gratis · 💎 Pro (string paywall teramati) · 🪙 kredit/menit · ☁️ butuh cloud/akun · ❔ status gating belum teramati
+- CapCut: ✅ gratis · 💎 fitur Pro/berbayar · 🪙 kredit/menit · ☁️ butuh cloud/akun · ❔ status gating belum teramati
 - Concat: ✅ ada · ⚠️ parsial · ❌ tidak ada
 - Fase kita: **P1** MVP inti · **P2** kreatif · **P3** AI lokal · **P4** pembeda · **P5+** setelah rilis · **✖** di luar cakupan
 - Semua fitur Kinora **gratis, offline, tanpa akun, tanpa watermark** kecuali disebut "BYOK" (pengguna memakai API key miliknya sendiri, opsional).

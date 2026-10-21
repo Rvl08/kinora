@@ -1,6 +1,6 @@
 # ADR-0007 — Code signing
 
-- **Status:** Accepted (21 Okt 2026). Penyedia: **Certum Open Source Code Signing (cloud)**, diputuskan pemilik proyek pada 21 Okt 2026 (§3) · **Terkait:** P0-06, S4, [ADR-0006](0006-local-ai-runtime.md) §9
+- **Status:** Accepted (21 Okt 2026). Penyedia: ~~Certum Open Source~~ → **tanpa biaya: SignPath Foundation + Microsoft Store** (Amandemen 1, keputusan pemilik 21 Okt 2026) · **Terkait:** P0-06, S4, [ADR-0006](0006-local-ai-runtime.md) §9
 
 ## Konteks
 - **Smart App Control (SAC)** aktif di mesin dev dan di banyak PC Windows 11 baru.
@@ -98,3 +98,20 @@ Belum diuji, karena butuh sertifikat asli:
 - perilaku SAC di host terhadap biner bertanda tangan;
 - mode `store` dengan SimplySign;
 - integrasi `signCommand` di bundler Tauri (S4).
+
+## Amandemen 1 — Tanpa biaya: SignPath Foundation + Microsoft Store (21 Okt 2026)
+Pemilik proyek memutuskan **tidak mengeluarkan biaya apa pun**; keputusan 3 (Certum) dibatalkan sebelum pembelian. Rincian: [06 — Rencana publikasi](../06-public-release-plan.md).
+
+1. **Kanal A — Microsoft Store (MSIX).** Pendaftaran developer perorangan gratis. Microsoft menandatangani ulang paket setelah sertifikasi, dan nama penerbit di Store bebas dipilih.
+2. **Kanal B — `setup.exe` di GitHub Releases, ditandatangani SignPath Foundation** (gratis untuk OSS). Penerbit yang tampil: "SignPath Foundation".
+   - Setiap rilis disetujui manual, dan semua anggota wajib memakai MFA.
+   - Halaman "Code signing policy" dan kebijakan privasi wajib ada.
+   - Sebelum disetujui, `setup.exe` dirilis sebagai **pratinjau tanpa tanda tangan**.
+3. **Tata letak rilis tanpa DLL pihak ketiga yang tak bertanda tangan** (syarat SignPath + SAC):
+   - FFmpeg statis ([ADR-0005](0005-codec-and-ffmpeg-policy.md) Amandemen 3);
+   - ggml statis dan CRT statis ([ADR-0006](0006-local-ai-runtime.md) Amandemen 1);
+   - `DirectML.dll` dan OpenH264 diunduh saat runtime, sudah bertanda tangan vendor.
+4. **Pipeline `scripts/signing/` tetap berlaku.**
+   - `verify.mjs` tetap menjadi gerbang rilis, dengan `publishers` diisi subjek sertifikat SignPath Foundation setelah tanda tangan pertama.
+   - Penandatanganan kanal B memakai GitHub Action SignPath. `sign.mjs` tetap dipakai untuk uji (`pfx`) dan bila kelak memakai sertifikat sendiri.
+5. Konsekuensi: rilis bergantung pada persetujuan SignPath (ditolak atau dicabut → kembali ke opsi A/C berbayar, tanpa perubahan pipeline). Nama legal pemilik tidak tampil di mana pun.

@@ -1,6 +1,6 @@
 # ADR-0005 — Kebijakan codec & build FFmpeg
 
-- **Status:** Accepted (19 Okt 2026), **diamandemen** 19 Okt 2026 (Amandemen 1, P0-05) dan 20 Okt 2026 (Amandemen 2, Spike S2) · **Keputusan terkait:** D2
+- **Status:** Accepted (19 Okt 2026), **diamandemen** 19 Okt 2026 (Amandemen 1, P0-05) 20 Okt 2026 (Amandemen 2, Spike S2), dan 21 Okt 2026 (Amandemen 3, distribusi tanpa biaya) · **Keputusan terkait:** D2
 
 ## Konteks
 Lisensi proyek permisif (ADR-0002) melarang komponen GPL. FFmpeg berlisensi LGPL-2.1+ bila dibangun tanpa
@@ -61,3 +61,14 @@ Dasar: [S2-report.md](../spikes/S2-report.md).
 4. **Wajib di exporter:** reset `pict_type`/flag key setiap frame; time base encoder = 1/fps dengan rescale timestamp **dan** durasi; `av_frame_ref`, bukan deep copy; `get_format` eksplisit; VBV hanya untuk encoder hardware.
 5. **Build rilis (P0-05b):** komponen sesuai [`scripts/ffmpeg/release-components.json`](../../scripts/ffmpeg/release-components.json), divalidasi `scripts/ffmpeg/check-components.py`; tanpa protokol jaringan, tanpa filter berat (efek dikerjakan compositor WGSL).
 6. **Belum teruji:** QSV & AMF (tidak ada perangkat), decode CUDA lewat API. Keduanya wajib diuji sebelum rilis; tabel encoder §3 tetap berlaku sebagai kebijakan.
+
+## Amandemen 3 — FFmpeg ditautkan statis (21 Okt 2026)
+Pemilik memilih distribusi tanpa biaya ([06](../06-public-release-plan.md), [ADR-0007](0007-code-signing.md) Amandemen 1): Microsoft Store (MSIX) dan `setup.exe` yang ditandatangani SignPath Foundation.
+SignPath hanya menandatangani artefak yang dibangun dari source proyek, dan Smart App Control memeriksa setiap DLL. Karena itu keputusan §1 dan §5 berubah:
+
+1. **Build rilis FFmpeg (P0-05b) ditautkan statis ke `kinora.exe`**, bukan DLL terpisah. FFmpeg dikompilasi dari source upstream yang dipin, oleh skrip CI kita. Kedua kanal memakai tata letak yang sama.
+2. **Kepatuhan LGPL tanpa DLL yang dapat diganti:**
+   - Seluruh source Kinora (MIT OR Apache-2.0), skrip build FFmpeg, dan versi yang dipin bersifat publik. Pengguna dapat membangun ulang Kinora dengan FFmpeg yang dimodifikasi (LGPL §6/§4d).
+   - `THIRD_PARTY_NOTICES` dan dokumentasi build menjelaskan caranya. Teks lisensi dan tautan source tetap disertakan di installer.
+3. Build dev (P0-05, BtbN shared) tidak berubah. Yang berubah hanya build rilis.
+4. Yang perlu dikonfirmasi saat mendaftar SignPath: FFmpeg statis di dalam exe kita dianggap artefak proyek (praktik yang sama dengan crate Rust pihak ketiga).

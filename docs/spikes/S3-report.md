@@ -4,7 +4,7 @@
 > **ADR terkait:** [ADR-0006](../adr/0006-local-ai-runtime.md) (baru) · **Kode:** [`spikes/s3-ai/`](../../spikes/s3-ai/README.md) · **Lanjutan:** S3b (model cutout), S4 (VC++ runtime di installer)
 > **Rekomendasi:** ✅ **ORT + DirectML** dan **whisper.cpp + Vulkan** jalan di GPU tanpa CUDA, Python, atau instalasi tambahan. Caption 10 menit (base, GPU) selesai dalam ±13 detik.
 > TTS tanpa espeak-ng terbukti. ⚠️ Dua risiko produk:
-> (1) export BiRefNet yang diuji butuh **11 GB VRAM**, jadi model cutout default belum ada (S3b);
+> (1) export BiRefNet yang diuji butuh **11 GB VRAM**. **Terselesaikan di [S3b](S3b-report.md):** export dinamis dengan bobot yang sama butuh 2,4 GB VRAM dan hasilnya identik;
 > (2) TTS bahasa Indonesia baru "beta" (Kokoro tidak punya suara Indonesia).
 
 ## 1. Ringkasan

@@ -55,8 +55,10 @@
 | F5-TTS | CC-BY-NC-4.0 | 🔴 | **Tolak** |
 | DeepFilterNet3 | MIT/Apache-2.0 | 🟢 | Pakai |
 | HTDemucs | MIT | 🟢 | Pakai |
-| BiRefNet | MIT | 🟢 | Lisensi lolos; export 1024² yang diuji butuh 11 GB VRAM → konfigurasi dipilih di S3b |
-| IS-Net (DIS) | Apache-2.0 | 🟢 | Pakai |
+| BiRefNet | MIT | 🟢 | Pakai: export dinamis `DeformConv` (S3b). File uji dari pihak ketiga (`senty-au`, MIT); rilis mengekspor sendiri dari bobot resmi |
+| IS-Net (DIS) | Apache-2.0 | 🟢 | Pakai (mode cutout "cepat", S3b); konversi ONNX rembg (MIT) |
+| U²-Net / U²-Net-P | Apache-2.0 | 🟢 | Lisensi lolos; ditolak karena kualitas (S3b) |
+| RMBG-1.4 / RMBG-2.0 (BRIA) | Non-komersial | 🔴 | **Tolak** |
 | MODNet | Kode Apache-2.0; **lisensi bobot belum terverifikasi** | ⚠️ | Verifikasi; jika tidak jelas → tolak |
 | RobustVideoMatting | GPL-3.0 | 🔴 | **Tolak** |
 | SlimSAM / EfficientSAM | Apache-2.0 | 🟢 | Pakai |

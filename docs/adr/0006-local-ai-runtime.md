@@ -1,6 +1,6 @@
 # ADR-0006 — Runtime AI lokal
 
-- **Status:** Accepted (21 Okt 2026), berdasarkan [Laporan Spike S3](../spikes/S3-report.md) · **Menggantikan sebagian:** baris "AI" di [ADR-0001](0001-technology-stack.md) (sherpa-onnx dihapus)
+- **Status:** Accepted (21 Okt 2026), berdasarkan [Laporan Spike S3](../spikes/S3-report.md); §7 diperbarui oleh [S3b](../spikes/S3b-report.md) pada hari yang sama · **Menggantikan sebagian:** baris "AI" di [ADR-0001](0001-technology-stack.md) (sherpa-onnx dihapus)
 
 ## Konteks
 Kinora menjanjikan fitur AI yang berjalan sepenuhnya di perangkat: caption otomatis, hapus latar, TTS, dan deteksi jeda.
@@ -26,10 +26,15 @@ Spike S3 menguji ORT + DirectML, whisper.cpp (Vulkan/CPU), Kokoro, Silero VAD, d
    - **espeak-ng tidak dipakai** (GPL-3.0).
    - Bahasa Indonesia ditandai **"beta"** sampai ada suara berbahasa Indonesia (05 §4 opsi 3).
 6. **VAD:** Silero v5 (ORT, CPU, 1 thread; RTF 0,002).
-7. **Cutout:** jalurnya ORT + DirectML fp16, sebagai pekerjaan latar dengan hasil di-cache per klip (bukan real-time).
-   - **Model default belum diputuskan.** Export ONNX BiRefNet-lite 1024² yang diuji berjalan cepat (98 ms/frame) dan mattingnya sangat baik, tetapi butuh **11,3 GB VRAM** (fp32: 22,7 GB) dan 6–12 GB RAM di CPU (S3 §3.3).
-   - Itu menutup GPU 8 GB dan semua laptop. Target: **≤ 3 GB VRAM** dan **≤ 2 GB RAM** di CPU.
-   - Tindak lanjut S3b: export ulang BiRefNet pada 512/768 atau tanpa `GatherND` deform-conv, dibandingkan dengan model alternatif berlisensi permisif.
+7. **Cutout:** ORT, sebagai pekerjaan latar dengan hasil di-cache per klip (bukan real-time). Model dipilih per perangkat (S3b §5):
+   - **Default: BiRefNet-lite, export dinamis dengan `DeformConv` native** (MIT).
+     - 1024² identik dengan export standar (IoU 0,9985) pada **2,4 GB VRAM**, bukan 11,1 GB.
+     - 768² di CPU dengan arena mati butuh 1,0 GB RAM.
+     - Export standar (`GatherND`) hanya dipakai bila VRAM ≥ 12 GB, karena 10× lebih cepat di DirectML.
+   - **Mode "cepat" untuk video:** IS-Net (Apache-2.0), 49 ms/frame dan 1,1 GB VRAM. Kualitas tepinya lebih rendah (halo latar).
+   - U²-Net-P ditolak (kualitas). RMBG (BRIA) ditolak (non-komersial).
+   - Sebelum rilis, export dinamis dibangun sendiri di CI dari bobot resmi (skrip dipin), bukan memakai file pihak ketiga.
+   - Masih terbuka (S3b §5): DeformConv kemungkinan tidak dijalankan DirectML (0,9 dtk/frame), dan stabilitas temporal video belum diukur.
 8. **Pengelola model:** model tidak dibundel di installer. Model diunduh saat fitur pertama kali dipakai, dari URL HF yang dipin ke commit.
    - SHA-256 wajib; file kecil non-LFS diverifikasi git-blob SHA-1 lalu SHA-256-nya dipin.
    - Unduhan dapat dilanjutkan (HTTP Range) ke `.part`, lalu rename atomik.
@@ -41,10 +46,10 @@ Spike S3 menguji ORT + DirectML, whisper.cpp (Vulkan/CPU), Kokoro, Silero VAD, d
 - ➕ Seluruh rantai TTS bebas GPL; dependensi sherpa-onnx dihapus.
 - ➖ Ukuran: `DirectML.dll` 18,5 MB (9,3 MB gzip); ORT + whisper.cpp statis ±28 MB (9,5 MB gzip); backend Vulkan +55 MB (+16 MB gzip) → harus dipisah menjadi DLL (keputusan 2).
 - ➖ Kualitas TTS Indonesia belum layak produksi (WER bolak-balik 24–47%).
-- ➖ Cutout belum punya model default yang muat di GPU 8 GB atau di laptop (keputusan 7) — risiko untuk fitur "hapus latar" di Fase 1.
+- ➖ Cutout kualitas tinggi yang hemat memori masih lambat di GPU (±0,9 dtk/frame pada 1024²): video panjang butuh mode "cepat" (IS-Net) atau optimasi export (S3b §5a).
 - ➖ Pemanasan pipeline Vulkan ±10 dtk saat model pertama kali dipakai → jalankan pemanasan di latar setelah model diunduh.
 
 ## Belum diputuskan
-- Model cutout default (S3b): BiRefNet export ulang 512/768, IS-Net, atau MODNet (hanya bila lisensi bobot terverifikasi).
+- Export BiRefNet yang cepat di DirectML (varian `GridSample` atau DeformConv fp16), lihat S3b §5a.
 - Sumber suara TTS Indonesia berlisensi permisif.
 - Validasi di iGPU Intel/AMD dan perangkat 8 GB RAM (perangkat belum ada).

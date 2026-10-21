@@ -1,6 +1,7 @@
 //! Spike S3: on-device AI. Throwaway.
 //!
-//!   s3-ai models                      fetch + verify every model in models/manifest.toml
+//!   s3-ai models [id,id,...]          fetch + verify every model in models/manifest.toml
+//!                                     (with a resume test), or only the listed ones
 //!   s3-ai bench [sections] [options]  run measurements (vad,cutout,asr,tts; default all),
 //!                                     write tests/media/s3-out/report-<sections>[-<tag>].json
 //!
@@ -9,7 +10,7 @@
 //! --speed-only (TTS without the Whisper round trip), --tag T (report suffix),
 //! --model ID and --device cpu|dml (run only matching cutout/TTS configurations,
 //! so each can be measured in its own process), --lean (CPU sessions without
-//! ORT's arena allocator).
+//! ORT's arena allocator), --size N (input size for the dynamic cutout export).
 
 mod asr;
 mod audio;
@@ -61,6 +62,7 @@ struct Opts {
     tag: Option<String>,
     model: Option<String>,
     device: Option<Device>,
+    size: Option<u32>,
 }
 /// Whether a cutout/TTS configuration passes the --model/--device filters.
 fn selected(model: &str, device: Device) -> bool {
@@ -79,15 +81,20 @@ fn log(v: &Value) {
     println!("{}", serde_json::to_string(v).unwrap());
 }
 
-fn cmd_models() {
+fn cmd_models(only: Option<&str>) {
     let store = store();
     let mut reports = Vec::new();
-    // Resume test first: cut whisper-small short at 50 MB, then let the normal pass resume it.
-    match store.fetch("whisper-small", Some(50 * 1024 * 1024)) {
-        Ok(r) => reports.push(serde_json::to_value(r).unwrap()),
-        Err(e) => reports.push(json!({ "id": "whisper-small", "resumeTestError": e })),
-    }
-    let ids: Vec<String> = store.models.iter().map(|m| m.id.clone()).collect();
+    let ids: Vec<String> = match only {
+        Some(list) => list.split(',').map(str::to_owned).collect(),
+        None => {
+            // Resume test first: cut whisper-small short at 50 MB, then let the normal pass resume it.
+            match store.fetch("whisper-small", Some(50 * 1024 * 1024)) {
+                Ok(r) => reports.push(serde_json::to_value(r).unwrap()),
+                Err(e) => reports.push(json!({ "id": "whisper-small", "resumeTestError": e })),
+            }
+            store.models.iter().map(|m| m.id.clone()).collect()
+        }
+    };
     for id in ids {
         let v = match store.fetch(&id, None) {
             Ok(r) => serde_json::to_value(r).unwrap(),
@@ -174,37 +181,76 @@ fn bench_vad(env: &ort::environment::Environment, store: &models::Store) -> Valu
     }
 }
 
+/// The S3b test set (public domain, sources in tests/media/s3/img/SOURCES.json).
+const CUTOUT_IMAGES: [&str; 6] = [
+    "einstein",
+    "aldrin",
+    "retriever",
+    "jemison",
+    "hamilton",
+    "ride",
+];
+/// Quality reference: the stock BiRefNet-lite export, which matches PyTorch.
+const CUTOUT_REFERENCE: &str = "birefnet-lite-fp16-1024-DirectMl";
+
 fn bench_cutout(env: &ort::environment::Environment, store: &models::Store) -> Value {
-    let imgs: Vec<image::RgbaImage> = ["einstein.jpg", "aldrin.jpg"]
+    let names: Vec<String> = CUTOUT_IMAGES.iter().map(|s| (*s).to_owned()).collect();
+    let imgs: Vec<image::RgbaImage> = names
         .iter()
-        .map(|f| {
-            image::open(media(&format!("s3/img/{f}")))
+        .map(|n| {
+            image::open(media(&format!("s3/img/{n}.jpg")))
                 .expect("test image")
                 .to_rgba8()
         })
         .collect();
-    let mut runs = Vec::new();
     let devices: &[Device] = if opts().cpu_only {
         &[Device::Cpu]
     } else {
         &[Device::DirectMl, Device::Cpu]
     };
-    let runs_each = if opts().cpu_only { 3 } else { 10 };
-    for model in ["birefnet-lite-fp32", "birefnet-lite-fp16"] {
+    let lean = ortx::LEAN.get() == Some(&true);
+    let mut runs = Vec::new();
+    for model in [
+        "birefnet-lite-fp32",
+        "birefnet-lite-fp16",
+        "birefnet-lite-dyn",
+        "isnet-general",
+        "u2netp",
+    ] {
+        let spec = cutout::spec(model, opts().size);
         for &device in devices {
             if !selected(model, device) {
                 continue;
             }
-            let prefix = out_dir().join(format!("cutout-{model}-{device:?}"));
+            let config = format!(
+                "{model}-{}-{device:?}{}",
+                spec.size,
+                if lean && device == Device::Cpu {
+                    "-lean"
+                } else {
+                    ""
+                }
+            );
+            let ref_dir = out_dir().join("cutout").join(CUTOUT_REFERENCE);
+            let inputs = cutout::Inputs {
+                names: &names,
+                images: &imgs,
+                mask_dir: out_dir().join("cutout").join(&config),
+                ref_dir: (config != CUTOUT_REFERENCE && ref_dir.is_dir()).then_some(ref_dir),
+            };
+            // One timed pass on the CPU (seconds per image), three on the GPU.
+            let passes = if device == Device::Cpu { 1 } else { 3 };
             let r = cutout::run(
                 env,
                 &store.path(model).unwrap(),
+                model,
+                spec,
                 device,
-                &imgs,
-                runs_each,
-                Some(&prefix),
+                &inputs,
+                passes,
             );
             let mut v = serde_json::to_value(&r).unwrap();
+            v["config"] = json!(config);
             v["memory"] = mem::global().take(mem::Window::Config);
             log(&v);
             runs.push(v);
@@ -580,7 +626,7 @@ fn cmd_bench(sections: &str) {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(String::as_str) {
-        Some("models") => cmd_models(),
+        Some("models") => cmd_models(args.get(2).map(String::as_str)),
         Some("bench") => {
             let mut sections = "all";
             let mut o = Opts::default();
@@ -592,6 +638,7 @@ fn main() {
                     "--speed-only" => o.speed_only = true,
                     "--tag" => o.tag = it.next().cloned(),
                     "--model" => o.model = it.next().cloned(),
+                    "--size" => o.size = it.next().and_then(|n| n.parse().ok()),
                     "--lean" => {
                         ortx::LEAN.set(true).ok();
                     }

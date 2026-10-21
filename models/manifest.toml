@@ -197,3 +197,43 @@ git_blob_sha1 = "121ba0c4a4ed40d284a58f9fd1fcaa2003613df0"
 license = "Apache-2.0"
 upstream = "https://raw.githubusercontent.com/hexgrad/misaki/fba1236595f2d2bf21d414ba6e57d25256afada3/misaki/data/us_silver.json"
 upstream_commit = "fba1236595f2d2bf21d414ba6e57d25256afada3"
+
+# Entries added by Spike S3b (21 Oct 2026): cutout candidates that fit in less memory.
+
+# BiRefNet_lite re-exported with ONNX's native DeformConv (opset 19) and dynamic
+# H/W (multiples of 64). Same MIT weights as birefnet-lite-*; the stock export
+# expands deformable convolutions into GatherND chains that need 11 GB of VRAM.
+[[model]]
+id = "birefnet-lite-dyn"
+family = "cutout"
+file = "birefnet-lite-dyn.onnx"
+bytes = 180839545
+sha256 = "1e0da42f0fde010e32e938bad388457ecefe35806fde9d923421997861ae9391"
+license = "MIT"
+upstream = "https://huggingface.co/senty-au/BiRefNet_lite-ONNX-dynamic/resolve/173d635935b93839608b9b9039da8d1d212471e9/onnx/model.onnx"
+upstream_commit = "173d635935b93839608b9b9039da8d1d212471e9"
+
+# IS-Net (DIS) general-use weights, Apache-2.0 (xuebinqin/DIS), as converted by
+# rembg (MIT). Release assets carry no digest: the MD5 rembg pins in its source
+# (fc16ebd8...) was checked before recording sha256.
+[[model]]
+id = "isnet-general"
+family = "cutout"
+file = "isnet-general-use.onnx"
+bytes = 178648008
+sha256 = "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a"
+license = "Apache-2.0"
+upstream = "https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-general-use.onnx"
+upstream_commit = "release v0.0.0"
+
+# U2-Net-P (4.6 MB, 320x320), Apache-2.0 (xuebinqin/U-2-Net), rembg conversion;
+# MD5 8e83ca70... checked as above. A floor for quality, not a candidate default.
+[[model]]
+id = "u2netp"
+family = "cutout"
+file = "u2netp.onnx"
+bytes = 4574861
+sha256 = "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8"
+license = "Apache-2.0"
+upstream = "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx"
+upstream_commit = "release v0.0.0"

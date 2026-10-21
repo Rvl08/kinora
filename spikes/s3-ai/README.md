@@ -10,7 +10,7 @@ Results: [`docs/spikes/S3-report.md`](../../docs/spikes/S3-report.md). Decision:
 | `src/models.rs` | Model manager: pinned URLs from `models/manifest.toml`, resumable download (HTTP Range → `.part`), SHA-256 / git-blob verification, atomic rename |
 | `src/ortx.rs` | ONNX Runtime environment (telemetry off) and CPU/DirectML sessions |
 | `src/vad.rs` | Silero VAD v5 and the reference segmenter |
-| `src/cutout.rs` | BiRefNet-lite matting: preprocess, inference, mask and cutout PNGs |
+| `src/cutout.rs` | Background removal (BiRefNet-lite stock and dynamic exports, IS-Net, U2-Net-P): inference, masks, quality against a reference (IoU, alpha MAE, edge-band MAE) |
 | `src/asr.rs` | whisper.cpp via `whisper-rs`: text, word starts (token t0, DTW, DTW of the previous token) |
 | `src/tts.rs` | Kokoro-82M through ORT directly (no sherpa-onnx), voice style vectors |
 | `src/g2p.rs` | Text → phonemes without espeak-ng: misaki dictionaries (English), spelling rules (Indonesian) |
@@ -46,11 +46,17 @@ Commands (inside the sandbox, or on a machine without Smart App Control):
 
 ```sh
 s3-ai models                          # fetch + verify all models (includes a resume test)
+s3-ai models isnet-general,u2netp     # fetch only these
 s3-ai bench vad,cutout,asr,tts        # sections; report-<sections>.json
 s3-ai bench cutout --model birefnet-lite-fp16 --device dml --tag fp16-dml   # one configuration
 s3-ai bench asr,tts --threads 4 --cpu-only --speed-only --tag lowspec        # weak-CPU simulation
 ```
 
 Options: `--threads N`, `--cpu-only`, `--speed-only` (TTS without the Whisper round trip), `--model ID`,
-`--device cpu|dml`, `--lean` (CPU sessions without ORT's arena allocator), `--tag T` (report name suffix).
+`--device cpu|dml`, `--size N` (input size of `birefnet-lite-dyn`, a multiple of 64), `--lean` (CPU sessions
+without ORT's arena allocator), `--tag T` (report name suffix).
+
+Cutout quality is measured against the masks of `birefnet-lite-fp16 --device dml` (run it first), saved in
+`tests/media/s3-out/cutout/<config>/`. S3b results: [`docs/spikes/S3b-report.md`](../../docs/spikes/S3b-report.md).
+
 The `vulkan` Cargo feature builds whisper.cpp's Vulkan backend (needs the Vulkan SDK on the build machine).

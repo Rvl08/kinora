@@ -14,7 +14,9 @@
     "licenses:check": "node scripts/check-js-licenses.mjs",
     "ffmpeg:fetch": "node scripts/ffmpeg/fetch.mjs",
     "ffmpeg:verify": "node scripts/ffmpeg/verify.mjs",
-    "ffmpeg:verify:ship": "node scripts/ffmpeg/verify.mjs --ship"
+    "ffmpeg:verify:ship": "node scripts/ffmpeg/verify.mjs --ship",
+    "sign": "node scripts/signing/sign.mjs",
+    "sign:verify": "node scripts/signing/verify.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

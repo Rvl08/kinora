@@ -1,0 +1,33 @@
+{
+  "$comment": "Code signing policy (ADR-0007). sign.mjs signs only files that are not already validly signed by an allowed third party; verify.mjs requires every PE file in a release to match a rule below.",
+  "publishers": [],
+  "testPublishers": ["CN=Kinora Test Signing"],
+  "digest": "sha256",
+  "timestampServers": [
+    "http://timestamp.digicert.com",
+    "http://time.certum.pl",
+    "http://timestamp.sectigo.com"
+  ],
+  "thirdParty": [
+    {
+      "name": "DirectML (Microsoft redistributable)",
+      "files": ["DirectML.dll", "DirectML.Debug.dll"],
+      "signer": "^CN=Microsoft "
+    },
+    {
+      "name": "Visual C++ runtime (app-local)",
+      "files": ["msvcp140*.dll", "vcruntime140*.dll", "concrt140.dll", "vccorlib140.dll"],
+      "signer": "^CN=Microsoft "
+    },
+    {
+      "name": "WebView2 bootstrapper",
+      "files": ["MicrosoftEdgeWebview2Setup.exe"],
+      "signer": "^CN=Microsoft "
+    },
+    {
+      "name": "OpenH264 (Cisco binary, downloaded at run time)",
+      "files": ["openh264-*.dll"],
+      "signer": "^CN=Cisco "
+    }
+  ]
+}

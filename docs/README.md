@@ -21,5 +21,6 @@
 | [0004](adr/0004-project-format-and-commands.md) | Format proyek, waktu rasional, Command | Accepted |
 | [0005](adr/0005-codec-and-ffmpeg-policy.md) | FFmpeg 8.1 LGPL & kebijakan codec | Accepted (Amandemen 1–2) |
 | [0006](adr/0006-local-ai-runtime.md) | Runtime AI lokal (ORT + DirectML, whisper.cpp + Vulkan, TTS tanpa espeak-ng) | Accepted (§7 cutout diperbarui S3b) |
+| [0007](adr/0007-code-signing.md) | Code signing (semua exe/dll, pipeline tidak terikat penyedia; Certum Open Source) | Accepted |
 
-Status: **Fase 0 berjalan. Selesai: P0-02, P0-03, P0-05, Spike S1 (GPU diskrit), Spike S2 (NVIDIA), Spike S3 (AI, GPU diskrit), Spike S3b (cutout). P0-04 (CI) menunggu remote GitHub. Berikutnya: P0-06 (code signing, prioritas naik karena Smart App Control), S4 (installer), P0-05b (build FFmpeg rilis); validasi iGPU (S1, S3) dan QSV/AMF (S2) butuh perangkat lain. P0-01 (nama) ditunda.**
+Status: **Fase 0 berjalan. Selesai: P0-02, P0-03, P0-05, Spike S1 (GPU diskrit), Spike S2 (NVIDIA), Spike S3 (AI, GPU diskrit), Spike S3b (cutout). P0-04 (CI) menunggu remote GitHub. P0-06: pipeline signing siap dan teruji, Certum Open Source dipilih, dibeli setelah repo publik. Berikutnya: S4 (installer), P0-05b (build FFmpeg rilis); validasi iGPU (S1, S3) dan QSV/AMF (S2) butuh perangkat lain. P0-01 (nama) ditunda.**

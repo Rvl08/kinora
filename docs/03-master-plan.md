@@ -65,7 +65,7 @@ dengan AI yang berjalan di perangkat pengguna — dan dipasang semudah *Next →
 | LLM lokal (opsional) | Ollama / llama.cpp server (dideteksi), atau BYOK (OpenAI-compatible, Anthropic) | Copilot tanpa membundel model besar | Membundel LLM di installer (GB) |
 | Penyimpanan | Proyek: JSON (+ jurnal command); cache/indeks: SQLite | Transparan, mudah di-diff, recoverable | Format biner tertutup |
 | Installer | **Tauri NSIS** (`setup.exe`), per-user, WebView2 *embedBootstrapper* | Wizard standar, tanpa admin, tanpa prasyarat | MSI saja (UX kurang ramah) |
-| Code signing | Azure Trusted Signing (atau sertifikat OV) | Hindari SmartScreen — kelemahan nyata Concat | Unsigned |
+| Code signing | Authenticode untuk **setiap** exe/dll; penyedia per [ADR-0007](adr/0007-code-signing.md) (Azure tidak tersedia untuk perorangan di Indonesia → Certum OSS / OV / SignPath) | SmartScreen dan Smart App Control — kelemahan nyata Concat | Unsigned |
 | CI/CD | GitHub Actions (windows-latest) | Build, test, sign, rilis, mirror model | — |
 
 ### 4.1 Model AI yang direncanakan (semua on-demand, lisensi permisif diprioritaskan)
@@ -247,7 +247,7 @@ upload langsung ke platform, C2PA, versi macOS/Linux (Tauri mendukungnya).
 | R6 | Performa laptop low-end | Sedang | Tinggi | Profil performa, proxy otomatis, resolusi preview adaptif |
 | R7 | AI lokal lambat tanpa GPU | Sedang | Tinggi | Model tier kecil default, job latar belakang, estimasi waktu jujur |
 | R8 | Klaim pelanggaran merek/hak cipta | Tinggi | Rendah | Clean-room, tanpa aset/merek CapCut, nama & ikon orisinal |
-| R9 | Sertifikat code signing tertunda | Sedang | Sedang | Urus di Fase 0 (Azure Trusted Signing butuh verifikasi identitas) |
+| R9 | Sertifikat code signing tertunda | Sedang | Tinggi (Smart App Control memblokir DLL tak bertanda tangan) | Pipeline siap dan teruji (ADR-0007); pengadaan sertifikat butuh repo publik + verifikasi identitas pemilik |
 
 ## 9. Keputusan
 

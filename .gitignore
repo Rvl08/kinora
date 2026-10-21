@@ -31,3 +31,4 @@ Thumbs.db
 
 # Windows Sandbox files generated per machine (host paths, user name)
 /spikes/*/sandbox/generated/
+/scripts/*/sandbox/generated/

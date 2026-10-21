@@ -1,0 +1,33 @@
+[package]
+name = "s3-ai"
+description = "Phase 0 Spike S3: on-device AI runtimes (ONNX Runtime + DirectML, whisper.cpp, Kokoro TTS, Silero VAD) and verified model downloads. Throwaway."
+version = "0.0.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+# Standalone: not a member of the repository workspace.
+[workspace]
+
+[dependencies]
+ort = { version = "=2.0.0-rc.15", features = ["directml", "download-binaries", "ndarray"] }
+ndarray = "0.17"
+whisper-rs = "0.16.0"
+hound = "3.5.1"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg"] }
+ureq = "3.4.2"
+sha2 = "0.11.1"
+sha1 = "0.11"
+toml = "0.9"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+# Peak RAM/VRAM sampling (DXGI per-process video memory, process memory counters).
+windows = { version = "0.62.2", features = ["Win32_Graphics_Dxgi", "Win32_System_ProcessStatus", "Win32_System_Threading"] }
+
+[features]
+# whisper.cpp's Vulkan backend links vulkan-1.dll at load time. Off by default:
+# the Windows Sandbox build (no Vulkan loader) is CPU + DirectML only.
+vulkan = ["whisper-rs/vulkan"]
+
+[profile.release]
+debug = 1

@@ -9,6 +9,7 @@
 | 05 | [Kepatuhan Lisensi](05-license-compliance.md) | Kelas lisensi, penegakan CI, audit komponen/model/aset, isu espeak-ng |
 | S1 | [Laporan Spike S1](spikes/S1-report.md) | Pipeline preview: hasil terukur, temuan, syarat produksi |
 | S2 | [Laporan Spike S2](spikes/S2-report.md) | Decode/encode/ekspor: kecepatan, kualitas (VMAF), zero-copy, OpenH264 Cisco, komponen FFmpeg rilis |
+| S3 | [Laporan Spike S3](spikes/S3-report.md) | AI lokal: Whisper Vulkan/CPU + timestamp kata, BiRefNet DirectML, Kokoro tanpa espeak-ng, Silero VAD, memori, pengelola model |
 
 ## Architecture Decision Records
 | ADR | Judul | Status |
@@ -18,5 +19,6 @@
 | [0003](adr/0003-preview-pipeline.md) | Pipeline preview WebCodecs + WebGPU | Accepted untuk GPU diskrit (iGPU menunggu) |
 | [0004](adr/0004-project-format-and-commands.md) | Format proyek, waktu rasional, Command | Accepted |
 | [0005](adr/0005-codec-and-ffmpeg-policy.md) | FFmpeg 8.1 LGPL & kebijakan codec | Accepted (Amandemen 1–2) |
+| [0006](adr/0006-local-ai-runtime.md) | Runtime AI lokal (ORT + DirectML, whisper.cpp + Vulkan, TTS tanpa espeak-ng) | Accepted (model cutout: S3b) |
 
-Status: **Fase 0 berjalan. Selesai: P0-02, P0-03, P0-05, Spike S1 (GPU diskrit), Spike S2 (NVIDIA). P0-04 (CI) menunggu remote GitHub. Berikutnya: S3 (AI), S4 (installer), P0-05b (build FFmpeg rilis), P0-06 (code signing); validasi iGPU (S1) dan QSV/AMF (S2) butuh perangkat lain. P0-01 (nama) ditunda.**
+Status: **Fase 0 berjalan. Selesai: P0-02, P0-03, P0-05, Spike S1 (GPU diskrit), Spike S2 (NVIDIA), Spike S3 (AI, GPU diskrit). P0-04 (CI) menunggu remote GitHub. Berikutnya: P0-06 (code signing, prioritas naik karena Smart App Control), S4 (installer), S3b (model cutout ≤ 3 GB VRAM), P0-05b (build FFmpeg rilis); validasi iGPU (S1, S3) dan QSV/AMF (S2) butuh perangkat lain. P0-01 (nama) ditunda.**

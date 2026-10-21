@@ -33,9 +33,11 @@
 | libzvbi (di dalam build FFmpeg BtbN) | GPL-2.0+ (sebagian file LGPL) | 🔴 untuk rilis | Hanya untuk dev; dibuang dari build rilis (ADR-0005 Amandemen 1) |
 | OpenH264 dibangun dari source | BSD-2, **tanpa** lisensi paten Cisco | 🔴 untuk rilis | Rilis memakai DLL resmi Cisco yang diunduh saat runtime, atau OpenH264 dihapus |
 | `ffmpeg-next` / `rsmpeg` | WTFPL / MIT | 🟢 | binding |
-| ONNX Runtime + DirectML | MIT | 🟢 | DirectML redistributable — cek ketentuan redistribusi |
+| ONNX Runtime + DirectML | MIT | 🟢 | `DirectML.dll` dibundel (redistributable Microsoft) — teks lisensi redistribusinya diperiksa dan dicantumkan di `THIRD_PARTY_NOTICES` sebelum S4. Telemetri ORT dimatikan (ADR-0006) |
 | whisper.cpp / whisper-rs | MIT / Unlicense | 🟢 | |
-| sherpa-onnx | Apache-2.0 | 🟢 / ⚠️ | **Bergantung pada espeak-ng (GPL-3.0)** untuk sebagian model TTS → lihat §4 |
+| VC++ runtime (`msvcp140*`, `vcruntime140*`) | Microsoft redistributable (Visual Studio) | 🟢 | Dibundel app-local; Windows bersih tidak memilikinya (S3 temuan 2) |
+| sherpa-onnx | Apache-2.0 | — | **Tidak dipakai** (S3): Kokoro dijalankan lewat ORT langsung dengan G2P sendiri |
+| Kamus misaki `us_gold`/`us_silver` | Apache-2.0 | 🟢 | Data G2P bahasa Inggris, diunduh sebagai model (SHA-256 terpin) |
 | OpenH264 (biner resmi Cisco 2.6.0) | Biner: [lisensi biner Cisco](http://www.openh264.org/BINARY_LICENSE.txt) + paten ditanggung Cisco; kode: BSD-2 | 🟢 | **Diunduh saat dibutuhkan, tidak dibundel**; MD5 + SHA-256 + Authenticode diverifikasi (S2) |
 | Crate `openh264` / `openh264-sys2` 0.9.9 (`libloading`) | BSD-2-Clause | 🟢 | Memuat DLL Cisco saat runtime; menolak DLL di luar allow-list SHA-256 |
 | SVT-AV1, dav1d, libvpx, libopus | BSD | 🟢 | |
@@ -48,12 +50,12 @@
 |---|---|---|---|
 | Whisper (GGML) | MIT | 🟢 | Pakai |
 | Silero VAD | MIT | 🟢 | Pakai |
-| Kokoro-82M v1.0 | Apache-2.0 | 🟢 | Pakai (G2P: §4) |
+| Kokoro-82M v1.0 (+ voice pack) | Apache-2.0 | 🟢 | Pakai (G2P: §4); export ONNX `onnx-community/Kokoro-82M-v1.0-ONNX` |
 | Chatterbox Turbo | MIT | 🟢 | Pakai untuk voice clone (verifikasi watermark Perth bawaan) |
 | F5-TTS | CC-BY-NC-4.0 | 🔴 | **Tolak** |
 | DeepFilterNet3 | MIT/Apache-2.0 | 🟢 | Pakai |
 | HTDemucs | MIT | 🟢 | Pakai |
-| BiRefNet | MIT | 🟢 | Pakai (cutout utama) |
+| BiRefNet | MIT | 🟢 | Lisensi lolos; export 1024² yang diuji butuh 11 GB VRAM → konfigurasi dipilih di S3b |
 | IS-Net (DIS) | Apache-2.0 | 🟢 | Pakai |
 | MODNet | Kode Apache-2.0; **lisensi bobot belum terverifikasi** | ⚠️ | Verifikasi; jika tidak jelas → tolak |
 | RobustVideoMatting | GPL-3.0 | 🔴 | **Tolak** |
@@ -83,7 +85,12 @@ Menautkannya akan membuat distribusi kita terikat GPL. Rencana:
 1. **Inggris:** G2P berbasis leksikon (kamus + aturan fallback) — tanpa espeak.
 2. **Bahasa Indonesia:** ejaan bahasa Indonesia hampir fonemis → **G2P berbasis aturan buatan sendiri** (ng, ny, sy, kh, e-pepet vs e-taling via kamus kecil, angka/singkatan → teks). Ini sekaligus pembeda kualitas TTS Indonesia.
 3. Model suara Indonesia: latih/fine-tune ringan Kokoro/VITS pada dataset berlisensi permisif (dicari di Fase 0; contoh kandidat perlu diverifikasi lisensinya) — bila tidak ada, TTS Indonesia digeser ke P4/P5.
-4. Verifikasi di **Spike S3**: apakah sherpa-onnx dapat dibangun tanpa espeak-ng dan menerima input fonem/token langsung.
+4. ~~Verifikasi di Spike S3: apakah sherpa-onnx dapat dibangun tanpa espeak-ng.~~ **Terjawab (S3, 21 Okt 2026):** sherpa-onnx tidak diperlukan.
+   Kokoro dijalankan lewat ORT dengan input token fonem langsung.
+   - Opsi 1 terbukti untuk bahasa Inggris: kamus misaki, WER bolak-balik 1,2%.
+   - Opsi 2 berjalan untuk bahasa Indonesia, tetapi kualitasnya "beta" (WER 24–47% dengan suara non-Indonesia).
+   - Opsi 3 tetap terbuka.
+   - Data uji FLEURS (CC-BY-4.0) hanya dipakai untuk pengujian dan tidak didistribusikan.
 
 ## 5. Checklist per pull request
 - [ ] Dependensi baru lolos `cargo-deny` / pemeriksa lisensi JS.

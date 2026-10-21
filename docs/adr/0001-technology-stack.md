@@ -1,6 +1,6 @@
 # ADR-0001 — Stack teknologi
 
-- **Status:** Accepted (19 Okt 2026) · **Keputusan terkait:** D3
+- **Status:** Accepted (19 Okt 2026), baris AI diperbarui 21 Okt 2026 ([ADR-0006](0006-local-ai-runtime.md)) · **Keputusan terkait:** D3
 - **Pemilik:** Tech lead
 
 ## Konteks
@@ -18,7 +18,7 @@ CapCut memakai Qt6 + CEF (±1,6 GB). Concat memakai Rust + Slint (iterasi UI lam
 | Media | FFmpeg 8.1 LGPL shared via `ffmpeg-next` atau `ffmpeg-the-third` (dipilih di Spike S2; lihat ADR-0005 Amandemen 1) | 8.1.3 |
 | GPU | wgpu (DX12 utama, Vulkan cadangan), shader WGSL | — |
 | Audio | `cpal` (WASAPI) | — |
-| AI | `ort` (ONNX Runtime + DirectML), `whisper-rs` (whisper.cpp), sherpa-onnx (TTS) | — |
+| AI | `ort` (ONNX Runtime + DirectML), `whisper-rs` (whisper.cpp, Vulkan); TTS Kokoro lewat `ort` dengan G2P sendiri (sherpa-onnx dihapus, [ADR-0006](0006-local-ai-runtime.md)) | ort 2.0.0-rc.15, whisper-rs 0.16 |
 | Data | JSON (proyek) + SQLite `rusqlite` (cache/indeks) | — |
 | Uji | `cargo nextest`, Vitest, `tauri-driver` (E2E) | — |
 

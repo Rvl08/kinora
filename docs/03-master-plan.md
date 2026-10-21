@@ -61,7 +61,7 @@ dengan AI yang berjalan di perangkat pengguna — dan dipasang semudah *Next →
 | Compositor | **wgpu** (DX12/Vulkan) + shader **WGSL** | Cepat, lintas vendor GPU; WGSL dipakai juga oleh WebGPU di preview | OpenGL (usang di Windows) |
 | Preview | **WebCodecs + WebGPU** di WebView2 (Opsi A) — lihat §5.3 | Decode HW di browser engine, paket terenkode kecil dikirim dari Rust | Kirim frame mentah via IPC (4K mustahil) |
 | Audio | Mixer Rust + `cpal` (WASAPI) sebagai **master clock** | Mixer yang sama untuk playback & ekspor | Web Audio (beda hasil dengan ekspor) |
-| AI runtime | **ONNX Runtime** (`ort`) + **DirectML**; whisper.cpp (`whisper-rs`, Vulkan/CUDA); sherpa-onnx (TTS) | Satu runtime untuk mayoritas model; DirectML jalan di NVIDIA/AMD/Intel | PyTorch/Python (berat, prasyarat) |
+| AI runtime | **ONNX Runtime** (`ort`) + **DirectML**; whisper.cpp (`whisper-rs`, Vulkan); TTS Kokoro lewat ORT + G2P sendiri ([ADR-0006](adr/0006-local-ai-runtime.md)) | Satu runtime untuk mayoritas model; DirectML jalan di NVIDIA/AMD/Intel | PyTorch/Python (berat, prasyarat) |
 | LLM lokal (opsional) | Ollama / llama.cpp server (dideteksi), atau BYOK (OpenAI-compatible, Anthropic) | Copilot tanpa membundel model besar | Membundel LLM di installer (GB) |
 | Penyimpanan | Proyek: JSON (+ jurnal command); cache/indeks: SQLite | Transparan, mudah di-diff, recoverable | Format biner tertutup |
 | Installer | **Tauri NSIS** (`setup.exe`), per-user, WebView2 *embedBootstrapper* | Wizard standar, tanpa admin, tanpa prasyarat | MSI saja (UX kurang ramah) |
@@ -74,7 +74,7 @@ dengan AI yang berjalan di perangkat pengguna — dan dipasang semudah *Next →
 |---|---|---|---|
 | Speech-to-text | Whisper base / small / large-v3-turbo (GGML) | 150 MB – 1,6 GB | MIT |
 | VAD / jeda | Silero VAD | 2 MB | MIT |
-| TTS | Kokoro v1.0 (multi), **suara VITS Indonesia** | 80–350 MB / 60 MB | Apache-2.0 / per-suara — ⚠️ phonemizer espeak-ng = GPL-3.0, lihat [05](05-license-compliance.md) §4 |
+| TTS | Kokoro v1.0 (multi), **suara VITS Indonesia** | 80–350 MB / 60 MB | Apache-2.0 / per-suara — G2P tanpa espeak-ng (GPL) terbukti di Spike S3; suara Indonesia masih dicari, lihat [05](05-license-compliance.md) §4 |
 | Voice clone | Chatterbox Turbo / F5-TTS | 300 MB – 1,2 GB | MIT / CC-BY-NC (F5 bobot → hindari) |
 | Noise reduction | DeepFilterNet3 | 10 MB | MIT/Apache |
 | Pisah vokal | HTDemucs / MDX-Net (ONNX) | 80–300 MB | MIT |
@@ -103,7 +103,7 @@ dengan AI yang berjalan di perangkat pengguna — dan dipasang semudah *Next →
 │  ├─ kinora-media    : FFmpeg demux/decode/encode, probe, thumbnail, proxy        │
 │  ├─ kinora-render   : wgpu compositor (ekspor & fallback preview), WGSL          │
 │  ├─ kinora-audio    : mixer, filter, cpal playback (master clock), LUFS          │
-│  ├─ kinora-ai       : ort/DirectML, whisper, sherpa-onnx, model manager          │
+│  ├─ kinora-ai       : ort/DirectML, whisper, Kokoro + G2P, model manager         │
 │  ├─ kinora-jobs     : antrean job (ekspor, proxy, transkrip, enhance) + progres  │
 │  ├─ kinora-api      : JSON-RPC lokal + server MCP (token, loopback)              │
 │  └─ kinora-copilot  : prompt → rencana → daftar Command (dengan pratinjau diff)  │

@@ -43,8 +43,10 @@ account, subscription or upload.
 - **P0-14:** public channels. Register with SignPath Foundation (needs a first release and the "Code signing
   policy" section) and the Microsoft Store. The owner does the registrations.
 - **Untested hardware:** iGPU (Intel/AMD), QSV/AMF encoders, 8 GB laptops.
-- **Phase 1 (MVP editor) has not started**, apart from the editing core above. Its first UI step is setting up
-  Impeccable (§4). The Tauri shell must write the journal (header on open/save, append and sync each entry,
+- **Phase 1 (MVP editor) has not started**, apart from the editing core above and the UI foundation:
+  - `apps/desktop/ui` follows `docs/07`;
+  - Impeccable is installed (`.claude/README.md`) and `PRODUCT.md` is written;
+  - the "cuci cetak" visual world (`src/lib/theme/tokens.css`) and the start screen are built. The Tauri shell must write the journal (header on open/save, append and sync each entry,
   atomic save); see the report's §3.3.
 
 ## 3. Non-negotiable rules

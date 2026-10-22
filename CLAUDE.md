@@ -46,8 +46,11 @@ account, subscription or upload.
 - **Phase 1 (MVP editor) has not started**, apart from the editing core above and the UI foundation:
   - `apps/desktop/ui` follows `docs/07`;
   - Impeccable is installed (`.claude/README.md`) and `PRODUCT.md` is written;
-  - the "cuci cetak" visual world (`src/lib/theme/tokens.css`) and the start screen are built. The Tauri shell must write the journal (header on open/save, append and sync each entry,
-  atomic save); see the report's §3.3.
+  - the "cuci cetak" visual world (`src/lib/theme/tokens.css`) and the start screen are built, passed two Impeccable
+    finish reviews, and the design system is recorded in `apps/desktop/ui/DESIGN.md` (read it before UI work);
+  - not yet verified in WebView2 (there is no Tauri shell yet).
+- **Tauri shell:** must write the edit journal (header on open/save, append and sync each entry, atomic save); see
+  `docs/spikes/edit-core-report.md` §3.3.
 
 ## 3. Non-negotiable rules
 

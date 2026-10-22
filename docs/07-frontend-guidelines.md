@@ -116,15 +116,17 @@ Nilai akhir (palet, tipografi, skala) ditetapkan bersama **Impeccable** (`/impec
 
 ### 7.1 Token
 - Semua nilai visual lewat **CSS custom properties** di `theme/tokens.css`, dalam tiga lapis:
-  1. **primitif** (`--ink-1…12`, `--accent-1…12`): skala warna dalam **OKLCH**, agar kecerahan dan kontras terkendali;
-  2. **semantik** (`--surface-base`, `--surface-raised`, `--text-primary`, `--text-secondary`, `--border-subtle`, `--accent`, `--danger`, `--focus-ring`);
+  1. **primitif**: warna dalam **OKLCH** agar kecerahan dan kontras terkendali, dinamai menurut dunia visual (sekarang `--pigment-*`, lihat `apps/desktop/ui/DESIGN.md`) dan hanya dirujuk di `tokens.css`;
+  2. **semantik** (`--surface-base`, `--surface-sunken`, `--text-primary`, `--text-secondary`, `--border-subtle`, `--accent`, `--status-danger`, `--focus-ring`, …);
   3. **komponen** (hanya bila perlu).
 - Komponen hanya memakai token **semantik**. Warna heksa langsung di komponen ditolak saat review.
 - **Tema terang dan gelap** didefinisikan ulang di lapis semantik (`[data-theme="dark"]`); pilihan bawaan mengikuti sistem (`prefers-color-scheme`) dan bisa diubah. Editor video lazim bekerja di tema gelap agar warna footage tidak terganggu, sehingga tema gelap dirancang sebagai warga kelas satu, bukan hasil inversi.
 - Skala spasi berbasis 4 px; radius, bayangan, dan durasi gerak juga berupa token.
 
 ### 7.2 Tipografi
-- Huruf UI: **font sistem Windows** (Segoe UI Variable) dengan *fallback* sistem. Font ini nol biaya, tajam di ClearType, dan tidak menambah ukuran installer. Font berlisensi terbuka untuk *teks video* adalah hal terpisah (aset proyek).
+- Huruf badan teks dan kontrol: **font sistem Windows** (Segoe UI Variable) dengan *fallback* sistem. Font ini nol biaya, tajam di ClearType, dan tidak menambah ukuran installer.
+- Satu **font display** berlisensi terbuka boleh dipakai untuk judul dan label bergaya (sekarang Archivo, OFL, *variable*, subset Latin ±90 KB). Syaratnya: di-*bundle* (tidak diunduh saat runtime), lisensi dan SHA-256 dicatat di sebelah berkasnya, dan pemakaiannya didokumentasikan di `DESIGN.md`.
+- Font berlisensi terbuka untuk *teks video* adalah hal terpisah (aset proyek).
 - Angka timecode dan durasi memakai `font-variant-numeric: tabular-nums` agar tidak "menari".
 - Skala tipe kecil dan konsisten (mis. 12/13/15/18/24); badan teks UI minimal 13 px.
 
@@ -133,7 +135,7 @@ Nilai akhir (palet, tipografi, skala) ditetapkan bersama **Impeccable** (`/impec
 - **Satu warna aksen**, dipakai hemat untuk aksi utama, seleksi, dan fokus. Tidak ada gradien ungu generik, teks bergradien, atau aksen bercahaya.
 - **Hierarki lewat ruang dan tipografi**, bukan kotak di dalam kotak. Hindari kartu seragam yang berderet dan border di setiap elemen.
 - **Ikon hanya bila bermakna** dan selalu memiliki label (teks atau `aria-label` + tooltip). Tidak ada ikon dekoratif.
-- **Gerak** singkat (120–200 ms), *easing* standar (tanpa *bounce*), hanya pada `transform`/`opacity`, dan dimatikan saat `prefers-reduced-motion`.
+- **Gerak** singkat (120–200 ms), *easing* standar (tanpa *bounce*), dan dimatikan saat `prefers-reduced-motion`. Perpindahan dan perubahan ukuran hanya lewat `transform`/`opacity` (tidak menganimasikan properti tata letak). Transisi warna atau border pada perubahan status (hover, fokus, aktif) boleh, karena tidak memicu tata letak.
 - Kepadatan informasi mengikuti persona: mode sederhana di depan, kontrol pro satu klik di belakang (progressive disclosure, 03 §6.6).
 
 ## 8. Pola UX wajib

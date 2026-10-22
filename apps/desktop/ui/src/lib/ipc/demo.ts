@@ -14,7 +14,7 @@ function sample(now: number): RecentProject[] {
   const square = { width: 1080, height: 1080, frameRate: { num: 30, den: 1 } };
   return [
     {
-      path: 'D:/Contoh/Liburan di Bali.kinora',
+      path: 'D:\\Contoh\\Liburan di Bali.kinora',
       name: 'Liburan di Bali (contoh)',
       openedAt: now - 2 * HOUR,
       format: vertical,
@@ -22,7 +22,7 @@ function sample(now: number): RecentProject[] {
       available: true,
     },
     {
-      path: 'D:/Contoh/Resep sambal matah.kinora',
+      path: 'D:\\Contoh\\Resep sambal matah.kinora',
       name: 'Resep sambal matah (contoh)',
       openedAt: now - 26 * HOUR,
       format: vertical,
@@ -30,7 +30,7 @@ function sample(now: number): RecentProject[] {
       available: true,
     },
     {
-      path: 'D:/Contoh/Review laptop kerja.kinora',
+      path: 'D:\\Contoh\\Review laptop kerja.kinora',
       name: 'Review laptop kerja (contoh)',
       openedAt: now - 5 * 24 * HOUR,
       format: landscape,
@@ -38,7 +38,7 @@ function sample(now: number): RecentProject[] {
       available: true,
     },
     {
-      path: 'D:/Contoh/Promo toko kue.kinora',
+      path: 'D:\\Contoh\\Promo toko kue.kinora',
       name: 'Promo toko kue (contoh)',
       openedAt: now - 9 * 24 * HOUR,
       format: square,
@@ -46,7 +46,7 @@ function sample(now: number): RecentProject[] {
       available: true,
     },
     {
-      path: 'E:/Flashdisk/Vlog wisuda.kinora',
+      path: 'E:\\Flashdisk\\Vlog wisuda.kinora',
       name: 'Vlog wisuda (contoh)',
       openedAt: now - 40 * 24 * HOUR,
       format: null,

@@ -57,10 +57,10 @@
     <span class="name">{project.name}</span>
     <span class="where">{i18n.t('start.lastLocation', { path: parent })}</span>
     <span class="actions">
-      <Button variant="quiet" onclick={() => onlocate(project)}>
+      <Button variant="secondary" onclick={() => onlocate(project)}>
         {i18n.t('start.locateProject')}
       </Button>
-      <Button variant="quiet" onclick={() => onforget(project)}>
+      <Button variant="secondary" onclick={() => onforget(project)}>
         {i18n.t('start.forgetProject')}
       </Button>
     </span>
@@ -144,6 +144,7 @@
   .actions {
     display: flex;
     flex-wrap: wrap;
-    padding: var(--space-1) var(--space-1) 0;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3) 0;
   }
 </style>

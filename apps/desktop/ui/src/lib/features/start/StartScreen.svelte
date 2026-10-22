@@ -114,10 +114,12 @@
             {preset}
             primary={index === 0}
             shortcut={index === 0 ? 'n' : undefined}
+            showUse={index !== 0}
             onselect={oncreate}
           />
         {/each}
       </div>
+      <p class="hint">{i18n.t('start.verticalHint')}</p>
 
       <DropBand active={dragging} onchoose={onchoosevideo} />
 
@@ -205,10 +207,15 @@
      the column: 9/16 + 16/9 + 1 = 3.34 heights of width, plus two gaps and
      some air on the right. */
   .ratios {
-    --ratio-height: min(7.5rem, calc((100cqi - 3rem) / 3.34));
+    --ratio-height: min(10rem, calc((100cqi - 3rem) / 3.34));
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: var(--space-3);
+  }
+
+  .hint {
+    margin-top: calc(-1 * var(--space-3));
+    color: var(--text-secondary);
   }
 
   .open {

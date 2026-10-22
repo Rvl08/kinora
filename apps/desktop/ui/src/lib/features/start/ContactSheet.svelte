@@ -125,7 +125,6 @@
   /* The first step sits on the unexposed strip itself: one row of four
      blank frames, the sentence across their middle. */
   .unexposed {
-    position: relative;
     max-width: 58rem;
   }
 
@@ -146,16 +145,9 @@
     border-radius: var(--radius-print);
   }
 
+  /* The first step is the strip's caption. */
   .first-step {
-    position: absolute;
-    top: 3.75rem;
-    left: 50%;
-    translate: -50% -50%;
-    width: max-content;
-    max-width: 90%;
-    padding: var(--space-2) var(--space-4);
-    background: var(--surface-sunken);
-    text-align: center;
+    margin-top: var(--space-4);
     font-family: var(--font-display);
     font-stretch: 87.5%;
     font-weight: 600;

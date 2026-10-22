@@ -1,6 +1,6 @@
 //! Property tests for exact rational time (ADR-0004).
 
-use kinora_core::{FLICKS_PER_SECOND, FrameRate, MAX_SAFE_INTEGER, Rational, Time};
+use kinora_core::{FLICKS_PER_SECOND, FrameRate, MAX_SAFE_INTEGER, Rational, Rounding, Time};
 use proptest::prelude::*;
 
 /// Rationals in the range a timeline actually uses: up to ±10^9 over
@@ -212,12 +212,29 @@ proptest! {
     #[test]
     fn scaling_is_monotonic_and_close(a in grid_time(), b in grid_time(), rate in speed()) {
         let (lo, hi) = if a <= b { (a, b) } else { (b, a) };
-        let (slo, shi) = (lo.scale_to_grid(rate).expect("in range"), hi.scale_to_grid(rate).expect("in range"));
-        prop_assert!(slo <= shi, "rounding keeps order");
-        // Scaling back by the same rate lands within a flick per 1/rate.
-        let back = shi.div_to_grid(rate).expect("in range");
-        let error = back.flicks().expect("on grid") - hi.flicks().expect("on grid");
-        prop_assert!(error.unsigned_abs() <= 1 + rate.recip().map_or(0, |r| r.ceil().unsigned_abs()));
+        for rounding in [Rounding::Nearest, Rounding::Down] {
+            let slo = lo.scale_to_grid(rate, rounding).expect("in range");
+            let shi = hi.scale_to_grid(rate, rounding).expect("in range");
+            prop_assert!(slo <= shi, "rounding keeps order");
+            // Within one flick of the exact product, and never above it when
+            // rounding down.
+            let exact = i128::from(hi.flicks().expect("on grid")) * i128::from(rate.num());
+            let scaled = i128::from(shi.flicks().expect("on grid")) * i128::from(rate.den());
+            prop_assert!((scaled - exact).abs() <= i128::from(rate.den()));
+            if rounding == Rounding::Down {
+                prop_assert!(scaled <= exact);
+            }
+        }
+    }
+
+    /// The editing core derives a timeline duration from a source length by
+    /// rounding down, so mapping it back never plays more than that length.
+    #[test]
+    fn rounding_down_never_grows_the_source_range(source in grid_time(), rate in speed()) {
+        let source = if source.is_negative() { Time::ZERO.checked_sub(source).expect("in range") } else { source };
+        let timeline = source.div_to_grid(rate, Rounding::Down).expect("in range");
+        let back = timeline.scale_to_grid(rate, Rounding::Nearest).expect("in range");
+        prop_assert!(back <= source);
     }
 
     #[test]

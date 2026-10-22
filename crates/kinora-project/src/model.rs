@@ -1,6 +1,6 @@
 //! The document tree: project, settings, timelines, tracks and clips.
 
-use kinora_core::{FrameRate, Rational, Time};
+use kinora_core::{FrameRate, Rational, Rounding, Time};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -315,16 +315,17 @@ impl Speed {
     /// the editing core and the renderer all use it.
     pub fn source_duration(self, duration: Time) -> Option<Time> {
         match self {
-            Self::Constant { rate } => duration.scale_to_grid(rate),
+            Self::Constant { rate } => duration.scale_to_grid(rate, Rounding::Nearest),
         }
     }
 
-    /// How many timeline seconds `source` source seconds last, rounded to the
-    /// nearest flick. `None` when `source` is off the grid or the result is
-    /// out of range.
+    /// The longest timeline duration whose source range
+    /// ([`Self::source_duration`]) does not exceed `source`: the exact
+    /// quotient rounded down to the flick. `None` when `source` is off the
+    /// grid or the result is out of range.
     pub fn timeline_duration(self, source: Time) -> Option<Time> {
         match self {
-            Self::Constant { rate } => source.div_to_grid(rate),
+            Self::Constant { rate } => source.div_to_grid(rate, Rounding::Down),
         }
     }
 }

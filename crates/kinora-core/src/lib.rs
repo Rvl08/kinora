@@ -13,4 +13,4 @@ mod rational;
 mod time;
 
 pub use rational::{MAX_SAFE_INTEGER, Rational, RationalError};
-pub use time::{FLICKS_PER_SECOND, FrameRate, Time};
+pub use time::{FLICKS_PER_SECOND, FrameRate, Rounding, Time};

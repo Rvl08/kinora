@@ -1,7 +1,7 @@
 //! Semantic checks: the rules of a well-formed document that the types and
 //! the JSON Schema cannot express.
 
-use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt;
 
 use kinora_core::{MAX_SAFE_INTEGER, Time};
@@ -41,7 +41,7 @@ pub fn validate(project: &Project) -> Vec<Issue> {
     let mut checker = Checker {
         project,
         issues: Vec::new(),
-        ids: HashMap::new(),
+        ids: HashSet::new(),
     };
     checker.project();
     checker.issues
@@ -50,8 +50,10 @@ pub fn validate(project: &Project) -> Vec<Issue> {
 struct Checker<'a> {
     project: &'a Project,
     issues: Vec<Issue>,
-    /// Every identifier seen, with where it was first seen.
-    ids: HashMap<Uuid, String>,
+    /// Every identifier seen. Where it was first seen is looked up only
+    /// for a duplicate ([`first_use`]), so a valid document allocates no
+    /// path per entity.
+    ids: HashSet<Uuid>,
 }
 
 impl Checker<'_> {
@@ -69,18 +71,19 @@ impl Checker<'_> {
     }
 
     /// Identifiers are unique across the whole document, whatever their kind.
-    fn id(&mut self, id: Uuid, path: String) {
-        if let Some(first) = self.ids.get(&id) {
-            let message = format!("identifier {id} is already used at {first}");
-            self.issue(path, message);
-        } else {
-            self.ids.insert(id, path);
+    fn id(&mut self, id: Uuid, path: impl FnOnce() -> String) {
+        if !self.ids.insert(id) {
+            let first = first_use(self.project, id).unwrap_or_default();
+            self.issue(
+                path(),
+                format!("identifier {id} is already used at {first}"),
+            );
         }
     }
 
     fn project(&mut self) {
         let project = self.project;
-        self.id(project.id.as_uuid(), "/id".into());
+        self.id(project.id.as_uuid(), || "/id".into());
         self.format("/settings/defaultFormat", project.settings.default_format);
         let rate = project.settings.audio.sample_rate;
         self.check(
@@ -126,7 +129,7 @@ impl Checker<'_> {
     }
 
     fn media(&mut self, path: &str, asset: &MediaAsset) {
-        self.id(asset.id.as_uuid(), format!("{path}/id"));
+        self.id(asset.id.as_uuid(), || format!("{path}/id"));
 
         let digest = &asset.hash.digest;
         self.check(
@@ -211,7 +214,7 @@ impl Checker<'_> {
     }
 
     fn timeline(&mut self, path: &str, timeline: &Timeline) {
-        self.id(timeline.id.as_uuid(), format!("{path}/id"));
+        self.id(timeline.id.as_uuid(), || format!("{path}/id"));
         self.format(&format!("{path}/format"), timeline.format);
         for (i, track) in timeline.tracks.iter().enumerate() {
             self.track(&format!("{path}/tracks/{i}"), track);
@@ -219,7 +222,7 @@ impl Checker<'_> {
         let mut previous = Time::ZERO;
         for (i, marker) in timeline.markers.iter().enumerate() {
             let path = format!("{path}/markers/{i}");
-            self.id(marker.id.as_uuid(), format!("{path}/id"));
+            self.id(marker.id.as_uuid(), || format!("{path}/id"));
             self.check(
                 marker.start >= previous,
                 || format!("{path}/start"),
@@ -237,7 +240,7 @@ impl Checker<'_> {
     }
 
     fn track(&mut self, path: &str, track: &Track) {
-        self.id(track.id.as_uuid(), format!("{path}/id"));
+        self.id(track.id.as_uuid(), || format!("{path}/id"));
         let mut previous_end = Time::ZERO;
         for (i, clip) in track.clips.iter().enumerate() {
             let clip_path = format!("{path}/clips/{i}");
@@ -251,9 +254,19 @@ impl Checker<'_> {
                 previous_end = end;
             }
         }
+        // A clip ends at one cut and starts at another, so it may appear once
+        // as `from` and once as `to`.
+        let (mut outgoing, mut incoming) = (HashSet::new(), HashSet::new());
         for (i, transition) in track.transitions.iter().enumerate() {
             let path = format!("{path}/transitions/{i}");
-            self.id(transition.id.as_uuid(), format!("{path}/id"));
+            let first_out = outgoing.insert(transition.from);
+            let first_in = incoming.insert(transition.to);
+            self.check(
+                first_out && first_in,
+                || path.clone(),
+                "a cut has at most one transition",
+            );
+            self.id(transition.id.as_uuid(), || format!("{path}/id"));
             self.effect_ref(&format!("{path}/effect"), &transition.effect);
             let find = |id| track.clips.iter().find(|c| c.id == id);
             let (Some(from), Some(to)) = (find(transition.from), find(transition.to)) else {
@@ -276,7 +289,7 @@ impl Checker<'_> {
     }
 
     fn clip(&mut self, path: &str, track: TrackKind, clip: &Clip) {
-        self.id(clip.id.as_uuid(), format!("{path}/id"));
+        self.id(clip.id.as_uuid(), || format!("{path}/id"));
         self.check(
             !clip.start.is_negative(),
             || format!("{path}/start"),
@@ -426,7 +439,7 @@ impl Checker<'_> {
         });
         for (i, effect) in visual.effects.iter().enumerate() {
             let path = format!("{path}/effects/{i}");
-            self.id(effect.id.as_uuid(), format!("{path}/id"));
+            self.id(effect.id.as_uuid(), || format!("{path}/id"));
             self.effect_ref(&format!("{path}/effect"), &effect.effect);
             for (name, value) in &effect.params {
                 let param_path = format!("{path}/params/{}", escape_pointer(name));
@@ -635,6 +648,44 @@ impl Checker<'_> {
     }
 }
 
+/// Where `id` is used first, in the order the checker visits entities.
+fn first_use(project: &Project, id: Uuid) -> Option<String> {
+    if project.id.as_uuid() == id {
+        return Some("/id".into());
+    }
+    if let Some(i) = project.media.iter().position(|m| m.id.as_uuid() == id) {
+        return Some(format!("/media/{i}/id"));
+    }
+    for (t, timeline) in project.timelines.iter().enumerate() {
+        let path = format!("/timelines/{t}");
+        if timeline.id.as_uuid() == id {
+            return Some(format!("{path}/id"));
+        }
+        for (k, track) in timeline.tracks.iter().enumerate() {
+            let path = format!("{path}/tracks/{k}");
+            if track.id.as_uuid() == id {
+                return Some(format!("{path}/id"));
+            }
+            for (c, clip) in track.clips.iter().enumerate() {
+                if clip.id.as_uuid() == id {
+                    return Some(format!("{path}/clips/{c}/id"));
+                }
+                let effects = clip.visual.iter().flat_map(|v| &v.effects);
+                if let Some(e) = effects.into_iter().position(|e| e.id.as_uuid() == id) {
+                    return Some(format!("{path}/clips/{c}/visual/effects/{e}/id"));
+                }
+            }
+            if let Some(x) = track.transitions.iter().position(|x| x.id.as_uuid() == id) {
+                return Some(format!("{path}/transitions/{x}/id"));
+            }
+        }
+        if let Some(m) = timeline.markers.iter().position(|m| m.id.as_uuid() == id) {
+            return Some(format!("{path}/markers/{m}/id"));
+        }
+    }
+    None
+}
+
 /// `a.b.c`: lowercase first segment, then segments of ASCII letters, digits
 /// and `-`, each starting with a letter.
 fn is_effect_id(id: &str) -> bool {
@@ -710,6 +761,23 @@ mod tests {
         ] {
             assert!(!is_portable_relative_path(bad), "{bad}");
         }
+    }
+
+    #[test]
+    fn duplicates_name_the_first_use() {
+        use crate::model::ProjectSettings;
+        let mut project = Project::new("Dup", ProjectSettings::default());
+        let mut copy = project.timelines[0].clone();
+        copy.id = crate::id::TimelineId::from_uuid(project.id.as_uuid());
+        project.timelines.push(copy);
+        let issues = validate(&project);
+        assert_eq!(issues.len(), 1, "{issues:?}");
+        assert_eq!(issues[0].path, "/timelines/1/id");
+        assert!(
+            issues[0].message.ends_with("is already used at /id"),
+            "{}",
+            issues[0].message
+        );
     }
 
     #[test]

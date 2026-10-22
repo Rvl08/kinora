@@ -353,7 +353,27 @@ track: Track, } } | { "op": "removeTrack", "params": {
 /**
  * The track.
  */
-track: TrackId, } } | { "op": "insertClip", "params": {
+track: TrackId, } } | { "op": "updateTrack", "params": {
+/**
+ * The track.
+ */
+track: TrackId,
+/**
+ * New display name.
+ */
+name: string | null,
+/**
+ * Silences the track's audio.
+ */
+muted: boolean | null,
+/**
+ * Hides the track's pictures.
+ */
+hidden: boolean | null,
+/**
+ * Protects the track from edits.
+ */
+locked: boolean | null, } } | { "op": "insertClip", "params": {
 /**
  * The track.
  */
@@ -449,7 +469,103 @@ param: string,
 /**
  * The new value.
  */
-value: Animated<ParamValue>, } };
+value: Animated<ParamValue>, } } | { "op": "renameClip", "params": {
+/**
+ * The clip.
+ */
+clip: ClipId,
+/**
+ * The new name; `null` shows the content's name.
+ */
+name: string | null, } } | { "op": "setClipEnabled", "params": {
+/**
+ * The clip.
+ */
+clip: ClipId,
+/**
+ * `false` keeps the clip but neither draws nor plays it.
+ */
+enabled: boolean, } } | { "op": "setTransform", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new transform.
+ */
+transform: Transform, } } | { "op": "setCrop", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new crop.
+ */
+crop: Crop, } } | { "op": "setOpacity", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new opacity.
+ */
+opacity: Animated<number>, } } | { "op": "setBlendMode", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new blend mode.
+ */
+blendMode: BlendMode, } } | { "op": "setAudioMix", "params": {
+/**
+ * The clip; on an audio track, or video media on a video track.
+ */
+clip: ClipId,
+/**
+ * The new sound properties.
+ */
+audio: AudioMix, } } | { "op": "setText", "params": {
+/**
+ * The clip; must be a text clip.
+ */
+clip: ClipId,
+/**
+ * The new content.
+ */
+content: TextContent, } } | { "op": "setCaption", "params": {
+/**
+ * The clip; must be a caption clip.
+ */
+clip: ClipId,
+/**
+ * The new content.
+ */
+content: CaptionContent, } } | { "op": "addTransition", "params": {
+/**
+ * The track holding both clips.
+ */
+track: TrackId,
+/**
+ * The transition, with a fresh id.
+ */
+transition: Transition, } } | { "op": "removeTransition", "params": {
+/**
+ * The transition.
+ */
+transition: TransitionId, } } | { "op": "addMarker", "params": {
+/**
+ * The timeline.
+ */
+timeline: TimelineId,
+/**
+ * The marker, with a fresh id.
+ */
+marker: Marker, } } | { "op": "removeMarker", "params": {
+/**
+ * The marker.
+ */
+marker: MarkerId, } };
 
 /**
  * An effect applied to a clip.

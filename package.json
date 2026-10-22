@@ -16,7 +16,10 @@
     "ffmpeg:verify": "node scripts/ffmpeg/verify.mjs",
     "ffmpeg:verify:ship": "node scripts/ffmpeg/verify.mjs --ship",
     "sign": "node scripts/signing/sign.mjs",
-    "sign:verify": "node scripts/signing/verify.mjs"
+    "sign:verify": "node scripts/signing/verify.mjs",
+    "fixtures:fetch": "node scripts/fixtures/fetch.mjs",
+    "fixtures:generate": "node scripts/fixtures/generate.mjs",
+    "fixtures:verify": "node scripts/fixtures/verify.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -9,9 +9,38 @@ export const en: Messages = {
   },
   start: {
     newProject: 'New project',
-    openProject: 'Open project',
+    newProjectHint: 'Pick the shape of your video. You can change it any time.',
+    ratio: {
+      vertical: 'Vertical',
+      verticalUse: 'TikTok, Reels, Shorts',
+      landscape: 'Landscape',
+      landscapeUse: 'YouTube, wide screens',
+      square: 'Square',
+      squareUse: 'Feed',
+    },
+    dropTitle: 'Drop a video here',
+    dropHint: 'A new vertical project starts from that video.',
+    dropActive: 'Release to start',
+    chooseVideo: 'Choose a video…',
+    openProject: 'Open project…',
     recentProjects: 'Recent',
-    noRecentProjects: 'No projects yet. Start with a new one.',
+    noRecentProjects: 'No projects yet. The projects you make will show up here.',
+    loadingRecent: 'Loading projects…',
+    recentError: 'The project list could not be loaded.',
+    retry: 'Try again',
+    missingProject: 'Folder not found',
+    unknownDuration: '–:––',
+  },
+  settings: {
+    appearance: 'Appearance',
+    themeSystem: 'Match system',
+    themeDark: 'Dark',
+    themeLight: 'Light',
+    language: 'Language',
+  },
+  time: {
+    today: 'Today, {time}',
+    yesterday: 'Yesterday, {time}',
   },
   history: {
     undo: 'Undo {action}',
@@ -108,5 +137,6 @@ export const en: Messages = {
   units: {
     clips: { one: '{count} clip', other: '{count} clips' },
     tracks: { one: '{count} track', other: '{count} tracks' },
+    projects: { one: '{count} project', other: '{count} projects' },
   },
 };

@@ -1,13 +1,51 @@
 <!--
-  Application frame. Scaffold only: the start screen and the editor
-  workspace are designed with Impeccable (docs/07 §14) before they get any
-  visual styling.
+  Application frame. With no project open it shows the start screen; the
+  editor workspace replaces it once the shell opens a project (Phase 1).
 -->
 <script lang="ts">
-  import { i18n } from '$lib/i18n/index.svelte';
+  import { onMount } from 'svelte';
+
+  import StartScreen from '$lib/features/start/StartScreen.svelte';
+  import type { RatioPreset } from '$lib/features/start/ratio';
+  import type { RecentProject } from '$lib/ipc/bindings';
+  import { IpcClient } from '$lib/ipc/client';
+  import { createTransport } from '$lib/ipc/runtime';
+  import { RecentProjectsStore } from '$lib/state/recent.svelte';
+
+  let recent = $state.raw<RecentProjectsStore | null>(null);
+  const now = Date.now();
+
+  onMount(() => {
+    void createTransport().then((transport) => {
+      const store = new RecentProjectsStore(new IpcClient(transport));
+      recent = store;
+      void store.load();
+    });
+  });
+
+  // The shell commands behind these intents (create, open, file dialogs)
+  // arrive with the Tauri shell; the start screen already emits them.
+  function create(preset: RatioPreset) {
+    void preset;
+  }
+  function open() {}
+  function openRecent(project: RecentProject) {
+    void project;
+  }
+  function dropMedia(files: readonly File[]) {
+    void files;
+  }
+  function chooseVideo() {}
 </script>
 
-<main>
-  <h1>{i18n.t('app.name')}</h1>
-  <p>{i18n.t('app.tagline')}</p>
-</main>
+{#if recent}
+  <StartScreen
+    {recent}
+    {now}
+    oncreate={create}
+    onopen={open}
+    onopenrecent={openRecent}
+    ondropmedia={dropMedia}
+    onchoosevideo={chooseVideo}
+  />
+{/if}

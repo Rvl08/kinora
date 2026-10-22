@@ -54,3 +54,29 @@ export class ThemeController {
     document.documentElement.style.colorScheme = this.theme;
   }
 }
+
+const STORAGE_KEY = 'kinora.theme';
+
+/** The preference saved in this window's storage (cosmetic only, docs/07 §10). */
+export function storedPreference(): ThemePreference {
+  try {
+    const value = localStorage.getItem(STORAGE_KEY);
+    return value === 'light' || value === 'dark' ? value : 'system';
+  } catch {
+    return 'system';
+  }
+}
+
+/** Saves the preference; losing it only means the system setting applies. */
+export function storePreference(preference: ThemePreference): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, preference);
+  } catch {
+    // Storage can be unavailable (private mode, policy); nothing to do.
+  }
+}
+
+/** The app-wide theme. */
+export const theme = new ThemeController(
+  typeof localStorage === 'undefined' ? 'system' : storedPreference(),
+);

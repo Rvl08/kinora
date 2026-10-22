@@ -2,12 +2,12 @@
 
 import { mount } from 'svelte';
 
+import './app.css';
 import App from './App.svelte';
 import { i18n } from './lib/i18n/index.svelte';
-import { ThemeController } from './lib/theme/theme.svelte';
+import { theme } from './lib/theme/theme.svelte';
 
 document.documentElement.lang = i18n.locale;
-const theme = new ThemeController();
 theme.start();
 
 const target = document.getElementById('app');

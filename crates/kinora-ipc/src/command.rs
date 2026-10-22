@@ -2,7 +2,7 @@
 
 use kinora_project::edit::EditorState;
 use kinora_project::id::ProjectId;
-use kinora_project::{EditCommand, Project, ProjectSettings};
+use kinora_project::{EditCommand, Project, ProjectSettings, Time, VideoFormat};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -94,6 +94,9 @@ commands! {
     /// Requests cancellation of a background job; its final state arrives as
     /// a `job:progress` event.
     CancelJob = "cancel_job" (CancelJobArgs) -> ();
+    /// The recently opened projects, most recent first, for the start
+    /// screen.
+    ListRecentProjects = "list_recent_projects" (()) -> Vec<RecentProject>;
 }
 
 /// Arguments of [`CreateProject`].
@@ -213,6 +216,31 @@ pub struct ProjectOpened {
     pub migrated_from: Option<u32>,
     /// How many unsaved edits were recovered from the journal.
     pub recovered_edits: u32,
+}
+
+/// A project on the recent-projects list.
+///
+/// Read from the shell's recent list and the project's own `project.json`;
+/// fields the shell could not read (a moved folder, a damaged file) are
+/// `null`, and `available` tells the UI whether opening can work.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RecentProject {
+    /// The `.kinora` folder, as the user chose it; passed back unchanged to
+    /// `open_project`.
+    pub path: String,
+    /// The project's display name.
+    pub name: String,
+    /// When it was last opened, in milliseconds since the Unix epoch (UTC).
+    /// At most 2^53 − 1.
+    #[ts(type = "number")]
+    pub opened_at: u64,
+    /// Canvas and frame rate of the project's first timeline.
+    pub format: Option<VideoFormat>,
+    /// Length of the project's first timeline: the end of its last clip.
+    pub duration: Option<Time>,
+    /// `false` when the folder or its `project.json` can no longer be read.
+    pub available: bool,
 }
 
 /// Identifies a background job (export, proxy, transcription, …).

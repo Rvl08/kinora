@@ -9,9 +9,38 @@ export const id = {
   },
   start: {
     newProject: 'Proyek baru',
-    openProject: 'Buka proyek',
+    newProjectHint: 'Pilih bentuk videonya. Bisa diubah kapan saja.',
+    ratio: {
+      vertical: 'Vertikal',
+      verticalUse: 'TikTok, Reels, Shorts',
+      landscape: 'Lanskap',
+      landscapeUse: 'YouTube, layar lebar',
+      square: 'Persegi',
+      squareUse: 'Feed',
+    },
+    dropTitle: 'Seret video ke sini',
+    dropHint: 'Proyek vertikal baru langsung dibuat dari video itu.',
+    dropActive: 'Lepaskan untuk memulai',
+    chooseVideo: 'Pilih video…',
+    openProject: 'Buka proyek…',
     recentProjects: 'Terakhir dibuka',
-    noRecentProjects: 'Belum ada proyek. Mulai dengan proyek baru.',
+    noRecentProjects: 'Belum ada proyek. Proyek yang Anda buat akan muncul di sini.',
+    loadingRecent: 'Memuat proyek…',
+    recentError: 'Daftar proyek tidak bisa dimuat.',
+    retry: 'Coba lagi',
+    missingProject: 'Folder tidak ditemukan',
+    unknownDuration: '–:––',
+  },
+  settings: {
+    appearance: 'Tampilan',
+    themeSystem: 'Ikuti sistem',
+    themeDark: 'Gelap',
+    themeLight: 'Terang',
+    language: 'Bahasa',
+  },
+  time: {
+    today: 'Hari ini, {time}',
+    yesterday: 'Kemarin, {time}',
   },
   history: {
     undo: 'Urungkan: {action}',
@@ -107,5 +136,6 @@ export const id = {
   units: {
     clips: { one: '{count} klip', other: '{count} klip' },
     tracks: { one: '{count} track', other: '{count} track' },
+    projects: { one: '{count} proyek', other: '{count} proyek' },
   },
 } as const;

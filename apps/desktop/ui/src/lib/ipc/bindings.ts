@@ -1146,6 +1146,41 @@ num: number,
 den: number, };
 
 /**
+ * A project on the recent-projects list.
+ *
+ * Read from the shell's recent list and the project's own `project.json`;
+ * fields the shell could not read (a moved folder, a damaged file) are
+ * `null`, and `available` tells the UI whether opening can work.
+ */
+export type RecentProject = {
+/**
+ * The `.kinora` folder, as the user chose it; passed back unchanged to
+ * `open_project`.
+ */
+path: string,
+/**
+ * The project's display name.
+ */
+name: string,
+/**
+ * When it was last opened, in milliseconds since the Unix epoch (UTC).
+ * At most 2^53 − 1.
+ */
+openedAt: number,
+/**
+ * Canvas and frame rate of the project's first timeline.
+ */
+format: VideoFormat | null,
+/**
+ * Length of the project's first timeline: the end of its last clip.
+ */
+duration: Time | null,
+/**
+ * `false` when the folder or its `project.json` can no longer be read.
+ */
+available: boolean, };
+
+/**
  * Counter of document states in the current session: every applied command,
  * undo or redo increments it. Requests that edit carry the revision they were
  * made against, so an edit computed from a stale UI state is rejected with
@@ -1580,6 +1615,11 @@ export type Commands = {
    * a `job:progress` event.
    */
   cancel_job: { args: CancelJobArgs; output: null };
+  /**
+   * The recently opened projects, most recent first, for the start
+   * screen.
+   */
+  list_recent_projects: { args: null; output: Array<RecentProject> };
 };
 
 /** Every IPC event: `listen(name)` delivers the payload. */

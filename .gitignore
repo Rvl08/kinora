@@ -42,3 +42,8 @@ Thumbs.db
 .impeccable/config.local.json
 .impeccable/hook.cache.json
 .impeccable/*.ndjson
+# Impeccable working files: decision rounds (raw seed keys), screenshots, comps, build state.
+**/.impeccable/questions/
+**/.impeccable/review/
+**/.impeccable/mocks/
+**/.impeccable/build/

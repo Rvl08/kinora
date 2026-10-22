@@ -1,0 +1,1662 @@
+{
+  "$comment": "Generated from crates/kinora-project; do not edit. Regenerate with `cargo run -p kinora-ipc --example generate`.",
+  "$defs": {
+    "Animated_ParamValue": {
+      "description": "A property that is either constant or animated by keyframes.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "The same value for the whole clip.",
+          "properties": {
+            "kind": {
+              "const": "static",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/ParamValue",
+              "description": "The value."
+            }
+          },
+          "required": ["kind", "value"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Interpolated between keyframes, held before the first and after the\nlast. At least one keyframe, ordered by strictly increasing `at`.",
+          "properties": {
+            "keyframes": {
+              "description": "The keyframes.",
+              "items": {
+                "$ref": "#/$defs/Keyframe_ParamValue"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "const": "keyframes",
+              "type": "string"
+            }
+          },
+          "required": ["kind", "keyframes"],
+          "type": "object"
+        }
+      ]
+    },
+    "Animated_Vec2": {
+      "description": "A property that is either constant or animated by keyframes.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "The same value for the whole clip.",
+          "properties": {
+            "kind": {
+              "const": "static",
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/$defs/Vec2",
+              "description": "The value."
+            }
+          },
+          "required": ["kind", "value"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Interpolated between keyframes, held before the first and after the\nlast. At least one keyframe, ordered by strictly increasing `at`.",
+          "properties": {
+            "keyframes": {
+              "description": "The keyframes.",
+              "items": {
+                "$ref": "#/$defs/Keyframe_Vec2"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "const": "keyframes",
+              "type": "string"
+            }
+          },
+          "required": ["kind", "keyframes"],
+          "type": "object"
+        }
+      ]
+    },
+    "Animated_double": {
+      "description": "A property that is either constant or animated by keyframes.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "The same value for the whole clip.",
+          "properties": {
+            "kind": {
+              "const": "static",
+              "type": "string"
+            },
+            "value": {
+              "description": "The value.",
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": ["kind", "value"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Interpolated between keyframes, held before the first and after the\nlast. At least one keyframe, ordered by strictly increasing `at`.",
+          "properties": {
+            "keyframes": {
+              "description": "The keyframes.",
+              "items": {
+                "$ref": "#/$defs/Keyframe_double"
+              },
+              "type": "array"
+            },
+            "kind": {
+              "const": "keyframes",
+              "type": "string"
+            }
+          },
+          "required": ["kind", "keyframes"],
+          "type": "object"
+        }
+      ]
+    },
+    "AudioFormat": {
+      "additionalProperties": false,
+      "description": "Mixer output format.",
+      "properties": {
+        "channels": {
+          "$ref": "#/$defs/ChannelLayout",
+          "description": "Channel layout."
+        },
+        "sampleRate": {
+          "description": "Samples per second, e.g. 48000.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": ["sampleRate", "channels"],
+      "type": "object"
+    },
+    "AudioMix": {
+      "additionalProperties": false,
+      "description": "Sound properties of a clip.",
+      "properties": {
+        "fadeIn": {
+          "$ref": "#/$defs/Time",
+          "description": "Fade-in length from the clip start, `>= 0`."
+        },
+        "fadeOut": {
+          "$ref": "#/$defs/Time",
+          "description": "Fade-out length before the clip end, `>= 0`."
+        },
+        "gainDb": {
+          "$ref": "#/$defs/Animated_double",
+          "description": "Gain in decibels; `0` leaves the level unchanged."
+        }
+      },
+      "required": ["gainDb", "fadeIn", "fadeOut"],
+      "type": "object"
+    },
+    "AudioStreamInfo": {
+      "additionalProperties": false,
+      "description": "Properties of an audio stream.",
+      "properties": {
+        "channels": {
+          "description": "Number of channels.",
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "sampleRate": {
+          "description": "Samples per second.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": ["sampleRate", "channels"],
+      "type": "object"
+    },
+    "BlendMode": {
+      "description": "Compositing blend modes (WGSL implementations in `effects/`).",
+      "oneOf": [
+        {
+          "const": "normal",
+          "description": "Source over.",
+          "type": "string"
+        },
+        {
+          "const": "multiply",
+          "description": "Darkens by multiplying.",
+          "type": "string"
+        },
+        {
+          "const": "screen",
+          "description": "Lightens by inverse multiplying.",
+          "type": "string"
+        },
+        {
+          "const": "overlay",
+          "description": "Multiply or screen depending on the base.",
+          "type": "string"
+        },
+        {
+          "const": "darken",
+          "description": "Keeps the darker colour.",
+          "type": "string"
+        },
+        {
+          "const": "lighten",
+          "description": "Keeps the lighter colour.",
+          "type": "string"
+        },
+        {
+          "const": "add",
+          "description": "Adds colours (linear dodge).",
+          "type": "string"
+        }
+      ]
+    },
+    "CaptionWord": {
+      "additionalProperties": false,
+      "description": "A word inside a caption cue.",
+      "properties": {
+        "end": {
+          "$ref": "#/$defs/Time",
+          "description": "When the word ends, relative to the clip start; `>= start`."
+        },
+        "start": {
+          "$ref": "#/$defs/Time",
+          "description": "When the word starts, relative to the clip start."
+        },
+        "text": {
+          "description": "The word as displayed.",
+          "type": "string"
+        }
+      },
+      "required": ["text", "start", "end"],
+      "type": "object"
+    },
+    "ChannelLayout": {
+      "description": "Audio channel layouts.",
+      "oneOf": [
+        {
+          "const": "mono",
+          "description": "One channel.",
+          "type": "string"
+        },
+        {
+          "const": "stereo",
+          "description": "Two channels.",
+          "type": "string"
+        }
+      ]
+    },
+    "Clip": {
+      "additionalProperties": false,
+      "description": "An item on a track.\n\nTiming: the clip occupies `[start, start + duration)` on the timeline. For\nmedia, the source range is derived, never stored twice:\n`sourceIn .. sourceIn + duration × speed`.",
+      "properties": {
+        "audio": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AudioMix"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Sound properties; required on audio tracks, optional for video media\nwith sound, `null` otherwise."
+        },
+        "content": {
+          "$ref": "#/$defs/ClipContent",
+          "description": "What the clip shows or plays."
+        },
+        "duration": {
+          "$ref": "#/$defs/Time",
+          "description": "Length on the timeline, `> 0`."
+        },
+        "enabled": {
+          "description": "A disabled clip is kept but neither drawn nor heard.",
+          "type": "boolean"
+        },
+        "id": {
+          "$ref": "#/$defs/ClipId",
+          "description": "Stable identifier."
+        },
+        "name": {
+          "description": "Display name override; `null` shows the content's name.",
+          "type": ["string", "null"]
+        },
+        "start": {
+          "$ref": "#/$defs/Time",
+          "description": "Position on the timeline, `>= 0`."
+        },
+        "visual": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Visual"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Picture properties; required on video, text and caption tracks,\n`null` on audio tracks."
+        }
+      },
+      "required": ["id", "start", "duration", "enabled", "content"],
+      "type": "object"
+    },
+    "ClipContent": {
+      "description": "What a clip shows or plays.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "A range of a media file (video and audio tracks).",
+          "properties": {
+            "kind": {
+              "const": "media",
+              "type": "string"
+            },
+            "media": {
+              "$ref": "#/$defs/MediaId",
+              "description": "The asset in the media pool."
+            },
+            "preservePitch": {
+              "description": "Keeps the pitch of sped-up or slowed-down sound.",
+              "type": "boolean"
+            },
+            "reverse": {
+              "description": "Plays the source range backwards.",
+              "type": "boolean"
+            },
+            "sourceIn": {
+              "$ref": "#/$defs/Time",
+              "description": "Where playback starts in the source, `>= 0`. With `reverse`, the\nclip plays the same source range backwards."
+            },
+            "speed": {
+              "$ref": "#/$defs/Speed",
+              "description": "Playback speed."
+            }
+          },
+          "required": ["kind", "media", "sourceIn", "speed", "reverse", "preservePitch"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A title (text tracks).",
+          "properties": {
+            "kind": {
+              "const": "text",
+              "type": "string"
+            },
+            "style": {
+              "$ref": "#/$defs/TextStyle",
+              "description": "How it looks."
+            },
+            "text": {
+              "description": "The text; `\\n` breaks lines.",
+              "type": "string"
+            }
+          },
+          "required": ["kind", "text", "style"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A caption cue (caption tracks).",
+          "properties": {
+            "kind": {
+              "const": "caption",
+              "type": "string"
+            },
+            "language": {
+              "description": "BCP 47 language tag (`\"id\"`, `\"en-US\"`), when known.",
+              "type": ["string", "null"]
+            },
+            "style": {
+              "$ref": "#/$defs/TextStyle",
+              "description": "How it looks."
+            },
+            "text": {
+              "description": "The cue text as displayed.",
+              "type": "string"
+            },
+            "words": {
+              "description": "Word timings for karaoke-style highlighting; empty when unknown.\nOrdered, non-overlapping and within the clip.",
+              "items": {
+                "$ref": "#/$defs/CaptionWord"
+              },
+              "type": "array"
+            }
+          },
+          "required": ["kind", "text", "words", "style"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A solid colour (video tracks).",
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/Color",
+              "description": "The colour."
+            },
+            "kind": {
+              "const": "solid",
+              "type": "string"
+            }
+          },
+          "required": ["kind", "color"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Applies the clip's effects to everything below it (video tracks).",
+          "properties": {
+            "kind": {
+              "const": "adjustment",
+              "type": "string"
+            }
+          },
+          "required": ["kind"],
+          "type": "object"
+        }
+      ]
+    },
+    "ClipId": {
+      "description": "Identifies a clip on a track.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "Color": {
+      "additionalProperties": false,
+      "description": "An RGBA colour: sRGB-encoded components in `0..=1`, straight (not\npremultiplied) alpha.",
+      "properties": {
+        "a": {
+          "description": "Opacity.",
+          "format": "double",
+          "type": "number"
+        },
+        "b": {
+          "description": "Blue.",
+          "format": "double",
+          "type": "number"
+        },
+        "g": {
+          "description": "Green.",
+          "format": "double",
+          "type": "number"
+        },
+        "r": {
+          "description": "Red.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": ["r", "g", "b", "a"],
+      "type": "object"
+    },
+    "ColorSpace": {
+      "description": "Colour spaces. Phase 1 renders Rec. 709 only; the HDR variants exist so\nthe format does not need a new version when HDR arrives (P5+).",
+      "oneOf": [
+        {
+          "const": "rec709",
+          "description": "ITU-R BT.709 primaries and transfer (SDR video, close to sRGB).",
+          "type": "string"
+        },
+        {
+          "const": "rec2100Pq",
+          "description": "ITU-R BT.2100 with the PQ transfer (HDR10).",
+          "type": "string"
+        },
+        {
+          "const": "rec2100Hlg",
+          "description": "ITU-R BT.2100 with the HLG transfer.",
+          "type": "string"
+        }
+      ]
+    },
+    "ContentHash": {
+      "additionalProperties": false,
+      "description": "A fast fingerprint of a file's content.\n\nNot a cryptographic hash: it detects that a file was replaced or matches a\ncandidate during relink, quickly, even for files of many gigabytes.",
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/HashAlgorithm",
+          "description": "How the digest was computed."
+        },
+        "digest": {
+          "description": "The digest as lowercase hexadecimal (32 characters for 128 bits).",
+          "type": "string"
+        },
+        "fileSize": {
+          "description": "File size in bytes, part of the fingerprint. At most 2^53 − 1.",
+          "format": "uint64",
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": ["algorithm", "digest", "fileSize"],
+      "type": "object"
+    },
+    "Crop": {
+      "additionalProperties": false,
+      "description": "How much of each edge of the source to cut away, as fractions of its\nsize; each `0..1`, and opposite edges sum to less than `1`.",
+      "properties": {
+        "bottom": {
+          "description": "Cut from the bottom edge.",
+          "format": "double",
+          "type": "number"
+        },
+        "left": {
+          "description": "Cut from the left edge.",
+          "format": "double",
+          "type": "number"
+        },
+        "right": {
+          "description": "Cut from the right edge.",
+          "format": "double",
+          "type": "number"
+        },
+        "top": {
+          "description": "Cut from the top edge.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": ["left", "top", "right", "bottom"],
+      "type": "object"
+    },
+    "Easing": {
+      "description": "How a value moves from one keyframe to the next.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Constant rate.",
+          "properties": {
+            "kind": {
+              "const": "linear",
+              "type": "string"
+            }
+          },
+          "required": ["kind"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Keep this keyframe's value until the next keyframe, then jump.",
+          "properties": {
+            "kind": {
+              "const": "hold",
+              "type": "string"
+            }
+          },
+          "required": ["kind"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Slow start.",
+          "properties": {
+            "kind": {
+              "const": "easeIn",
+              "type": "string"
+            }
+          },
+          "required": ["kind"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Slow end.",
+          "properties": {
+            "kind": {
+              "const": "easeOut",
+              "type": "string"
+            }
+          },
+          "required": ["kind"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Slow start and end.",
+          "properties": {
+            "kind": {
+              "const": "easeInOut",
+              "type": "string"
+            }
+          },
+          "required": ["kind"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A CSS-style cubic Bézier through `(0,0)`, `(x1,y1)`, `(x2,y2)`, `(1,1)`.\n`x1` and `x2` must be within `0..=1`.",
+          "properties": {
+            "kind": {
+              "const": "cubicBezier",
+              "type": "string"
+            },
+            "x1": {
+              "description": "First control point, x.",
+              "format": "double",
+              "type": "number"
+            },
+            "x2": {
+              "description": "Second control point, x.",
+              "format": "double",
+              "type": "number"
+            },
+            "y1": {
+              "description": "First control point, y.",
+              "format": "double",
+              "type": "number"
+            },
+            "y2": {
+              "description": "Second control point, y.",
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": ["kind", "x1", "y1", "x2", "y2"],
+          "type": "object"
+        }
+      ]
+    },
+    "EffectInstance": {
+      "additionalProperties": false,
+      "description": "An effect applied to a clip.",
+      "properties": {
+        "effect": {
+          "$ref": "#/$defs/EffectRef",
+          "description": "Which effect."
+        },
+        "enabled": {
+          "description": "A disabled effect is kept but skipped.",
+          "type": "boolean"
+        },
+        "id": {
+          "$ref": "#/$defs/EffectInstanceId",
+          "description": "Stable identifier of this application of the effect."
+        },
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Animated_ParamValue"
+          },
+          "description": "Parameter values by name; parameters left out take the manifest's\ndefault.",
+          "type": "object"
+        }
+      },
+      "required": ["id", "effect", "enabled", "params"],
+      "type": "object"
+    },
+    "EffectInstanceId": {
+      "description": "Identifies one applied effect on a clip.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "EffectRef": {
+      "additionalProperties": false,
+      "description": "A reference to an effect package (`effects/<id>/effect.toml`).",
+      "properties": {
+        "id": {
+          "description": "Dotted identifier, e.g. `\"kinora.gaussianBlur\"`.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Manifest version the parameters were written for; the effect migrates\nolder parameters when it loads them.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": ["id", "version"],
+      "type": "object"
+    },
+    "FontRef": {
+      "additionalProperties": false,
+      "description": "A typeface by family name. Fonts are resolved at render time from the\nbundled open-licence fonts, then the system; a missing font falls back\nand is reported, never silently substituted in the file.",
+      "properties": {
+        "family": {
+          "description": "Family name, e.g. `\"Inter\"`.",
+          "type": "string"
+        },
+        "italic": {
+          "description": "Italic style.",
+          "type": "boolean"
+        },
+        "weight": {
+          "description": "CSS weight, `100..=900`.",
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": ["family", "weight", "italic"],
+      "type": "object"
+    },
+    "FrameRate": {
+      "additionalProperties": false,
+      "description": "Frames per second as an exact, positive rational num/den, e.g. 30000/1001.",
+      "properties": {
+        "den": {
+          "maximum": 4294967295,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "num": {
+          "maximum": 9007199254740991,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": ["num", "den"],
+      "type": "object"
+    },
+    "HashAlgorithm": {
+      "description": "Fingerprint algorithms.",
+      "oneOf": [
+        {
+          "const": "xxh3Sampled",
+          "description": "XXH3-128 over the file size and three fixed-size samples (start,\nmiddle, end) of the file (ADR-0004 §2). `kinora-media` defines the\nexact sampling; changing it requires a new variant.",
+          "type": "string"
+        }
+      ]
+    },
+    "Keyframe_ParamValue": {
+      "additionalProperties": false,
+      "description": "A value at a point in time.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Time",
+          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. Within `0..=clip.duration`."
+        },
+        "easing": {
+          "$ref": "#/$defs/Easing",
+          "description": "Interpolation from this keyframe to the next one."
+        },
+        "value": {
+          "$ref": "#/$defs/ParamValue",
+          "description": "The value at `at`."
+        }
+      },
+      "required": ["at", "value", "easing"],
+      "type": "object"
+    },
+    "Keyframe_Vec2": {
+      "additionalProperties": false,
+      "description": "A value at a point in time.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Time",
+          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. Within `0..=clip.duration`."
+        },
+        "easing": {
+          "$ref": "#/$defs/Easing",
+          "description": "Interpolation from this keyframe to the next one."
+        },
+        "value": {
+          "$ref": "#/$defs/Vec2",
+          "description": "The value at `at`."
+        }
+      },
+      "required": ["at", "value", "easing"],
+      "type": "object"
+    },
+    "Keyframe_double": {
+      "additionalProperties": false,
+      "description": "A value at a point in time.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Time",
+          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. Within `0..=clip.duration`."
+        },
+        "easing": {
+          "$ref": "#/$defs/Easing",
+          "description": "Interpolation from this keyframe to the next one."
+        },
+        "value": {
+          "description": "The value at `at`.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": ["at", "value", "easing"],
+      "type": "object"
+    },
+    "Marker": {
+      "additionalProperties": false,
+      "description": "A named point or range on a timeline (also exported as chapters).",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/MarkerColor",
+          "description": "Colour tag."
+        },
+        "duration": {
+          "$ref": "#/$defs/Time",
+          "description": "Length; `0` for a point marker."
+        },
+        "id": {
+          "$ref": "#/$defs/MarkerId",
+          "description": "Stable identifier."
+        },
+        "label": {
+          "description": "Label shown on the ruler.",
+          "type": "string"
+        },
+        "start": {
+          "$ref": "#/$defs/Time",
+          "description": "Position, `>= 0`."
+        }
+      },
+      "required": ["id", "start", "duration", "label", "color"],
+      "type": "object"
+    },
+    "MarkerColor": {
+      "description": "Marker colour tags.",
+      "oneOf": [
+        {
+          "const": "red",
+          "description": "Red.",
+          "type": "string"
+        },
+        {
+          "const": "orange",
+          "description": "Orange.",
+          "type": "string"
+        },
+        {
+          "const": "yellow",
+          "description": "Yellow.",
+          "type": "string"
+        },
+        {
+          "const": "green",
+          "description": "Green.",
+          "type": "string"
+        },
+        {
+          "const": "blue",
+          "description": "Blue.",
+          "type": "string"
+        },
+        {
+          "const": "purple",
+          "description": "Purple.",
+          "type": "string"
+        }
+      ]
+    },
+    "MarkerId": {
+      "description": "Identifies a marker on a timeline.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "MediaAsset": {
+      "additionalProperties": false,
+      "description": "One file in the media pool.",
+      "properties": {
+        "hash": {
+          "$ref": "#/$defs/ContentHash",
+          "description": "Fingerprint of the file's content, for relinking and change detection."
+        },
+        "id": {
+          "$ref": "#/$defs/MediaId",
+          "description": "Stable identifier; clips refer to the asset by it."
+        },
+        "info": {
+          "$ref": "#/$defs/MediaInfo",
+          "description": "Stream properties found when the file was imported."
+        },
+        "kind": {
+          "$ref": "#/$defs/MediaKind",
+          "description": "What the file contains."
+        },
+        "location": {
+          "$ref": "#/$defs/MediaLocation",
+          "description": "Where the file is."
+        },
+        "name": {
+          "description": "Display name, initially the file name.",
+          "type": "string"
+        },
+        "origin": {
+          "$ref": "#/$defs/MediaOrigin",
+          "description": "Imported by the user or produced by Kinora."
+        }
+      },
+      "required": ["id", "name", "kind", "location", "hash", "info", "origin"],
+      "type": "object"
+    },
+    "MediaId": {
+      "description": "Identifies an asset in the media pool.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "MediaInfo": {
+      "additionalProperties": false,
+      "description": "Stream properties of a media file.",
+      "properties": {
+        "audio": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AudioStreamInfo"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The primary audio stream, if any."
+        },
+        "duration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Length of the file; `null` for still images, which last as long as\ntheir clip."
+        },
+        "video": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VideoStreamInfo"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The primary video stream, if any."
+        }
+      },
+      "type": "object"
+    },
+    "MediaKind": {
+      "description": "The kind of a media file.",
+      "oneOf": [
+        {
+          "const": "video",
+          "description": "Moving pictures, possibly with sound.",
+          "type": "string"
+        },
+        {
+          "const": "audio",
+          "description": "Sound only.",
+          "type": "string"
+        },
+        {
+          "const": "image",
+          "description": "A still picture.",
+          "type": "string"
+        }
+      ]
+    },
+    "MediaLocation": {
+      "additionalProperties": false,
+      "description": "Where a media file is on disk.",
+      "properties": {
+        "absolutePath": {
+          "description": "Absolute path when last seen, e.g. `D:\\Footage\\beach.mp4`.",
+          "type": "string"
+        },
+        "relativePath": {
+          "description": "Path relative to the `.kinora` project folder with `/` separators,\ne.g. `../Footage/beach.mp4` or `media/beach.mp4` after \"Collect media\".\nTried first, so a project folder moved together with its media still\nresolves. `null` when the file is on another drive.",
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["absolutePath"],
+      "type": "object"
+    },
+    "MediaOrigin": {
+      "description": "Where an asset came from.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Imported by the user.",
+          "properties": {
+            "kind": {
+              "const": "imported",
+              "type": "string"
+            }
+          },
+          "required": ["kind"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Produced by Kinora: text-to-speech, a background cutout, an upscale, a\nvoiceover recording. Can be regenerated from its source.",
+          "properties": {
+            "generator": {
+              "description": "Generator identifier with version, e.g. `\"kinora.ai.cutout@1\"`.",
+              "type": "string"
+            },
+            "kind": {
+              "const": "generated",
+              "type": "string"
+            },
+            "source": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MediaId"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The asset it was derived from, if any."
+            }
+          },
+          "required": ["kind", "generator"],
+          "type": "object"
+        }
+      ]
+    },
+    "ParamValue": {
+      "description": "The value of one effect or transition parameter.\n\nExternally tagged so the type is explicit and compact:\n`{ \"float\": 0.5 }`, `{ \"color\": { \"r\": 1, \"g\": 0, \"b\": 0, \"a\": 1 } }`.\nThe effect's manifest (`effects/<id>/effect.toml`) declares which type each\nparameter has; every keyframe of a parameter has the same type.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "A real number.",
+          "properties": {
+            "float": {
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": ["float"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "An integer.",
+          "properties": {
+            "int": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": ["int"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A switch.",
+          "properties": {
+            "bool": {
+              "type": "boolean"
+            }
+          },
+          "required": ["bool"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A point or a size.",
+          "properties": {
+            "vec2": {
+              "$ref": "#/$defs/Vec2"
+            }
+          },
+          "required": ["vec2"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A colour.",
+          "properties": {
+            "color": {
+              "$ref": "#/$defs/Color"
+            }
+          },
+          "required": ["color"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "One of the options the effect declares, by its identifier.",
+          "properties": {
+            "choice": {
+              "type": "string"
+            }
+          },
+          "required": ["choice"],
+          "type": "object"
+        }
+      ]
+    },
+    "ProjectId": {
+      "description": "Identifies a project. Survives \"save as\" so caches can be shared.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "ProjectSettings": {
+      "additionalProperties": false,
+      "description": "Project-wide settings.",
+      "properties": {
+        "audio": {
+          "$ref": "#/$defs/AudioFormat",
+          "description": "Mixer output format."
+        },
+        "colorSpace": {
+          "$ref": "#/$defs/ColorSpace",
+          "description": "Colour space the compositor works and exports in."
+        },
+        "defaultFormat": {
+          "$ref": "#/$defs/VideoFormat",
+          "description": "Format given to new timelines."
+        }
+      },
+      "required": ["defaultFormat", "colorSpace", "audio"],
+      "type": "object"
+    },
+    "Rational": {
+      "additionalProperties": false,
+      "description": "Exact rational number num/den (ADR-0004). Readers normalise to lowest terms.",
+      "properties": {
+        "den": {
+          "description": "Denominator, at least 1.",
+          "maximum": 4294967295,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "num": {
+          "description": "Numerator, within ±(2^53 − 1) so JavaScript reads it exactly.",
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        }
+      },
+      "required": ["num", "den"],
+      "type": "object"
+    },
+    "SchemaVersion": {
+      "const": 0,
+      "description": "Document format version. This schema describes exactly this version.",
+      "type": "integer"
+    },
+    "Shadow": {
+      "additionalProperties": false,
+      "description": "A drop shadow.",
+      "properties": {
+        "blur": {
+          "description": "Blur radius in ems, `>= 0`.",
+          "format": "double",
+          "type": "number"
+        },
+        "color": {
+          "$ref": "#/$defs/Color",
+          "description": "Shadow colour."
+        },
+        "offset": {
+          "$ref": "#/$defs/Vec2",
+          "description": "Offset in ems."
+        }
+      },
+      "required": ["color", "offset", "blur"],
+      "type": "object"
+    },
+    "Speed": {
+      "description": "Playback speed of a media clip.\n\nA tagged union so speed curves (P2) can be added as a new variant.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "A fixed multiplier, `> 0`: `2` is twice as fast, `1/2` is slow motion.\nExact, so source and timeline durations convert without drift.",
+          "properties": {
+            "kind": {
+              "const": "constant",
+              "type": "string"
+            },
+            "rate": {
+              "$ref": "#/$defs/Rational",
+              "description": "Source seconds per timeline second."
+            }
+          },
+          "required": ["kind", "rate"],
+          "type": "object"
+        }
+      ]
+    },
+    "Stroke": {
+      "additionalProperties": false,
+      "description": "An outline around glyphs.",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/Color",
+          "description": "Outline colour."
+        },
+        "width": {
+          "description": "Outline width in ems, `> 0`.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": ["color", "width"],
+      "type": "object"
+    },
+    "TextAlign": {
+      "description": "Horizontal alignment.",
+      "oneOf": [
+        {
+          "const": "left",
+          "description": "Flush left.",
+          "type": "string"
+        },
+        {
+          "const": "center",
+          "description": "Centred.",
+          "type": "string"
+        },
+        {
+          "const": "right",
+          "description": "Flush right.",
+          "type": "string"
+        }
+      ]
+    },
+    "TextBackground": {
+      "additionalProperties": false,
+      "description": "A box drawn behind the text.",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/Color",
+          "description": "Box colour."
+        },
+        "cornerRadius": {
+          "description": "Corner radius in ems, `>= 0`.",
+          "format": "double",
+          "type": "number"
+        },
+        "padding": {
+          "description": "Padding around the text in ems, `>= 0`.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": ["color", "padding", "cornerRadius"],
+      "type": "object"
+    },
+    "TextStyle": {
+      "additionalProperties": false,
+      "description": "Typography and decoration of text.",
+      "properties": {
+        "align": {
+          "$ref": "#/$defs/TextAlign",
+          "description": "Horizontal alignment of lines."
+        },
+        "background": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextBackground"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Box behind the text, if any."
+        },
+        "color": {
+          "$ref": "#/$defs/Color",
+          "description": "Fill colour."
+        },
+        "font": {
+          "$ref": "#/$defs/FontRef",
+          "description": "Typeface."
+        },
+        "letterSpacing": {
+          "description": "Extra space between letters, in ems.",
+          "format": "double",
+          "type": "number"
+        },
+        "lineHeight": {
+          "description": "Line height as a multiple of the font size, `> 0`.",
+          "format": "double",
+          "type": "number"
+        },
+        "shadow": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Shadow"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Drop shadow, if any."
+        },
+        "size": {
+          "description": "Font size as a fraction of the canvas height, `> 0`.",
+          "format": "double",
+          "type": "number"
+        },
+        "stroke": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Stroke"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Outline, if any."
+        }
+      },
+      "required": ["font", "size", "color", "align", "lineHeight", "letterSpacing"],
+      "type": "object"
+    },
+    "Time": {
+      "$ref": "#/$defs/Rational",
+      "description": "A point or a span on a time axis, in seconds, as an exact rational.\n\nThe same type serves positions (a clip's start), durations (its length)\nand offsets (a keyframe relative to its clip); the field name says which.\nNegative values are representable because offsets can be negative; the\ndocument validator decides where they are allowed.\n\nSerialised exactly like [`Rational`]: `{ \"num\": 1001, \"den\": 30000 }`."
+    },
+    "Timeline": {
+      "additionalProperties": false,
+      "description": "A timeline (sequence): a canvas and a stack of tracks.",
+      "properties": {
+        "format": {
+          "$ref": "#/$defs/VideoFormat",
+          "description": "Canvas size and frame rate."
+        },
+        "id": {
+          "$ref": "#/$defs/TimelineId",
+          "description": "Stable identifier."
+        },
+        "markers": {
+          "description": "Markers and chapters, ordered by `start`.",
+          "items": {
+            "$ref": "#/$defs/Marker"
+          },
+          "type": "array"
+        },
+        "name": {
+          "description": "Display name.",
+          "type": "string"
+        },
+        "tracks": {
+          "description": "Tracks in compositing order: index 0 is drawn first (the bottom\nlayer). Audio tracks are mixed regardless of order.",
+          "items": {
+            "$ref": "#/$defs/Track"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["id", "name", "format", "tracks", "markers"],
+      "type": "object"
+    },
+    "TimelineId": {
+      "description": "Identifies a timeline (a sequence) within the project.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "Track": {
+      "additionalProperties": false,
+      "description": "A row of clips of one kind.",
+      "properties": {
+        "clips": {
+          "description": "Clips ordered by `start`, not overlapping.",
+          "items": {
+            "$ref": "#/$defs/Clip"
+          },
+          "type": "array"
+        },
+        "hidden": {
+          "description": "Hides the track's pictures.",
+          "type": "boolean"
+        },
+        "id": {
+          "$ref": "#/$defs/TrackId",
+          "description": "Stable identifier."
+        },
+        "kind": {
+          "$ref": "#/$defs/TrackKind",
+          "description": "What the track holds."
+        },
+        "locked": {
+          "description": "Protects the track from edits.",
+          "type": "boolean"
+        },
+        "muted": {
+          "description": "Silences the track's audio.",
+          "type": "boolean"
+        },
+        "name": {
+          "description": "Display name.",
+          "type": "string"
+        },
+        "transitions": {
+          "description": "Transitions between adjacent clips of this track.",
+          "items": {
+            "$ref": "#/$defs/Transition"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["id", "kind", "name", "muted", "hidden", "locked", "clips", "transitions"],
+      "type": "object"
+    },
+    "TrackId": {
+      "description": "Identifies a track within a timeline.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "TrackKind": {
+      "description": "Track kinds; each accepts certain clip contents (see [`ClipContent`]).",
+      "oneOf": [
+        {
+          "const": "video",
+          "description": "Video and image media, solids and adjustment layers.",
+          "type": "string"
+        },
+        {
+          "const": "audio",
+          "description": "Audio, from audio files or the sound of video files.",
+          "type": "string"
+        },
+        {
+          "const": "text",
+          "description": "Titles and other text.",
+          "type": "string"
+        },
+        {
+          "const": "caption",
+          "description": "Captions (subtitles).",
+          "type": "string"
+        }
+      ]
+    },
+    "Transform": {
+      "additionalProperties": false,
+      "description": "Placement of a clip on the canvas.\n\nCoordinates are fractions of the canvas, origin at its centre, `+y` down:\n`(0.5, 0)` puts the anchor on the right edge. Resolution-independent, so a\ntimeline can be resized without moving anything.",
+      "properties": {
+        "anchor": {
+          "$ref": "#/$defs/Vec2",
+          "description": "Pivot for scale and rotation, as fractions of the clip from its\ncentre."
+        },
+        "flipHorizontal": {
+          "description": "Mirrors left to right.",
+          "type": "boolean"
+        },
+        "flipVertical": {
+          "description": "Mirrors top to bottom.",
+          "type": "boolean"
+        },
+        "position": {
+          "$ref": "#/$defs/Animated_Vec2",
+          "description": "Where the anchor point sits on the canvas."
+        },
+        "rotation": {
+          "$ref": "#/$defs/Animated_double",
+          "description": "Clockwise rotation in degrees."
+        },
+        "scale": {
+          "$ref": "#/$defs/Animated_Vec2",
+          "description": "Size relative to fitting the canvas; `(1, 1)` fits."
+        }
+      },
+      "required": ["position", "scale", "rotation", "anchor", "flipHorizontal", "flipVertical"],
+      "type": "object"
+    },
+    "Transition": {
+      "additionalProperties": false,
+      "description": "A transition across the cut between two adjacent clips on one track,\ncentred on the cut.",
+      "properties": {
+        "duration": {
+          "$ref": "#/$defs/Time",
+          "description": "Length, `> 0` and no longer than either clip."
+        },
+        "effect": {
+          "$ref": "#/$defs/EffectRef",
+          "description": "Which transition effect."
+        },
+        "from": {
+          "$ref": "#/$defs/ClipId",
+          "description": "The clip that ends at the cut."
+        },
+        "id": {
+          "$ref": "#/$defs/TransitionId",
+          "description": "Stable identifier."
+        },
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ParamValue"
+          },
+          "description": "Parameter values by name.",
+          "type": "object"
+        },
+        "to": {
+          "$ref": "#/$defs/ClipId",
+          "description": "The clip that starts at the cut."
+        }
+      },
+      "required": ["id", "from", "to", "duration", "effect", "params"],
+      "type": "object"
+    },
+    "TransitionId": {
+      "description": "Identifies a transition between two clips.",
+      "format": "uuid",
+      "type": "string"
+    },
+    "Vec2": {
+      "additionalProperties": false,
+      "description": "A 2-D vector.",
+      "properties": {
+        "x": {
+          "description": "Horizontal component.",
+          "format": "double",
+          "type": "number"
+        },
+        "y": {
+          "description": "Vertical component (positive is down, as on screen).",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": ["x", "y"],
+      "type": "object"
+    },
+    "VideoFormat": {
+      "additionalProperties": false,
+      "description": "Canvas size and frame rate of a timeline.",
+      "properties": {
+        "frameRate": {
+          "$ref": "#/$defs/FrameRate",
+          "description": "Frames per second."
+        },
+        "height": {
+          "description": "Height in pixels; even, `2..=16384`.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "width": {
+          "description": "Width in pixels; even, `2..=16384`.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": ["width", "height", "frameRate"],
+      "type": "object"
+    },
+    "VideoStreamInfo": {
+      "additionalProperties": false,
+      "description": "Properties of a video (or image) stream.",
+      "properties": {
+        "colorSpace": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ColorSpace"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Colour space as signalled by the file; `null` when unspecified."
+        },
+        "frameRate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameRate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Nominal frame rate; `null` for variable frame rate or still images."
+        },
+        "hasAlpha": {
+          "description": "`true` when the stream carries an alpha channel.",
+          "type": "boolean"
+        },
+        "height": {
+          "description": "Height in pixels.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "width": {
+          "description": "Width in pixels.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": ["width", "height", "hasAlpha"],
+      "type": "object"
+    },
+    "Visual": {
+      "additionalProperties": false,
+      "description": "Picture properties of a clip.",
+      "properties": {
+        "blendMode": {
+          "$ref": "#/$defs/BlendMode",
+          "description": "How the clip combines with the layers below."
+        },
+        "crop": {
+          "$ref": "#/$defs/Crop",
+          "description": "Cropping of the source, applied before the transform."
+        },
+        "effects": {
+          "description": "Effects, applied in order.",
+          "items": {
+            "$ref": "#/$defs/EffectInstance"
+          },
+          "type": "array"
+        },
+        "opacity": {
+          "$ref": "#/$defs/Animated_double",
+          "description": "Opacity, `0..=1`."
+        },
+        "transform": {
+          "$ref": "#/$defs/Transform",
+          "description": "Placement on the canvas."
+        }
+      },
+      "required": ["transform", "crop", "opacity", "blendMode", "effects"],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The whole `project.json` document.",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/ProjectId",
+      "description": "Stable project identifier."
+    },
+    "media": {
+      "description": "The media pool.",
+      "items": {
+        "$ref": "#/$defs/MediaAsset"
+      },
+      "type": "array"
+    },
+    "name": {
+      "description": "Display name.",
+      "type": "string"
+    },
+    "schemaVersion": {
+      "$ref": "#/$defs/SchemaVersion",
+      "description": "Document format version; see `kinora_project::version`."
+    },
+    "settings": {
+      "$ref": "#/$defs/ProjectSettings",
+      "description": "Project-wide defaults."
+    },
+    "timelines": {
+      "description": "Timelines (sequences), e.g. a 16:9 cut and a 9:16 cut of the same\nmaterial. At least one.",
+      "items": {
+        "$ref": "#/$defs/Timeline"
+      },
+      "type": "array"
+    }
+  },
+  "required": ["schemaVersion", "id", "name", "settings", "media", "timelines"],
+  "title": "Kinora project",
+  "type": "object"
+}

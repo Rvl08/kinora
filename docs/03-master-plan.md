@@ -95,11 +95,12 @@ dengan AI yang berjalan di perangkat pengguna — dan dipasang semudah *Next →
 │  WebView2 (Svelte UI)                                                           │
 │  ├─ Panels: Media · Timeline (canvas) · Inspector · Transcript · Copilot        │
 │  ├─ Preview: WebCodecs VideoDecoder → WebGPU compositor (WGSL bersama)          │
-│  └─ State store (read-model) ◄── event "project.changed" / "clock.tick"         │
+│  └─ State store (read-model) ◄── event "project:changed" / "clock:tick"         │
 │                     ▲  invoke(command) / Channel(binary packets)                │
 ├─────────────────────┼───────────────────────────────────────────────────────────┤
 │  Rust core (proses yang sama)                                                    │
 │  ├─ kinora-project  : model dokumen, Command, undo/redo, jurnal, serde           │
+│  ├─ kinora-ipc      : kontrak IPC bertipe (command, event, galat) + binding TS   │
 │  ├─ kinora-media    : FFmpeg demux/decode/encode, probe, thumbnail, proxy        │
 │  ├─ kinora-render   : wgpu compositor (ekspor & fallback preview), WGSL          │
 │  ├─ kinora-audio    : mixer, filter, cpal playback (master clock), LUFS          │
@@ -127,7 +128,7 @@ dengan AI yang berjalan di perangkat pengguna — dan dipasang semudah *Next →
   Codec yang tidak didukung WebCodecs (ProRes, DNxHD, dsb.) → **proxy otomatis** H.264.
 - **Opsi B (cadangan):** compositor wgpu Rust menggambar langsung ke HWND (child window) di bawah area transparan WebView2.
 - **Fallback C:** WebGL2 bila WebGPU di-blocklist driver.
-- Audio dari Rust (`cpal`) = master clock; UI menerima `clock.tick` dan memilih frame yang sesuai.
+- Audio dari Rust (`cpal`) = master clock; UI menerima `clock:tick` dan memilih frame yang sesuai.
 
 ### 5.4 Pipeline ekspor
 Flatten timeline → per frame: decode (HW) → wgpu compositor (WGSL) → readback/zero-copy → encode (NVENC/QSV/AMF/OpenH264/SVT-AV1)
@@ -137,7 +138,7 @@ Flatten timeline → per frame: decode (HW) → wgpu compositor (WGSL) → readb
 ```
 kinora/
 ├─ apps/desktop/            # Tauri 2: src-tauri (Rust glue) + ui (Svelte)
-├─ crates/                  # kinora-core, -project, -media, -render, -audio, -ai, -jobs, -api, -copilot
+├─ crates/                  # kinora-core, -project, -ipc, -media, -render, -audio, -ai, -jobs, -api, -copilot
 ├─ effects/                 # paket efek: effect.toml + effect.wgsl + preview + fixture
 ├─ assets/                  # font open-license, stiker CC0, musik CC0, ikon
 ├─ models/manifest.toml     # daftar model + SHA-256 + lisensi

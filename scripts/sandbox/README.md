@@ -17,4 +17,8 @@ powershell -ExecutionPolicy Bypass -File scripts/sandbox/invoke.ps1 -Name rust-c
 - The exit code is the job's. The log is in `tests/sandbox-out/<name>/job.log`.
 - Each job costs about 4 minutes of VM start-up, so batch related work into one job.
 
-Jobs: [`jobs/rust-check.ps1`](jobs/rust-check.ps1) runs fmt, clippy and tests, as CI does.
+Jobs:
+
+- [`jobs/rust-check.ps1`](jobs/rust-check.ps1) runs fmt, clippy and tests, as CI does.
+- [`jobs/ipc-contract.ps1`](jobs/ipc-contract.ps1) regenerates the TS bindings and the `project.json` schema,
+  then runs fmt, clippy, tests and `cargo deny` (advisories use the host's RustSec database offline).

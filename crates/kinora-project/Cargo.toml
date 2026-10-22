@@ -1,0 +1,29 @@
+[package]
+name = "kinora-project"
+description = "The Kinora project document (project.json): model, validation, schema versions and migrations."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+default = []
+# TypeScript declarations for the IPC bindings (crates/kinora-ipc).
+ts-rs = ["dep:ts-rs", "kinora-core/ts-rs"]
+
+[dependencies]
+kinora-core = { workspace = true, features = ["serde", "schemars"] }
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+ts-rs = { workspace = true, optional = true }
+uuid.workspace = true
+
+[dev-dependencies]
+jsonschema.workspace = true
+proptest.workspace = true
+
+[lints]
+workspace = true

@@ -1,8 +1,16 @@
 //! Shared vocabulary of the Kinora engine.
 //!
-//! This crate will hold the types every other engine crate speaks: rational
-//! time (ADR-0004), stable identifiers and the timeline model. It depends on
-//! the standard library only.
+//! Exact time (ADR-0004): every position, duration and rate in the document
+//! model is a [`Rational`], never a float. Floats appear only at the edges
+//! (drawing the timeline, feeding a decoder) through explicit conversions such
+//! as [`Time::as_secs_f64`].
 //!
-//! Empty until Phase 1; it exists in Phase 0 so the workspace, formatting,
-//! lints and CI have a member to run against.
+//! The crate depends on the standard library only. Serialisation, JSON Schema
+//! and TypeScript support are opt-in through the `serde`, `schemars` and
+//! `ts-rs` features.
+
+mod rational;
+mod time;
+
+pub use rational::{MAX_SAFE_INTEGER, Rational, RationalError};
+pub use time::{FrameRate, Time};

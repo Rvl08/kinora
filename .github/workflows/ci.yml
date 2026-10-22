@@ -40,6 +40,11 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+      # cargo test already fails on drift; this step says which generated file is stale.
+      - name: Generated IPC bindings and project schema are current
+        run: |
+          cargo run -p kinora-ipc --example generate --locked
+          git diff --exit-code -- apps/desktop/ui/src/lib/ipc/bindings.ts crates/kinora-project/schema
 
   web:
     name: Web tooling (lint, format, licences)

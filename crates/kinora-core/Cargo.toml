@@ -1,11 +1,31 @@
 [package]
 name = "kinora-core"
-description = "Shared vocabulary of the Kinora engine: rational time, identifiers, the timeline model."
+description = "Shared vocabulary of the Kinora engine: exact rational time and frame rates."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
+
+[features]
+# Everything outside the standard library is opt-in, so engine crates that only
+# do arithmetic stay dependency-free.
+default = []
+# Serialisation as `{ "num": i64, "den": u32 }` (ADR-0004).
+serde = ["dep:serde"]
+# JSON Schema for `project.json` (crates/kinora-project/schema).
+schemars = ["dep:schemars"]
+# TypeScript declarations for the IPC bindings (crates/kinora-ipc).
+ts-rs = ["dep:ts-rs"]
+
+[dependencies]
+schemars = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+ts-rs = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true

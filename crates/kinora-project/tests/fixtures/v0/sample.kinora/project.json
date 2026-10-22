@@ -1,0 +1,591 @@
+{
+  "schemaVersion": 0,
+  "id": "0192f1c4-0000-7000-8000-000000000001",
+  "name": "Liburan di Bali",
+  "settings": {
+    "defaultFormat": {
+      "width": 1920,
+      "height": 1080,
+      "frameRate": { "num": 30, "den": 1 }
+    },
+    "colorSpace": "rec709",
+    "audio": { "sampleRate": 48000, "channels": "stereo" }
+  },
+  "media": [
+    {
+      "id": "0192f1c4-0000-7000-8000-000000000101",
+      "name": "beach.mp4",
+      "kind": "video",
+      "location": {
+        "absolutePath": "D:\\Footage\\beach.mp4",
+        "relativePath": "../Footage/beach.mp4"
+      },
+      "hash": {
+        "algorithm": "xxh3Sampled",
+        "digest": "3f2a9c0d4b1e5f6a7b8c9d0e1f2a3b4c",
+        "fileSize": 734003200
+      },
+      "info": {
+        "duration": { "num": 30, "den": 1 },
+        "video": {
+          "width": 3840,
+          "height": 2160,
+          "frameRate": { "num": 30000, "den": 1001 },
+          "colorSpace": "rec709",
+          "hasAlpha": false
+        },
+        "audio": { "sampleRate": 48000, "channels": 2 }
+      },
+      "origin": { "kind": "imported" }
+    },
+    {
+      "id": "0192f1c4-0000-7000-8000-000000000102",
+      "name": "music.mp3",
+      "kind": "audio",
+      "location": {
+        "absolutePath": "D:\\Projects\\Liburan di Bali.kinora\\media\\music.mp3",
+        "relativePath": "media/music.mp3"
+      },
+      "hash": {
+        "algorithm": "xxh3Sampled",
+        "digest": "00112233445566778899aabbccddeeff",
+        "fileSize": 5820416
+      },
+      "info": {
+        "duration": { "num": 3637, "den": 25 },
+        "video": null,
+        "audio": { "sampleRate": 44100, "channels": 2 }
+      },
+      "origin": { "kind": "imported" }
+    },
+    {
+      "id": "0192f1c4-0000-7000-8000-000000000103",
+      "name": "logo.png",
+      "kind": "image",
+      "location": {
+        "absolutePath": "C:\\Users\\editor\\Pictures\\logo.png",
+        "relativePath": null
+      },
+      "hash": {
+        "algorithm": "xxh3Sampled",
+        "digest": "ffeeddccbbaa99887766554433221100",
+        "fileSize": 48213
+      },
+      "info": {
+        "duration": null,
+        "video": {
+          "width": 512,
+          "height": 512,
+          "frameRate": null,
+          "colorSpace": null,
+          "hasAlpha": true
+        },
+        "audio": null
+      },
+      "origin": { "kind": "imported" }
+    },
+    {
+      "id": "0192f1c4-0000-7000-8000-000000000104",
+      "name": "voiceover.wav",
+      "kind": "audio",
+      "location": {
+        "absolutePath": "D:\\Projects\\Liburan di Bali.kinora\\media\\voiceover.wav",
+        "relativePath": "media/voiceover.wav"
+      },
+      "hash": {
+        "algorithm": "xxh3Sampled",
+        "digest": "0a1b2c3d4e5f60718293a4b5c6d7e8f9",
+        "fileSize": 201644
+      },
+      "info": {
+        "duration": { "num": 21, "den": 5 },
+        "video": null,
+        "audio": { "sampleRate": 24000, "channels": 1 }
+      },
+      "origin": { "kind": "generated", "generator": "kinora.tts.kokoro@1", "source": null }
+    }
+  ],
+  "timelines": [
+    {
+      "id": "0192f1c4-0000-7000-8000-000000000201",
+      "name": "Utama 16:9",
+      "format": {
+        "width": 1920,
+        "height": 1080,
+        "frameRate": { "num": 30, "den": 1 }
+      },
+      "tracks": [
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000301",
+          "kind": "video",
+          "name": "Video 1",
+          "muted": false,
+          "hidden": false,
+          "locked": false,
+          "clips": [
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000501",
+              "name": null,
+              "start": { "num": 0, "den": 1 },
+              "duration": { "num": 5, "den": 1 },
+              "enabled": true,
+              "content": {
+                "kind": "media",
+                "media": "0192f1c4-0000-7000-8000-000000000101",
+                "sourceIn": { "num": 2, "den": 1 },
+                "speed": { "kind": "constant", "rate": { "num": 1, "den": 1 } },
+                "reverse": false,
+                "preservePitch": true
+              },
+              "visual": {
+                "transform": {
+                  "position": {
+                    "kind": "keyframes",
+                    "keyframes": [
+                      {
+                        "at": { "num": 0, "den": 1 },
+                        "value": { "x": 0.0, "y": 0.0 },
+                        "easing": { "kind": "linear" }
+                      },
+                      {
+                        "at": { "num": 5, "den": 1 },
+                        "value": { "x": 0.1, "y": 0.0 },
+                        "easing": {
+                          "kind": "cubicBezier",
+                          "x1": 0.25,
+                          "y1": 0.1,
+                          "x2": 0.25,
+                          "y2": 1.0
+                        }
+                      }
+                    ]
+                  },
+                  "scale": { "kind": "static", "value": { "x": 1.0, "y": 1.0 } },
+                  "rotation": { "kind": "static", "value": 0.0 },
+                  "anchor": { "x": 0.0, "y": 0.0 },
+                  "flipHorizontal": false,
+                  "flipVertical": false
+                },
+                "crop": { "left": 0.0, "top": 0.0, "right": 0.0, "bottom": 0.0 },
+                "opacity": { "kind": "static", "value": 1.0 },
+                "blendMode": "normal",
+                "effects": [
+                  {
+                    "id": "0192f1c4-0000-7000-8000-000000000601",
+                    "effect": { "id": "kinora.gaussianBlur", "version": 1 },
+                    "enabled": true,
+                    "params": {
+                      "radius": {
+                        "kind": "keyframes",
+                        "keyframes": [
+                          {
+                            "at": { "num": 0, "den": 1 },
+                            "value": { "float": 8.0 },
+                            "easing": { "kind": "easeOut" }
+                          },
+                          {
+                            "at": { "num": 1, "den": 1 },
+                            "value": { "float": 0.0 },
+                            "easing": { "kind": "linear" }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "audio": {
+                "gainDb": { "kind": "static", "value": -6.0 },
+                "fadeIn": { "num": 0, "den": 1 },
+                "fadeOut": { "num": 1, "den": 2 }
+              }
+            },
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000502",
+              "name": "Ombak (2x)",
+              "start": { "num": 5, "den": 1 },
+              "duration": { "num": 4, "den": 1 },
+              "enabled": true,
+              "content": {
+                "kind": "media",
+                "media": "0192f1c4-0000-7000-8000-000000000101",
+                "sourceIn": { "num": 10, "den": 1 },
+                "speed": { "kind": "constant", "rate": { "num": 2, "den": 1 } },
+                "reverse": false,
+                "preservePitch": true
+              },
+              "visual": {
+                "transform": {
+                  "position": { "kind": "static", "value": { "x": 0.0, "y": 0.0 } },
+                  "scale": { "kind": "static", "value": { "x": 1.0, "y": 1.0 } },
+                  "rotation": { "kind": "static", "value": 0.0 },
+                  "anchor": { "x": 0.0, "y": 0.0 },
+                  "flipHorizontal": false,
+                  "flipVertical": false
+                },
+                "crop": { "left": 0.0, "top": 0.0, "right": 0.0, "bottom": 0.0 },
+                "opacity": { "kind": "static", "value": 1.0 },
+                "blendMode": "normal",
+                "effects": []
+              },
+              "audio": null
+            },
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000503",
+              "name": null,
+              "start": { "num": 9, "den": 1 },
+              "duration": { "num": 1, "den": 1 },
+              "enabled": true,
+              "content": {
+                "kind": "solid",
+                "color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+              },
+              "visual": {
+                "transform": {
+                  "position": { "kind": "static", "value": { "x": 0.0, "y": 0.0 } },
+                  "scale": { "kind": "static", "value": { "x": 1.0, "y": 1.0 } },
+                  "rotation": { "kind": "static", "value": 0.0 },
+                  "anchor": { "x": 0.0, "y": 0.0 },
+                  "flipHorizontal": false,
+                  "flipVertical": false
+                },
+                "crop": { "left": 0.0, "top": 0.0, "right": 0.0, "bottom": 0.0 },
+                "opacity": {
+                  "kind": "keyframes",
+                  "keyframes": [
+                    {
+                      "at": { "num": 0, "den": 1 },
+                      "value": 0.0,
+                      "easing": { "kind": "easeIn" }
+                    },
+                    {
+                      "at": { "num": 1, "den": 1 },
+                      "value": 1.0,
+                      "easing": { "kind": "hold" }
+                    }
+                  ]
+                },
+                "blendMode": "normal",
+                "effects": []
+              },
+              "audio": null
+            }
+          ],
+          "transitions": [
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000701",
+              "from": "0192f1c4-0000-7000-8000-000000000501",
+              "to": "0192f1c4-0000-7000-8000-000000000502",
+              "duration": { "num": 1, "den": 2 },
+              "effect": { "id": "kinora.crossDissolve", "version": 1 },
+              "params": {}
+            }
+          ]
+        },
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000302",
+          "kind": "video",
+          "name": "Logo",
+          "muted": false,
+          "hidden": false,
+          "locked": true,
+          "clips": [
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000504",
+              "name": null,
+              "start": { "num": 1, "den": 1 },
+              "duration": { "num": 3, "den": 1 },
+              "enabled": true,
+              "content": {
+                "kind": "media",
+                "media": "0192f1c4-0000-7000-8000-000000000103",
+                "sourceIn": { "num": 0, "den": 1 },
+                "speed": { "kind": "constant", "rate": { "num": 1, "den": 1 } },
+                "reverse": false,
+                "preservePitch": false
+              },
+              "visual": {
+                "transform": {
+                  "position": { "kind": "static", "value": { "x": 0.4, "y": -0.4 } },
+                  "scale": { "kind": "static", "value": { "x": 0.2, "y": 0.2 } },
+                  "rotation": { "kind": "static", "value": 0.0 },
+                  "anchor": { "x": 0.0, "y": 0.0 },
+                  "flipHorizontal": false,
+                  "flipVertical": false
+                },
+                "crop": { "left": 0.0, "top": 0.0, "right": 0.0, "bottom": 0.0 },
+                "opacity": { "kind": "static", "value": 0.8 },
+                "blendMode": "screen",
+                "effects": []
+              },
+              "audio": null
+            }
+          ],
+          "transitions": []
+        },
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000303",
+          "kind": "audio",
+          "name": "Musik",
+          "muted": false,
+          "hidden": false,
+          "locked": false,
+          "clips": [
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000505",
+              "name": null,
+              "start": { "num": 0, "den": 1 },
+              "duration": { "num": 10, "den": 1 },
+              "enabled": true,
+              "content": {
+                "kind": "media",
+                "media": "0192f1c4-0000-7000-8000-000000000102",
+                "sourceIn": { "num": 0, "den": 1 },
+                "speed": { "kind": "constant", "rate": { "num": 1, "den": 1 } },
+                "reverse": false,
+                "preservePitch": false
+              },
+              "visual": null,
+              "audio": {
+                "gainDb": {
+                  "kind": "keyframes",
+                  "keyframes": [
+                    {
+                      "at": { "num": 0, "den": 1 },
+                      "value": -12.0,
+                      "easing": { "kind": "linear" }
+                    },
+                    {
+                      "at": { "num": 4, "den": 1 },
+                      "value": -12.0,
+                      "easing": { "kind": "easeInOut" }
+                    },
+                    {
+                      "at": { "num": 9, "den": 2 },
+                      "value": -24.0,
+                      "easing": { "kind": "linear" }
+                    }
+                  ]
+                },
+                "fadeIn": { "num": 1, "den": 1 },
+                "fadeOut": { "num": 2, "den": 1 }
+              }
+            },
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000506",
+              "name": null,
+              "start": { "num": 10, "den": 1 },
+              "duration": { "num": 21, "den": 5 },
+              "enabled": true,
+              "content": {
+                "kind": "media",
+                "media": "0192f1c4-0000-7000-8000-000000000104",
+                "sourceIn": { "num": 0, "den": 1 },
+                "speed": { "kind": "constant", "rate": { "num": 1, "den": 1 } },
+                "reverse": false,
+                "preservePitch": true
+              },
+              "visual": null,
+              "audio": {
+                "gainDb": { "kind": "static", "value": 0.0 },
+                "fadeIn": { "num": 0, "den": 1 },
+                "fadeOut": { "num": 0, "den": 1 }
+              }
+            }
+          ],
+          "transitions": []
+        },
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000304",
+          "kind": "text",
+          "name": "Judul",
+          "muted": false,
+          "hidden": false,
+          "locked": false,
+          "clips": [
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000507",
+              "name": null,
+              "start": { "num": 1, "den": 2 },
+              "duration": { "num": 3, "den": 1 },
+              "enabled": true,
+              "content": {
+                "kind": "text",
+                "text": "Pantai Kuta\nBali",
+                "style": {
+                  "font": { "family": "Inter", "weight": 700, "italic": false },
+                  "size": 0.08,
+                  "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                  "align": "center",
+                  "lineHeight": 1.2,
+                  "letterSpacing": 0.0,
+                  "stroke": { "color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }, "width": 0.06 },
+                  "shadow": null,
+                  "background": null
+                }
+              },
+              "visual": {
+                "transform": {
+                  "position": { "kind": "static", "value": { "x": 0.0, "y": 0.3 } },
+                  "scale": { "kind": "static", "value": { "x": 1.0, "y": 1.0 } },
+                  "rotation": { "kind": "static", "value": 0.0 },
+                  "anchor": { "x": 0.0, "y": 0.0 },
+                  "flipHorizontal": false,
+                  "flipVertical": false
+                },
+                "crop": { "left": 0.0, "top": 0.0, "right": 0.0, "bottom": 0.0 },
+                "opacity": { "kind": "static", "value": 1.0 },
+                "blendMode": "normal",
+                "effects": []
+              },
+              "audio": null
+            }
+          ],
+          "transitions": []
+        },
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000305",
+          "kind": "caption",
+          "name": "Teks otomatis",
+          "muted": false,
+          "hidden": false,
+          "locked": false,
+          "clips": [
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000508",
+              "name": null,
+              "start": { "num": 10, "den": 1 },
+              "duration": { "num": 2, "den": 1 },
+              "enabled": true,
+              "content": {
+                "kind": "caption",
+                "text": "Halo semuanya",
+                "words": [
+                  {
+                    "text": "Halo",
+                    "start": { "num": 0, "den": 1 },
+                    "end": { "num": 3, "den": 5 }
+                  },
+                  {
+                    "text": "semuanya",
+                    "start": { "num": 3, "den": 5 },
+                    "end": { "num": 3, "den": 2 }
+                  }
+                ],
+                "style": {
+                  "font": { "family": "Inter", "weight": 600, "italic": false },
+                  "size": 0.05,
+                  "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                  "align": "center",
+                  "lineHeight": 1.1,
+                  "letterSpacing": 0.0,
+                  "stroke": null,
+                  "shadow": {
+                    "color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.6 },
+                    "offset": { "x": 0.05, "y": 0.05 },
+                    "blur": 0.1
+                  },
+                  "background": {
+                    "color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.4 },
+                    "padding": 0.2,
+                    "cornerRadius": 0.15
+                  }
+                },
+                "language": "id"
+              },
+              "visual": {
+                "transform": {
+                  "position": { "kind": "static", "value": { "x": 0.0, "y": 0.4 } },
+                  "scale": { "kind": "static", "value": { "x": 1.0, "y": 1.0 } },
+                  "rotation": { "kind": "static", "value": 0.0 },
+                  "anchor": { "x": 0.0, "y": 0.0 },
+                  "flipHorizontal": false,
+                  "flipVertical": false
+                },
+                "crop": { "left": 0.0, "top": 0.0, "right": 0.0, "bottom": 0.0 },
+                "opacity": { "kind": "static", "value": 1.0 },
+                "blendMode": "normal",
+                "effects": []
+              },
+              "audio": null
+            }
+          ],
+          "transitions": []
+        }
+      ],
+      "markers": [
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000801",
+          "start": { "num": 0, "den": 1 },
+          "duration": { "num": 0, "den": 1 },
+          "label": "Pembuka",
+          "color": "blue"
+        },
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000802",
+          "start": { "num": 5, "den": 1 },
+          "duration": { "num": 4, "den": 1 },
+          "label": "Ombak",
+          "color": "orange"
+        }
+      ]
+    },
+    {
+      "id": "0192f1c4-0000-7000-8000-000000000202",
+      "name": "Vertikal 9:16",
+      "format": {
+        "width": 1080,
+        "height": 1920,
+        "frameRate": { "num": 30000, "den": 1001 }
+      },
+      "tracks": [
+        {
+          "id": "0192f1c4-0000-7000-8000-000000000306",
+          "kind": "video",
+          "name": "Video 1",
+          "muted": false,
+          "hidden": false,
+          "locked": false,
+          "clips": [
+            {
+              "id": "0192f1c4-0000-7000-8000-000000000509",
+              "name": null,
+              "start": { "num": 0, "den": 1 },
+              "duration": { "num": 1001, "den": 200 },
+              "enabled": true,
+              "content": {
+                "kind": "media",
+                "media": "0192f1c4-0000-7000-8000-000000000101",
+                "sourceIn": { "num": 2, "den": 1 },
+                "speed": { "kind": "constant", "rate": { "num": 1, "den": 1 } },
+                "reverse": false,
+                "preservePitch": true
+              },
+              "visual": {
+                "transform": {
+                  "position": { "kind": "static", "value": { "x": 0.0, "y": 0.0 } },
+                  "scale": { "kind": "static", "value": { "x": 3.16, "y": 3.16 } },
+                  "rotation": { "kind": "static", "value": 0.0 },
+                  "anchor": { "x": 0.0, "y": 0.0 },
+                  "flipHorizontal": false,
+                  "flipVertical": false
+                },
+                "crop": { "left": 0.0, "top": 0.0, "right": 0.0, "bottom": 0.0 },
+                "opacity": { "kind": "static", "value": 1.0 },
+                "blendMode": "normal",
+                "effects": []
+              },
+              "audio": {
+                "gainDb": { "kind": "static", "value": 0.0 },
+                "fadeIn": { "num": 0, "den": 1 },
+                "fadeOut": { "num": 0, "den": 1 }
+              }
+            }
+          ],
+          "transitions": []
+        }
+      ],
+      "markers": []
+    }
+  ]
+}

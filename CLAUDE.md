@@ -31,12 +31,13 @@ account, subscription or upload.
 | P0-08 S2 export | NVENC paths and the component list for the release FFmpeg |
 | P0-09 S3 AI runtime, P0-09b S3b cutout | ADR-0006: whisper Vulkan; Kokoro without espeak-ng; BiRefNet dynamic export |
 | P0-11 fixtures | `scripts/fixtures/`, 15 freely licensed fixtures (media outside git) |
+| P0-12 IPC contract | `crates/kinora-project` (project.json v0) and `crates/kinora-ipc`; ts-rs bindings in `apps/desktop/ui/src/lib/ipc/bindings.ts` and the JSON Schema are generated (`pnpm run ipc:generate`) and drift-tested |
 
 **In progress or not done:**
 - **P0-05b:** static release FFmpeg built in CI (`scripts/ffmpeg/release*`, `.github/workflows/ffmpeg-release.yml`).
-- **P0-12:** IPC contract (Rust → TS) and the `project.json` v0 schema (`crates/kinora-project`, `crates/kinora-ipc`).
-
-  Check `git log` and the docs/04 table before touching either: they may already be committed.
+  Check `git log` and the docs/04 table before touching it: it may already be committed.
+- **Edit timebase (ADR-0004 amendment 1):** decide before Phase 1's `apply`: snap to timeline frames or to a
+  global flick tick. Adding times with coprime denominators can otherwise overflow.
 - **P0-10 / Spike S4:** NSIS installer with wizard + MSIX (winapp CLI); test install in a clean Windows Sandbox.
 - **P0-13:** Phase 0 go/no-go gate, then the Phase 1 backlog.
 - **P0-14:** public channels. Register with SignPath Foundation (needs a first release and the "Code signing

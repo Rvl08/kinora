@@ -1,0 +1,22 @@
+[package]
+name = "kinora-ipc"
+description = "The typed IPC contract between the Kinora shell and its UI, and the TypeScript bindings generator."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+kinora-core = { workspace = true, features = ["serde", "ts-rs"] }
+kinora-project = { workspace = true, features = ["ts-rs"] }
+serde.workspace = true
+thiserror.workspace = true
+ts-rs.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints]
+workspace = true

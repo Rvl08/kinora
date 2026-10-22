@@ -19,7 +19,9 @@
     "sign:verify": "node scripts/signing/verify.mjs",
     "fixtures:fetch": "node scripts/fixtures/fetch.mjs",
     "fixtures:generate": "node scripts/fixtures/generate.mjs",
-    "fixtures:verify": "node scripts/fixtures/verify.mjs"
+    "fixtures:verify": "node scripts/fixtures/verify.mjs",
+    "ipc:generate": "cargo run -p kinora-ipc --example generate",
+    "ipc:check": "cargo test -p kinora-ipc --test contract && cargo test -p kinora-project --test document"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

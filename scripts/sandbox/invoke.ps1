@@ -43,7 +43,11 @@ while ($true) {
   } catch [IO.IOException] {
     $age = (Get-Date) - (Get-Item $lock).LastWriteTime
     $running = Get-Process WindowsSandboxRemoteSession, WindowsSandboxClient -ErrorAction SilentlyContinue
-    if (-not $running -and $age.TotalMinutes -gt $TimeoutMinutes) { Remove-Item $lock -Force; continue }
+    # Stale when the holder (its PID is the lock's second field) has exited, or after the timeout.
+    $holderPid = 0
+    [void][int]::TryParse(((Get-Content $lock -Raw) -split ' ')[1], [ref]$holderPid)
+    $holderGone = $holderPid -gt 0 -and -not (Get-Process -Id $holderPid -ErrorAction SilentlyContinue)
+    if (-not $running -and ($holderGone -or $age.TotalMinutes -gt $TimeoutMinutes)) { Remove-Item $lock -Force; continue }
     if ((Get-Date) -gt $deadline) { throw "gave up waiting for the sandbox lock held by: $(Get-Content $lock)" }
     Write-Host "waiting for sandbox ($(Get-Content $lock))..."
     Start-Sleep 20

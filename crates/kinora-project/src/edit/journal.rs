@@ -6,7 +6,7 @@
 //! One JSON object per line, each ending with `\n`:
 //!
 //! ```text
-//! {"kind":"header","format":1,"schemaVersion":0,"project":"…","base":"9f2c…","revision":7}
+//! {"kind":"header","format":1,"schemaVersion":0,"project":"…","base":"9f2c…","revision":7,"historyLimit":500}
 //! {"kind":"apply","revision":8,"command":{"op":"splitClip","params":{…}}}
 //! {"kind":"undo","revision":9,"step":null}
 //! {"kind":"redo","revision":10,"step":null}
@@ -24,6 +24,16 @@
 //! - An undo or redo of a step that is older than the journal (made before
 //!   the last save) cannot be rebuilt by replay, so its entry carries the
 //!   step (`step`), and replay applies it directly. [`Editor`] decides this.
+//! - `historyLimit` is the writer's undo limit; replay uses the same one, or
+//!   it would forget (or keep) different steps than the session did.
+//!
+//! # After recovery
+//!
+//! Recovery may stop before the end of the file (a torn or damaged line, or
+//! an entry that fails). Entries appended after such a line would never be
+//! read again, so the shell first **replaces** the journal with
+//! [`Replay::journal`](super::Replay::journal), the part that was replayed,
+//! and only then appends.
 //!
 //! # Reading untrusted journals
 //!
@@ -86,6 +96,8 @@ pub struct Header {
     /// The editor's revision when the journal began; the first entry has the
     /// next one.
     pub revision: Revision,
+    /// The writer's undo history limit, which replay must use too.
+    pub history_limit: u32,
 }
 
 /// An undo step written into the journal because replay cannot rebuild it.
@@ -237,6 +249,20 @@ pub struct Recovered {
     pub entries: Vec<Entry>,
     /// Why reading stopped early, if it did.
     pub stop: Option<Stop>,
+    /// The header line and one line per entry, each with its `\n`, exactly
+    /// as read; recovery writes back the replayed prefix of them.
+    pub(crate) lines: Vec<String>,
+}
+
+impl Recovered {
+    /// The header line followed by the first `entries` entry lines.
+    pub(crate) fn prefix(&self, entries: usize) -> String {
+        self.lines
+            .iter()
+            .take(entries + 1)
+            .map(String::as_str)
+            .collect()
+    }
 }
 
 /// Reads a journal and checks that it continues the `project.json` with
@@ -256,12 +282,13 @@ pub fn read(text: &str, project: ProjectId, base: &str) -> Result<Recovered, Jou
     };
     let mut lines = complete.split('\n').filter(|_| !complete.is_empty());
 
-    let header = lines
+    let header_line = lines
         .next()
         .filter(|line| line.len() <= MAX_LINE_BYTES)
-        .and_then(|line| serde_json::from_str::<HeaderLine>(line).ok())
-        .map(|HeaderLine::Header(header)| header)
         .ok_or(JournalError::MissingHeader)?;
+    let header = serde_json::from_str::<HeaderLine>(header_line)
+        .map(|HeaderLine::Header(header)| header)
+        .map_err(|_| JournalError::MissingHeader)?;
     if header.format != FORMAT {
         return Err(JournalError::UnsupportedFormat {
             found: header.format,
@@ -280,6 +307,7 @@ pub fn read(text: &str, project: ProjectId, base: &str) -> Result<Recovered, Jou
     }
 
     let mut entries = Vec::new();
+    let mut raw = vec![format!("{header_line}\n")];
     let mut expected = header.revision;
     let mut stop = None;
     for (index, line) in lines.enumerate() {
@@ -299,6 +327,7 @@ pub fn read(text: &str, project: ProjectId, base: &str) -> Result<Recovered, Jou
         }
         expected = entry.revision();
         entries.push(entry);
+        raw.push(format!("{line}\n"));
     }
     if stop.is_none() && torn {
         stop = Some(Stop::TornTail);
@@ -307,6 +336,7 @@ pub fn read(text: &str, project: ProjectId, base: &str) -> Result<Recovered, Jou
         header,
         entries,
         stop,
+        lines: raw,
     })
 }
 
@@ -322,6 +352,7 @@ mod tests {
             project,
             base: fingerprint(b"{}"),
             revision: Revision(4),
+            history_limit: 500,
         }
     }
 

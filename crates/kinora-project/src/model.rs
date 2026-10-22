@@ -319,10 +319,12 @@ impl Speed {
         }
     }
 
-    /// The longest timeline duration whose source range
-    /// ([`Self::source_duration`]) does not exceed `source`: the exact
-    /// quotient rounded down to the flick. `None` when `source` is off the
-    /// grid or the result is out of range.
+    /// The timeline duration that plays `source` source seconds: the exact
+    /// quotient rounded down to the flick, so its source range
+    /// ([`Self::source_duration`]) never exceeds `source`. (It is not always
+    /// the longest such duration: rounding the source back can absorb a few
+    /// more flicks.) `None` when `source` is off the grid or the result is
+    /// out of range.
     pub fn timeline_duration(self, source: Time) -> Option<Time> {
         match self {
             Self::Constant { rate } => source.div_to_grid(rate, Rounding::Down),

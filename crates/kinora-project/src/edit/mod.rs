@@ -296,6 +296,12 @@ fn execute(tx: &mut Tx<'_>, command: &EditCommand) -> Result<(), EditError> {
             tx.project
                 .require_new_id(transition.id.as_uuid(), EntityKind::Transition)?;
             require_grid(transition.duration, "the transition duration")?;
+            if !transition.duration.is_positive() {
+                return Err(EditError::rejected(
+                    EditRule::OutOfRange,
+                    "a transition needs a positive duration",
+                ));
+            }
             let track = tx.project.track(at)?;
             let find = |id: ClipId| track.clips.iter().find(|c| c.id == id);
             let adjacent = match (find(transition.from), find(transition.to)) {
@@ -356,6 +362,12 @@ fn execute(tx: &mut Tx<'_>, command: &EditCommand) -> Result<(), EditError> {
                 .require_new_id(marker.id.as_uuid(), EntityKind::Marker)?;
             require_grid(marker.start, "the marker start")?;
             require_grid(marker.duration, "the marker duration")?;
+            if marker.start.is_negative() || marker.duration.is_negative() {
+                return Err(EditError::rejected(
+                    EditRule::OutOfRange,
+                    "a marker cannot start before the timeline or have a negative length",
+                ));
+            }
             let markers = &tx.project.timelines[t].markers;
             let index = markers.partition_point(|m| m.start <= marker.start);
             tx.run(Op::InsertMarker {

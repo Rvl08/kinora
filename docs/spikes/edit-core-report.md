@@ -14,7 +14,7 @@
 | Sesi `Editor` | Revisi, undo/redo, batas riwayat, status *dirty* berbasis ID state | `edit/history.rs` |
 | Jurnal | `journal.jsonl` format 1, pemulihan crash | `edit/journal.rs` |
 | Galat | `EditRule` (18 kode terlokalisasi) → `IpcError::editRejected{rule, reason, command}` | `edit/error.rs`, `kinora-ipc` |
-| Tes | 116 tes lulus (core 38, project 65, ipc 13), termasuk property test sesi acak | `tests/` per crate |
+| Tes | 120 tes lulus (core 38, project 69, ipc 13), termasuk property test sesi acak dan 4 tes regresi hasil review | `tests/` per crate |
 
 ## 2. Timebase edit: grid flick
 
@@ -76,7 +76,7 @@ Setiap op mengembalikan inverse-nya. Patch berisi op berurutan; menerapkan patch
   - Kasus sulit yang ditangani: **undo melewati simpan**. Contoh: simpan, undo, 50 edit, lalu crash. Replay biasa akan berhenti di undo itu (langkahnya tidak ada di jurnal) dan 50 edit hilang. Karena itu entri undo/redo untuk langkah yang lebih tua dari jurnal membawa patch-nya.
   - Saat replay, stack milik replay dipakai lebih dulu. Patch dari entri hanya dipakai bila stack itu kosong, karena stack live = bagian pra-jurnal + bagian replay.
 - **Tanggung jawab shell (Fase 1):**
-  1. Saat membuka proyek: `from_json` → `journal::read` → `Editor::recover`, atau `Editor::new` bila tidak ada jurnal.
+  1. Saat membuka proyek: `from_json` → `journal::read` → `Editor::recover`, atau `Editor::new` bila tidak ada jurnal. Setelah `recover`, **ganti** file jurnal dengan `Replay::journal` sebelum menambah entri apa pun.
   2. `begin_journal(fingerprint(bytes))`, lalu tulis header.
   3. Setiap entri dari `Outcome.journal`: *append* + *sync*.
   4. Simpan: tulis `project.json` secara atomik, lalu `mark_saved`, `begin_journal`, dan ganti jurnal.
@@ -95,6 +95,25 @@ Setiap op mengembalikan inverse-nya. Patch berisi op berurutan; menerapkan patch
 **Distribusi hasil** (1.000 sesi acak, ±19.000 aksi): ±9.100 edit diterima, ±580 no-op. Penolakan tersebar di semua aturan (`trackLocked`, `overlap`, `outsideClip`, `emptyClip`, `notApplicable`, `trackKind`, `otherTimeline`, `sourceRange`, …). Tidak ada `internal`. Jaring pengaman validator hanya tertangkap 13 kali, semuanya transisi yang menjadi terlalu panjang; kasus ini sekarang punya aturan sendiri (`transitionTooLong`).
 
 **Bug yang ditemukan property test dan sudah diperbaiki:** setelah urutan *edit → simpan → undo → crash*, sesi hasil pemulihan melaporkan dokumen bersih padahal berbeda dari file. Akibatnya menutup aplikasi tidak akan meminta simpan. Penyebabnya, *dirty* dilacak lewat "langkah teratas stack undo", yang tidak bisa merepresentasikan state di bawah dasar stack. Diganti dengan ID state eksplisit; tes regresi: `recovery_after_an_undo_across_a_save_is_dirty`.
+
+**Review adversarial oleh sub-agen** (baca-saja; setiap temuan diverifikasi ulang dengan tes regresi yang gagal sebelum perbaikan; semua di `tests/edit_regressions.rs`):
+
+| # | Temuan | Perbaikan |
+|---|---|---|
+| 1 (tinggi) | Setelah pemulihan yang berhenti di baris terpotong, entri baru yang ditambahkan ke file lama tertahan di belakang baris itu dan hilang pada crash berikutnya | `Replay::journal` berisi jurnal bersih yang wajib ditulis shell sebelum menambah entri; dokumentasi format diperbarui |
+| 2 (sedang) | `recover` selalu memakai batas riwayat bawaan, sehingga sesi dengan batas lebih besar gagal di-*replay* (`nothingToUndo`) | Header jurnal menyimpan `historyLimit` |
+| 3 (sedang) | `setSpeed` ke kecepatan yang sama memanjangkan klip beberapa flick (efek pembulatan), sehingga muncul langkah undo palsu atau `overlap` | Kecepatan yang sama = no-op |
+| 4 (rendah) | Doc `timeline_duration` tidak akurat; durasi transisi ≤ 0 dan marker negatif hanya tertangkap sebagai `invalidResult` | Doc diperbaiki; aturan `outOfRange` yang tepat |
+
+Area yang dinyatakan aman oleh reviewer:
+- matematika sumber trim/split/speed (maju dan *reverse*);
+- `require_room`, indeks op setelah pergeseran, dan *slicing*;
+- aturan track terkunci di semua command;
+- atomisitas dan undo eksak;
+- invarian stack replay;
+- `time.rs` dan validator.
+
+**Tes property yang tidak stabil (diperbaiki):** `rounding_to_the_grid_is_within_half_a_flick` sesekali gagal karena generator menghasilkan nilai di luar rentang grid. Itu kesalahan tes, bukan kode. Seluruh workspace kemudian dijalankan dengan 3.000 kasus per property test: 120 lulus, 0 gagal.
 
 **Pemeriksaan lain (Linux):**
 - `cargo fmt --check`;
@@ -130,3 +149,4 @@ Semua lulus. Dependensi baru hanya fitur `v5` dari `uuid`, yang menarik `sha1_sm
 5. **Batas riwayat berdasarkan memori**, bukan hanya jumlah langkah (bawaan 500).
 6. **Fuzzing** `from_json`, `journal::read`, dan `edit::apply` dengan `cargo-fuzz` (butuh nightly; bisa dijalankan di sesi cloud).
 7. Pemulihan tidak membangun ulang riwayat undo **sebelum** simpan terakhir. Ini perilaku umum aplikasi desktop; perlu dikonfirmasi pemilik.
+8. **Bolak-balik kecepatan** (r1 → r2 → r1) bisa menggeser akhir klip beberapa flick karena pembulatan, walaupun sumber yang diputar tetap sama. Usulan: planner men-snap durasi hasil `setSpeed` ke frame timeline.

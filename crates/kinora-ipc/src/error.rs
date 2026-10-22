@@ -246,7 +246,8 @@ impl From<LoadError> for IpcError {
 
 /// Maps a refused edit. [`EditError::Internal`] becomes
 /// [`IpcError::Internal`]: the shell logs the original error under the new
-/// incident id before returning it.
+/// incident id before returning it. `notFound` has no command pointer: the
+/// identifier it carries already names what the failing command referred to.
 impl From<EditError> for IpcError {
     fn from(error: EditError) -> Self {
         let command = error.command_pointer();

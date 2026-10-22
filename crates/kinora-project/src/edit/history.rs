@@ -152,6 +152,10 @@ pub struct Replay {
     /// entries) and why. Replay stops there; the editor holds the state just
     /// before it.
     pub failure: Option<(usize, HistoryError)>,
+    /// The journal as it must be on disk before anything is appended: the
+    /// header and the replayed entries, without the torn, damaged or failed
+    /// rest. The shell replaces the file with it (see [`journal`]).
+    pub journal: String,
 }
 
 impl Editor {
@@ -231,6 +235,7 @@ impl Editor {
             project: self.project.id,
             base,
             revision: self.revision,
+            history_limit: u32::try_from(self.history_limit).unwrap_or(u32::MAX),
         }
     }
 
@@ -241,18 +246,22 @@ impl Editor {
     ///
     /// Every entry goes through the same checks as a live edit, so a damaged
     /// or hostile journal cannot produce an invalid document: replay stops
-    /// at the first entry that fails and reports it.
+    /// at the first entry that fails and reports it. The session uses the
+    /// journal's history limit. Before appending, the shell replaces the
+    /// journal with [`Replay::journal`].
     ///
     /// # Errors
     /// The issues of an invalid `project`.
     pub fn recover(project: Project, journal: Recovered) -> Result<(Self, Replay), Vec<Issue>> {
-        let mut editor = Self::new(project)?;
+        let limit = usize::try_from(journal.header.history_limit).unwrap_or(usize::MAX);
+        let mut editor = Self::new(project)?.with_history_limit(limit);
         editor.revision = journal.header.revision;
         let mut replay = Replay {
             replayed: 0,
             failure: None,
+            journal: String::new(),
         };
-        for (index, entry) in journal.entries.into_iter().enumerate() {
+        for (index, entry) in journal.entries.iter().cloned().enumerate() {
             let expected = entry.revision();
             match editor.replay_entry(entry) {
                 Ok(()) if editor.revision == expected => replay.replayed += 1,
@@ -273,6 +282,7 @@ impl Editor {
                 }
             }
         }
+        replay.journal = journal.prefix(replay.replayed);
         Ok((editor, replay))
     }
 
@@ -660,8 +670,9 @@ mod tests {
 
         let journal = Recovered {
             header,
-            entries: vec![entry],
+            entries: vec![entry.clone()],
             stop: None,
+            lines: vec![String::new(), entry.to_line().expect("line")],
         };
         let (recovered, replay) = Editor::recover(saved, journal).expect("valid");
         assert_eq!(replay.failure, None);

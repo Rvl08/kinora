@@ -199,7 +199,14 @@ proptest! {
     #[test]
     fn rounding_to_the_grid_is_within_half_a_flick(secs in rational()) {
         let time = Time::from_rational(secs);
-        let rounded = time.round_to_grid().expect("in range");
+        // The grid spans ±(2^53 − 1) flicks; beyond it there is nothing to
+        // round to. Compare in i128 flicks: |secs · F| <= 2^53 − 1 (+ ½).
+        let scaled = i128::from(secs.num()) * i128::from(FLICKS_PER_SECOND);
+        let limit = (i128::from(MAX_SAFE_INTEGER) * 2 + 1) * i128::from(secs.den());
+        let Some(rounded) = time.round_to_grid() else {
+            prop_assert!(2 * scaled.abs() >= limit, "in range but not rounded: {}", secs);
+            return Ok(());
+        };
         prop_assert!(rounded.is_on_grid());
         // |time - rounded| <= 1/2 flick, compared exactly.
         let half_flick = Rational::new(1, 2 * u32::try_from(FLICKS_PER_SECOND).expect("fits")).expect("valid");

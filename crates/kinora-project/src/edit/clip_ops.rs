@@ -288,6 +288,11 @@ pub(crate) fn with_speed(
             "only video and audio clips have a speed",
         ));
     };
+    if content.speed == speed {
+        // Recomputing the duration through the rounding would move the end
+        // by a few flicks for nothing.
+        return Ok(clip.clone());
+    }
     let source = source_len(content.speed, clip.duration)?;
     let duration = speed
         .timeline_duration(source)

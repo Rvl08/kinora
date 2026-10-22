@@ -21,6 +21,9 @@ account, subscription or upload.
 
 ## 2. Status (22 Oct 2026). The source of truth is `docs/04-phase0-plan.md` §3.1
 
+**Start of a session:** read `docs/handoff.md` (last session's results, what is unverified, the next steps). Update it
+at the end of every session.
+
 | Done | Notes |
 |---|---|
 | P0-01 name | "Kinora" kept (owner's decision; no formal trademark check) |

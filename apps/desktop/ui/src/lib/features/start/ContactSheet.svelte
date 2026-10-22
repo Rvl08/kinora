@@ -1,6 +1,7 @@
 <!--
-  "Terakhir dibuka": recent projects laid out as a contact sheet, with
-  loading, error and first-run states.
+  "Terakhir dibuka": recent projects as a contact sheet. Prints share one
+  height and baseline, and each row's edge prints join into one continuous
+  rebate band. Loading, error and first-run states included.
 -->
 <script lang="ts">
   import Button from '$lib/components/Button.svelte';
@@ -16,9 +17,11 @@
     recent: RecentProjectsStore;
     now: number;
     onopen: (project: RecentProject) => void;
+    onlocate: (project: RecentProject) => void;
+    onforget: (project: RecentProject) => void;
   }
 
-  let { recent, now, onopen }: Props = $props();
+  let { recent, now, onopen, onlocate, onforget }: Props = $props();
 
   /** Frames of the unexposed strip shown before the first project. */
   const BLANK_FRAMES = [1, 2, 3, 4];
@@ -47,16 +50,16 @@
           {#each BLANK_FRAMES as frame (frame)}
             <li>
               <span class="blank"></span>
-              <EdgePrint {frame} ratio="" duration="" />
+              <EdgePrint {frame} />
             </li>
           {/each}
         </ol>
-        <p class="note">{i18n.t('start.noRecentProjects')}</p>
+        <p class="first-step">{i18n.t('start.noRecentProjects')}</p>
       </div>
     {:else}
       <ul class="grid">
         {#each recent.items as project, index (project.path)}
-          <li><Print {project} frame={index + 1} {now} {onopen} /></li>
+          <li><Print {project} frame={index + 1} {now} {onopen} {onlocate} {onforget} /></li>
         {/each}
       </ul>
     {/if}
@@ -80,8 +83,10 @@
   }
 
   h2 {
+    font-family: var(--font-display);
+    font-stretch: 87.5%;
+    font-weight: 650;
     font-size: var(--text-lg);
-    font-weight: 600;
   }
 
   .count {
@@ -93,11 +98,11 @@
     overflow-y: auto;
   }
 
+  /* No column gap: the edge prints of a row meet as one band. */
   .grid {
     display: grid;
-    /* Wide enough for a 16:9 print at the shared print height. */
     grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
-    gap: var(--space-4) var(--space-3);
+    gap: var(--space-5) 0;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -117,16 +122,16 @@
     color: var(--text-tertiary);
   }
 
+  /* The first step sits on the unexposed strip itself: one row of four
+     blank frames, the sentence across their middle. */
   .unexposed {
-    display: grid;
-    gap: var(--space-5);
-    max-width: 44rem;
+    position: relative;
+    max-width: 58rem;
   }
 
   .strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-3);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -135,9 +140,27 @@
   .blank {
     display: block;
     aspect-ratio: 9 / 16;
-    max-height: 7.5rem;
+    height: 7.5rem;
     margin: 0 auto var(--space-3);
     border: var(--hairline) solid var(--border-subtle);
     border-radius: var(--radius-print);
+  }
+
+  .first-step {
+    position: absolute;
+    top: 3.75rem;
+    left: 50%;
+    translate: -50% -50%;
+    width: max-content;
+    max-width: 90%;
+    padding: var(--space-2) var(--space-4);
+    background: var(--surface-sunken);
+    text-align: center;
+    font-family: var(--font-display);
+    font-stretch: 87.5%;
+    font-weight: 600;
+    font-size: var(--text-lg);
+    color: var(--text-primary);
+    text-wrap: balance;
   }
 </style>

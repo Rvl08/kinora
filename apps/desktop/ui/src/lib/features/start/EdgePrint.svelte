@@ -1,17 +1,18 @@
 <!--
   The edge print: the strip of tabular labels a contact sheet carries under
-  each frame. Kinora's signature: frame number, ratio, and the duration set
-  tight against the right edge. The timeline ruler reuses it later.
+  each frame, and Kinora's signature (the timeline ruler reuses it): frame
+  number, ratio, date, and the duration set tight against the right edge.
 -->
 <script lang="ts">
   interface Props {
     frame: number;
-    ratio: string;
-    duration: string;
+    ratio?: string;
+    date?: string;
+    duration?: string;
     status?: string | undefined;
   }
 
-  let { frame, ratio, duration, status }: Props = $props();
+  let { frame, ratio = '', date = '', duration = '', status }: Props = $props();
 </script>
 
 <p class="edge">
@@ -20,8 +21,9 @@
     <span class="status">{status}</span>
   {:else}
     <span>{ratio}</span>
-    <span class="duration">{duration}</span>
+    <span class="date">{date}</span>
   {/if}
+  <span class="duration">{duration}</span>
 </p>
 
 <style>
@@ -29,20 +31,28 @@
     display: flex;
     align-items: baseline;
     gap: var(--space-3);
-    padding-top: var(--space-2);
-    border-top: var(--hairline) solid var(--border-subtle);
+    min-height: 1.75rem;
+    padding: var(--space-1) var(--space-3);
+    background: var(--surface-base);
     font-family: var(--font-display);
     font-stretch: var(--edge-stretch);
     font-weight: 600;
     font-size: var(--text-xs);
+    line-height: 1.5rem;
     letter-spacing: var(--edge-tracking);
     text-transform: uppercase;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
     color: var(--text-tertiary);
   }
 
   .number {
     color: var(--text-accent);
+  }
+
+  .date {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .duration {

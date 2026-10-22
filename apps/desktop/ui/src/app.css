@@ -36,6 +36,11 @@ p {
   margin: 0;
 }
 
+/* No lone words at the end of a paragraph. */
+p {
+  text-wrap: pretty;
+}
+
 button,
 input,
 select,

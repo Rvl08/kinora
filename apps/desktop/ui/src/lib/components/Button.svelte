@@ -9,15 +9,25 @@
   interface Props extends Omit<HTMLButtonAttributes, 'children'> {
     variant?: 'primary' | 'secondary' | 'quiet';
     icon?: Snippet;
+    /** A keyboard shortcut shown after the label, e.g. `Ctrl+O`. */
+    shortcut?: string | undefined;
     children: Snippet;
   }
 
-  let { variant = 'secondary', icon, children, type = 'button', ...rest }: Props = $props();
+  let {
+    variant = 'secondary',
+    icon,
+    shortcut,
+    children,
+    type = 'button',
+    ...rest
+  }: Props = $props();
 </script>
 
 <button {type} class="button {variant}" {...rest}>
   {#if icon}<span class="icon" aria-hidden="true">{@render icon()}</span>{/if}
   <span>{@render children()}</span>
+  {#if shortcut}<kbd class="key">{shortcut}</kbd>{/if}
 </button>
 
 <style>
@@ -74,5 +84,16 @@
 
   .icon {
     display: inline-flex;
+  }
+
+  .key {
+    margin-left: var(--space-1);
+    font-family: var(--font-display);
+    font-stretch: var(--edge-stretch);
+    font-weight: 600;
+    font-size: var(--text-xs);
+    letter-spacing: var(--edge-tracking);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
   }
 </style>

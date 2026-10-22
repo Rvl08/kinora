@@ -12,7 +12,7 @@ export const en: Messages = {
     newProjectHint: 'Pick the shape of your video. You can change it any time.',
     ratio: {
       vertical: 'Vertical',
-      verticalUse: 'TikTok, Reels, Shorts',
+      verticalUse: 'TikTok\nReels\nShorts',
       landscape: 'Landscape',
       landscapeUse: 'YouTube, wide screens',
       square: 'Square',
@@ -24,12 +24,18 @@ export const en: Messages = {
     chooseVideo: 'Choose a video…',
     openProject: 'Open project…',
     recentProjects: 'Recent',
-    noRecentProjects: 'No projects yet. The projects you make will show up here.',
+    noRecentProjects: 'Start on the left: pick 9:16, or drop a video onto this window.',
     loadingRecent: 'Loading projects…',
     recentError: 'The project list could not be loaded.',
     retry: 'Try again',
     missingProject: 'Folder not found',
+    lastLocation: 'Last seen in {path}',
+    locateProject: 'Find folder…',
+    forgetProject: 'Remove from list',
     unknownDuration: '–:––',
+  },
+  keys: {
+    ctrl: 'Ctrl',
   },
   settings: {
     appearance: 'Appearance',

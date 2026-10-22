@@ -69,12 +69,13 @@
   --pigment-print: oklch(0.955 0.008 85);
   --pigment-negative: oklch(0.72 0.155 52);
   --pigment-negative-bright: oklch(0.76 0.14 55);
-  --pigment-unexposed: oklch(0.32 0.05 50);
+  --pigment-unexposed: oklch(0.28 0.008 55);
 
   --surface-base: var(--pigment-rebate);
   --surface-raised: var(--pigment-rebate-raised);
   --surface-sunken: var(--pigment-rebate-deep);
-  --surface-print: oklch(0.94 0.008 85);
+  /* Print borders sit below the primary action in the hierarchy. */
+  --surface-print: oklch(0.78 0.01 80);
   --surface-unexposed: var(--pigment-unexposed);
 
   --text-primary: var(--pigment-print);
@@ -109,7 +110,7 @@
   --pigment-paper-shade: oklch(0.925 0.005 250);
   --pigment-ink: oklch(0.23 0.015 50);
   --pigment-negative: oklch(0.56 0.155 44);
-  --pigment-unexposed: oklch(0.82 0.045 65);
+  --pigment-unexposed: oklch(0.86 0.006 80);
 
   --surface-base: var(--pigment-paper);
   --surface-raised: var(--pigment-paper-bright);

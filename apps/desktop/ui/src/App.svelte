@@ -23,13 +23,20 @@
     });
   });
 
-  // The shell commands behind these intents (create, open, file dialogs)
-  // arrive with the Tauri shell; the start screen already emits them.
+  // The shell commands behind these intents (create, open, locate, forget,
+  // file dialogs) arrive with the Tauri shell; the start screen already
+  // emits them.
   function create(preset: RatioPreset) {
     void preset;
   }
   function open() {}
   function openRecent(project: RecentProject) {
+    void project;
+  }
+  function locateRecent(project: RecentProject) {
+    void project;
+  }
+  function forgetRecent(project: RecentProject) {
     void project;
   }
   function dropMedia(files: readonly File[]) {
@@ -45,6 +52,8 @@
     oncreate={create}
     onopen={open}
     onopenrecent={openRecent}
+    onlocaterecent={locateRecent}
+    onforgetrecent={forgetRecent}
     ondropmedia={dropMedia}
     onchoosevideo={chooseVideo}
   />

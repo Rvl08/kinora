@@ -12,7 +12,7 @@ export const id = {
     newProjectHint: 'Pilih bentuk videonya. Bisa diubah kapan saja.',
     ratio: {
       vertical: 'Vertikal',
-      verticalUse: 'TikTok, Reels, Shorts',
+      verticalUse: 'TikTok\nReels\nShorts',
       landscape: 'Lanskap',
       landscapeUse: 'YouTube, layar lebar',
       square: 'Persegi',
@@ -24,12 +24,18 @@ export const id = {
     chooseVideo: 'Pilih video…',
     openProject: 'Buka proyek…',
     recentProjects: 'Terakhir dibuka',
-    noRecentProjects: 'Belum ada proyek. Proyek yang Anda buat akan muncul di sini.',
+    noRecentProjects: 'Mulai dari kiri: pilih 9:16, atau seret video ke jendela ini.',
     loadingRecent: 'Memuat proyek…',
     recentError: 'Daftar proyek tidak bisa dimuat.',
     retry: 'Coba lagi',
     missingProject: 'Folder tidak ditemukan',
+    lastLocation: 'Terakhir di {path}',
+    locateProject: 'Cari folder…',
+    forgetProject: 'Hapus dari daftar',
     unknownDuration: '–:––',
+  },
+  keys: {
+    ctrl: 'Ctrl',
   },
   settings: {
     appearance: 'Tampilan',

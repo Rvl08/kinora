@@ -1,6 +1,6 @@
 # ADR-0004 — Format proyek, waktu, dan Command
 
-- **Status:** Accepted (19 Okt 2026), diamandemen 22 Okt 2026 (Amandemen 1, P0-12)
+- **Status:** Accepted (19 Okt 2026), diamandemen 22 Okt 2026 (Amandemen 1, P0-12; Amandemen 2, inti edit)
 
 ## Konteks
 Edit harus frame-accurate, dapat di-undo tanpa batas, dapat dipulihkan setelah crash, dan dapat dijalankan oleh UI,
@@ -48,4 +48,32 @@ Rincian dan alasan: [Laporan P0-12](../spikes/P0-12-report.md).
    - Tipe TypeScript dibangkitkan `ts-rs` (bukan dari skema) ke `apps/desktop/ui/src/lib/ipc/bindings.ts`, bersama kontrak IPC dari crate `kinora-ipc` (bebas dari Tauri, agar dapat dipakai ulang oleh `kinora-api`/MCP).
    - Keduanya diuji *drift* di CI.
 7. **Fixture** per versi berada di `crates/kinora-project/tests/fixtures/v<N>/`, menggantikan `tests/fixtures/projects/`.
+
+## Amandemen 2 — Timebase edit, inti edit, dan jurnal (22 Okt 2026)
+Rincian, pengujian, dan angka: [Laporan inti edit](../spikes/edit-core-report.md). Menutup pertanyaan terbuka Amandemen 1 butir 1.
+
+1. **Timebase edit = grid flick global** (keputusan pemilik, 22 Okt 2026). Snap ke frame timeline saja ditolak karena tetap mencampur timebase media dan menutup kemungkinan edit audio sub-frame.
+   - 1 flick = 1/705.600.000 detik (2^9 · 3^2 · 5^5 · 7^2). Satu flick habis membagi durasi frame 24/25/30/48/50/60/90/100/120 fps, varian NTSC-nya (×1000/1001), periode sampel 8–192 kHz, dan clock MPEG 90 kHz.
+   - **Invarian dokumen:** setiap waktu pada sumbu timeline adalah kelipatan bulat flick dalam ±(2^53 − 1) flick (±147 hari). Ini berlaku untuk `start`/`duration` klip, `sourceIn`, `at` keyframe, fade, durasi transisi, marker, dan waktu kata caption. Frame rate timeline wajib *grid-aligned* (satu frame = bilangan bulat flick). Metadata media (`info.duration`, frame rate stream) boleh memakai timebase apa pun.
+   - Penjumlahan dan pengurangan waktu grid tetap di grid, sehingga penyebut tidak pernah membengkak.
+   - Hasil yang keluar dari grid (durasi × kecepatan) dibulatkan **secara eksplisit** ke flick terdekat (`Time::scale_to_grid`, galat ≤ 0,7 ns). Jika hasilnya tidak boleh melampaui batas, pembulatan dilakukan ke bawah (`Rounding::Down`).
+   - **Snap ke frame adalah kebijakan UI/Copilot**, bukan invarian. UI men-snap posisi ke frame timeline sebelum mengirim command. Klip audio boleh berada di posisi sub-frame.
+2. **Pemetaan sumber tunggal:** `Speed::source_duration` (dibulatkan ke flick) adalah satu-satunya pemetaan timeline → sumber, dipakai validator, inti edit, dan renderer. Saat tepi klip berpindah, titik sumber di bawah tepi **yang lain** tetap, termasuk untuk klip `reverse`. Akibatnya klip yang berakhir tepat di ujung media tetap berakhir di sana setelah trim, split, atau pembulatan kecepatan.
+3. **Aturan validator yang berubah:**
+   - Keyframe dan kata caption **boleh berada di luar rentang klip**. Trim dan split mempertahankannya relatif terhadap konten, sehingga animasi tetap menyambung dan muncul kembali saat klip diperpanjang.
+   - Satu potongan (*cut*) memiliki paling banyak satu transisi.
+4. **`inverse` berupa patch privat, bukan `EditCommand`.** Setiap command dijalankan sebagai urutan operasi primitif (sisip/hapus/ganti entitas, geser klip). Inverse setiap operasi menyimpan data yang dihapus atau diganti, sehingga undo memulihkan dokumen **identik bit per bit**, termasuk data yang sengaja dibuang command (fade yang dipangkas, transisi yang hilang karena klip dipindah). Undo dan redo adalah operasi yang sama (menerapkan patch menghasilkan patch kebalikannya).
+5. **Jaminan `apply`:** atomik (termasuk `batch`), deterministik (ID baru dibawa command atau diturunkan darinya, misalnya ID efek pada belahan kanan split = UUIDv5), dan tervalidasi. Aturan per command menghasilkan kode `EditRule` yang dapat dilokalkan. Setelah itu validator penuh dijalankan sebagai jaring pengaman; hasil yang melanggar format di-*rollback*. Input dibatasi: kedalaman batch ≤ 8, ≤ 100.000 command per edit.
+6. **Aturan edit Fase 1:**
+   - Track terkunci tidak bisa diubah isinya (`updateTrack` tetap boleh agar bisa dibuka kuncinya).
+   - Klip pada satu track tidak boleh tumpang tindih. Command tidak menggeser klip lain, kecuali `removeClip` dengan `ripple`.
+   - Transisi milik potongannya: command yang menggeser salah satu tepi di potongan itu menghapus transisinya (undo mengembalikannya). Transisi tidak boleh lebih panjang dari klipnya (`transitionTooLong`).
+   - Kosakata ditambah 14 operasi properti: `updateTrack`, `renameClip`, `setClipEnabled`, `setTransform`, `setCrop`, `setOpacity`, `setBlendMode`, `setAudioMix`, `setText`, `setCaption`, `addTransition`, `removeTransition`, `addMarker`, `removeMarker`.
+7. **Sesi (`Editor`):** revisi dengan konkurensi optimistik, undo/redo dengan batas riwayat (bawaan 500 langkah), dan status *dirty* berbasis ID state (setiap state dokumen punya ID; *dirty* = state kini ≠ state tersimpan). Setiap operasi mengembalikan entri jurnal yang harus ditulis shell, sehingga shell tidak bisa mencatat hal yang salah.
+8. **`journal.jsonl` format 1** (menjawab pertanyaan terbuka P0-12 §9 butir 3):
+   - Baris pertama berisi *header* `{kind:"header", format, schemaVersion, project, base, revision}`. `base` adalah sidik FNV-1a 64-bit dari byte `project.json`. Jurnal yang tidak cocok dengan file di disk (misalnya crash di antara menulis `project.json` dan memotong jurnal) dianggap basi dan tidak di-*replay*.
+   - Entri berikutnya: `apply{revision, command}`, `undo{revision, step}`, `redo{revision, step}`. Undo/redo atas langkah yang lebih tua dari jurnal (dibuat sebelum simpan terakhir) membawa patch langkah itu di `step`, karena replay tidak bisa membangunnya ulang.
+   - Pembaca menoleransi baris terakhir yang terpotong dan berhenti di baris rusak pertama. Ukuran dibatasi (jurnal 256 MiB, baris 16 MiB). Replay memvalidasi semua yang diterapkannya.
+   - Pemulihan membangun ulang dokumen, revisi, status *dirty*, dan riwayat undo **sejak simpan terakhir**.
+   - Shell (Fase 1) menulis header saat membuka proyek dan setelah setiap simpan. Setiap entri ditambahkan lalu di-*sync* ke disk. Simpan: tulis `project.json` secara atomik (file sementara lalu *rename*), lalu mulai jurnal baru.
 

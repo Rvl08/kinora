@@ -32,18 +32,19 @@ account, subscription or upload.
 | P0-09 S3 AI runtime, P0-09b S3b cutout | ADR-0006: whisper Vulkan; Kokoro without espeak-ng; BiRefNet dynamic export |
 | P0-11 fixtures | `scripts/fixtures/`, 15 freely licensed fixtures (media outside git) |
 | P0-12 IPC contract | `crates/kinora-project` (project.json v0) and `crates/kinora-ipc`; ts-rs bindings in `apps/desktop/ui/src/lib/ipc/bindings.ts` and the JSON Schema are generated (`pnpm run ipc:generate`) and drift-tested |
+| Editing core (pre-Phase 1) | ADR-0004 amendment 2: timeline times on a **flick grid** (1/705,600,000 s). `kinora-project::edit`: atomic `apply`, exact undo/redo patches, `Editor` session, `journal.jsonl` crash recovery. Linux-tested; Windows sandbox run pending (`docs/spikes/edit-core-report.md`) |
 
 **In progress or not done:**
 - **P0-05b:** static release FFmpeg built in CI (`scripts/ffmpeg/release*`, `.github/workflows/ffmpeg-release.yml`).
   Check `git log` and the docs/04 table before touching it: it may already be committed.
-- **Edit timebase (ADR-0004 amendment 1):** decide before Phase 1's `apply`: snap to timeline frames or to a
-  global flick tick. Adding times with coprime denominators can otherwise overflow.
 - **P0-10 / Spike S4:** NSIS installer with wizard + MSIX (winapp CLI); test install in a clean Windows Sandbox.
 - **P0-13:** Phase 0 go/no-go gate, then the Phase 1 backlog.
 - **P0-14:** public channels. Register with SignPath Foundation (needs a first release and the "Code signing
   policy" section) and the Microsoft Store. The owner does the registrations.
 - **Untested hardware:** iGPU (Intel/AMD), QSV/AMF encoders, 8 GB laptops.
-- **Phase 1 (MVP editor) has not started.** Its first step is setting up Impeccable (§4).
+- **Phase 1 (MVP editor) has not started**, apart from the editing core above. Its first UI step is setting up
+  Impeccable (§4). The Tauri shell must write the journal (header on open/save, append and sync each entry,
+  atomic save); see the report's §3.3.
 
 ## 3. Non-negotiable rules
 
@@ -92,7 +93,8 @@ first.
   CI runs `cargo clippy -D warnings`.
 - Typed errors (`thiserror`). Errors cross IPC as safe, serialisable values: no panics, no internal paths.
 - Every project change is a **Command** (undo/redo, journal). The UI, Copilot, MCP and scripts all go through it (ADR-0004).
-- Timeline time is **rational**, never floating point.
+- Timeline time is **rational**, never floating point, and on the flick grid (`Time::is_on_grid`); round
+  explicitly with `scale_to_grid`/`round_to_grid`, never implicitly.
 - Treat media, project files, templates and effect packages as **untrusted input**: bounds checks, no unbounded allocation, fuzz the parsers.
 
 **Data and schema**

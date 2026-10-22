@@ -143,10 +143,10 @@ Semua lulus. Dependensi baru hanya fitur `v5` dari `uuid`, yang menarik `sha1_sm
 ## 7. Pertanyaan terbuka dan tindak lanjut
 
 1. **Performa validasi untuk proyek sangat besar:** buat path JSON Pointer di validator menjadi *lazy*, atau validasi hanya track yang tersentuh. Target: < 2 ms untuk 10.000 klip.
-2. **Transisi saat trim:** saat ini transisi di tepi yang digeser dihapus, dan transisi yang menjadi terlalu panjang ditolak. Alternatif yang perlu diputuskan saat UI dibuat: *roll edit* (kedua klip ikut bergeser) atau memendekkan transisi otomatis.
+2. **Transisi saat trim:** saat ini transisi di tepi yang digeser dihapus, dan transisi yang menjadi terlalu panjang ditolak. **Keputusan pemilik (22 Okt 2026): perilaku ini dipertahankan.** Alternatifnya (*roll edit* atau memendekkan transisi otomatis) diputuskan setelah UI timeline selesai.
 3. **Split caption:** teks diduplikasi ke kedua belahan (kata ditandai per waktu). Memecah teks per kata bergantung bahasa; perlu diputuskan saat fitur transkrip (Fase 3).
 4. **Ripple multi-track** (*sync lock*): `ripple` saat ini hanya untuk satu track.
 5. **Batas riwayat berdasarkan memori**, bukan hanya jumlah langkah (bawaan 500).
 6. **Fuzzing** `from_json`, `journal::read`, dan `edit::apply` dengan `cargo-fuzz` (butuh nightly; bisa dijalankan di sesi cloud).
-7. Pemulihan tidak membangun ulang riwayat undo **sebelum** simpan terakhir. Ini perilaku umum aplikasi desktop; perlu dikonfirmasi pemilik.
+7. ~~Pemulihan tidak membangun ulang riwayat undo **sebelum** simpan terakhir.~~ **Diterima pemilik (22 Okt 2026)** sebagai perilaku yang disengaja.
 8. **Bolak-balik kecepatan** (r1 → r2 → r1) bisa menggeser akhir klip beberapa flick karena pembulatan, walaupun sumber yang diputar tetap sama. Usulan: planner men-snap durasi hasil `setSpeed` ke frame timeline.

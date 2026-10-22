@@ -17,6 +17,7 @@ account, subscription or upload.
   - `docs/04-phase0-plan.md`: Phase 0 backlog, with the progress table in §3.1.
   - `docs/adr/` (0001–0007): binding decisions. Change one only through an amendment.
   - `docs/06-public-release-plan.md`: zero-cost distribution.
+  - `docs/07-frontend-guidelines.md`: binding UI architecture and design rules for `apps/desktop/ui`.
 
 ## 2. Status (22 Oct 2026). The source of truth is `docs/04-phase0-plan.md` §3.1
 
@@ -80,7 +81,7 @@ first.
   `/impeccable init` and `/impeccable hooks on` (<https://impeccable.style>). The hooks need the owner's approval.
 - The goal is clean, elegant, professional and easy for anyone. **No "AI slop":** no generic purple gradients,
   identical cards or decorative icons.
-- Follow docs/03 §6.6:
+- Follow `docs/07-frontend-guidelines.md` (structure, read-model data flow, i18n, tokens, a11y, testing) and docs/03 §6.6:
   - progressive disclosure, and ≤ 2 clicks for common actions;
   - honest progress for AI jobs, which can always be cancelled;
   - dark and light themes; WCAG AA contrast; keyboard-first for pro users;

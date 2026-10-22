@@ -8,6 +8,7 @@
 | 04 | [Rencana Fase 0](04-phase0-plan.md) | Audit lingkungan dev, backlog P0-01..13, spesifikasi spike S1–S4, jadwal, gate |
 | 05 | [Kepatuhan Lisensi](05-license-compliance.md) | Kelas lisensi, penegakan CI, audit komponen/model/aset, isu espeak-ng |
 | 06 | [Rencana Publikasi & Distribusi Tanpa Biaya](06-public-release-plan.md) | Microsoft Store (MSIX) + SignPath Foundation tanpa biaya, dampak arsitektur, audit kesiapan repo publik, keputusan yang dibutuhkan |
+| 07 | [Pedoman Arsitektur & Desain Frontend](07-frontend-guidelines.md) | Struktur `apps/desktop/ui`, aliran data read-model, IPC, i18n, sistem desain & token, aksesibilitas, keamanan, performa, pengujian, proses Impeccable, definisi selesai |
 | S1 | [Laporan Spike S1](spikes/S1-report.md) | Pipeline preview: hasil terukur, temuan, syarat produksi |
 | S2 | [Laporan Spike S2](spikes/S2-report.md) | Decode/encode/ekspor: kecepatan, kualitas (VMAF), zero-copy, OpenH264 Cisco, komponen FFmpeg rilis |
 | S3 | [Laporan Spike S3](spikes/S3-report.md) | AI lokal: Whisper Vulkan/CPU + timestamp kata, BiRefNet DirectML, Kokoro tanpa espeak-ng, Silero VAD, memori, pengelola model |

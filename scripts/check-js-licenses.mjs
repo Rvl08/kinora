@@ -32,7 +32,8 @@ function isAllowed(expression) {
 
 // Under `pnpm run`, npm_execpath is the running pnpm (also when it comes from
 // Corepack and is not on PATH): a native binary since pnpm 11, a JS file before.
-const args = ['licenses', 'list', '--json', '--dev'];
+// `--recursive` covers every workspace package (apps/*/ui), not only the root.
+const args = ['licenses', 'list', '--json', '--dev', '--recursive'];
 const pnpm = process.env.npm_execpath;
 if (!pnpm) {
   console.error('Run this through pnpm: `pnpm run licenses:check`.');

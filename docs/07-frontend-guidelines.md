@@ -197,7 +197,7 @@ Nilai akhir (palet, tipografi, skala) ditetapkan bersama **Impeccable** (`/impec
 | Desain | `impeccable detect` | Setiap PR UI; temuan "primer" harus nol atau dijelaskan |
 | E2E | `tauri-driver` (Windows Sandbox) | Alur inti per rilis: buat proyek, impor, edit, ekspor |
 
-Perintah: `pnpm --filter @kinora/ui run check` (svelte-check), `run test` (Vitest), `run build`.
+Perintah dari root repo: `pnpm run ui:check` (svelte-check + tsc untuk konfigurasi), `pnpm run ui:test` (Vitest), `pnpm run ui:build`. Ketiganya juga dijalankan job `web` di CI.
 
 ## 14. Proses kerja dengan Impeccable
 

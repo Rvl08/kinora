@@ -146,6 +146,7 @@ decision means a new ADR or an amendment, plus an update to the docs/04 progress
 ```sh
 corepack pnpm install
 corepack pnpm run lint && corepack pnpm run format:check && corepack pnpm run licenses:check
+corepack pnpm run ui:check && corepack pnpm run ui:test && corepack pnpm run ui:build   # apps/desktop/ui
 cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace
 cargo deny check
 corepack pnpm run ffmpeg:fetch | ffmpeg:verify          # dev FFmpeg (Windows)

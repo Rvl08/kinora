@@ -171,11 +171,34 @@ fn semantic_rules_are_enforced() {
             }),
         ),
         (
-            "keyframe after clip end",
+            "keyframes out of order",
             format!("{clips}/0/visual/transform/position/keyframes/1/at"),
             Box::new(|d| {
                 d["timelines"][0]["tracks"][0]["clips"][0]["visual"]["transform"]["position"]["keyframes"]
-                    [1]["at"] = json!({ "num": 6, "den": 1 });
+                    [1]["at"] = json!({ "num": 0, "den": 1 });
+            }),
+        ),
+        (
+            "keyframe off the edit grid",
+            format!("{clips}/0/visual/transform/position/keyframes/1/at"),
+            Box::new(|d| {
+                d["timelines"][0]["tracks"][0]["clips"][0]["visual"]["transform"]["position"]["keyframes"]
+                    [1]["at"] = json!({ "num": 1, "den": 1001 });
+            }),
+        ),
+        (
+            "clip start off the edit grid",
+            format!("{clips}/2/start"),
+            Box::new(|d| {
+                d["timelines"][0]["tracks"][0]["clips"][2]["start"] =
+                    json!({ "num": 9_000_000_001_i64, "den": 1_000_000_000 });
+            }),
+        ),
+        (
+            "frame rate off the edit grid",
+            "/timelines/1/format/frameRate".into(),
+            Box::new(|d| {
+                d["timelines"][1]["format"]["frameRate"] = json!({ "num": 1001, "den": 1 });
             }),
         ),
         (

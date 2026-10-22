@@ -106,7 +106,8 @@ pub enum Easing {
 #[cfg_attr(feature = "ts-rs", derive(ts_rs::TS))]
 pub struct Keyframe<T> {
     /// When, relative to the start of the owning clip, so moving the clip
-    /// moves its animation. Within `0..=clip.duration`.
+    /// moves its animation. May lie outside `0..=clip.duration` after a trim
+    /// or split, which keep keyframes in place relative to the content.
     pub at: Time,
     /// The value at `at`.
     pub value: T,

@@ -100,7 +100,8 @@ export type CaptionContent = {
 text: string,
 /**
  * Word timings for karaoke-style highlighting; empty when unknown.
- * Ordered, non-overlapping and within the clip.
+ * Ordered and non-overlapping. Words outside the clip (after a trim or
+ * split) are kept but not shown.
  */
 words: Array<CaptionWord>,
 /**
@@ -144,7 +145,9 @@ export type ChannelLayout = "mono" | "stereo";
  *
  * Timing: the clip occupies `[start, start + duration)` on the timeline. For
  * media, the source range is derived, never stored twice:
- * `sourceIn .. sourceIn + duration × speed`.
+ * `sourceIn .. sourceIn + duration × speed` (rounded to the flick, see
+ * [`Speed::source_duration`]). Every time here is on the edit grid
+ * (ADR-0004 amendment 2).
  */
 export type Clip = {
 /**
@@ -665,7 +668,8 @@ error: IpcError, } | { "kind": "cancelled" };
 export type Keyframe<T> = {
 /**
  * When, relative to the start of the owning clip, so moving the clip
- * moves its animation. Within `0..=clip.duration`.
+ * moves its animation. May lie outside `0..=clip.duration` after a trim
+ * or split, which keep keyframes in place relative to the content.
  */
 at: Time,
 /**

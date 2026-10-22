@@ -109,6 +109,20 @@ impl Checker<'_> {
                 "canvas edges must be even and within 2..=16384",
             );
         }
+        self.check(
+            format.frame_rate.is_grid_aligned(),
+            || format!("{path}/frameRate"),
+            "a frame must last a whole number of flicks (1/705600000 s)",
+        );
+    }
+
+    /// Times on the timeline axis lie on the edit grid (ADR-0004 amendment 2).
+    fn grid(&mut self, path: impl FnOnce() -> String, time: Time) {
+        self.check(
+            time.is_on_grid(),
+            path,
+            "time must be a whole number of flicks (1/705600000 s) within ±(2^53 - 1)",
+        );
     }
 
     fn media(&mut self, path: &str, asset: &MediaAsset) {
@@ -211,6 +225,8 @@ impl Checker<'_> {
                 || format!("{path}/start"),
                 "markers must be ordered by start, from 0",
             );
+            self.grid(|| format!("{path}/start"), marker.start);
+            self.grid(|| format!("{path}/duration"), marker.duration);
             self.check(
                 !marker.duration.is_negative(),
                 || format!("{path}/duration"),
@@ -250,6 +266,7 @@ impl Checker<'_> {
                 "`from` must end exactly where `to` starts",
             );
             let d = transition.duration;
+            self.grid(|| format!("{path}/duration"), d);
             self.check(
                 d.is_positive() && d <= from.duration && d <= to.duration,
                 || format!("{path}/duration"),
@@ -270,8 +287,10 @@ impl Checker<'_> {
             || format!("{path}/duration"),
             "duration must be positive",
         );
+        self.grid(|| format!("{path}/start"), clip.start);
+        self.grid(|| format!("{path}/duration"), clip.duration);
         self.check(
-            clip.end().is_some(),
+            clip.end().is_some_and(Time::is_on_grid),
             || format!("{path}/duration"),
             "start + duration is out of range",
         );
@@ -316,7 +335,7 @@ impl Checker<'_> {
         );
 
         if let Some(visual) = &clip.visual {
-            self.visual(&format!("{path}/visual"), clip.duration, visual);
+            self.visual(&format!("{path}/visual"), visual);
         }
         if let Some(audio) = &clip.audio {
             self.audio(&format!("{path}/audio"), clip.duration, audio);
@@ -325,7 +344,7 @@ impl Checker<'_> {
             ClipContent::Text(text) => {
                 self.text_style(&format!("{path}/content/style"), &text.style)
             }
-            ClipContent::Caption(caption) => self.caption(path, clip.duration, caption),
+            ClipContent::Caption(caption) => self.caption(path, caption),
             ClipContent::Solid(solid) => self.color(&format!("{path}/content/color"), solid.color),
             ClipContent::Media(_) | ClipContent::Adjustment => {}
         }
@@ -350,6 +369,7 @@ impl Checker<'_> {
             || format!("{path}/content/sourceIn"),
             "source in-point must not be negative",
         );
+        self.grid(|| format!("{path}/content/sourceIn"), content.source_in);
         let project = self.project;
         let Some(asset) = project.media(content.media) else {
             self.issue(
@@ -372,11 +392,10 @@ impl Checker<'_> {
         Some(asset.kind)
     }
 
-    fn visual(&mut self, path: &str, duration: Time, visual: &Visual) {
+    fn visual(&mut self, path: &str, visual: &Visual) {
         let transform = &visual.transform;
         self.animated(
             &format!("{path}/transform/position"),
-            duration,
             &transform.position,
             |c, p, v| {
                 c.vec2(p, *v);
@@ -384,7 +403,6 @@ impl Checker<'_> {
         );
         self.animated(
             &format!("{path}/transform/scale"),
-            duration,
             &transform.scale,
             |c, p, v| {
                 c.vec2(p, *v);
@@ -392,7 +410,6 @@ impl Checker<'_> {
         );
         self.animated(
             &format!("{path}/transform/rotation"),
-            duration,
             &transform.rotation,
             |c, p, v| {
                 c.finite(p, *v);
@@ -400,18 +417,13 @@ impl Checker<'_> {
         );
         self.vec2(&format!("{path}/transform/anchor"), transform.anchor);
         self.crop(&format!("{path}/crop"), visual.crop);
-        self.animated(
-            &format!("{path}/opacity"),
-            duration,
-            &visual.opacity,
-            |c, p, v| {
-                c.check(
-                    (0.0..=1.0).contains(v),
-                    || p.to_owned(),
-                    "opacity must be within 0..=1",
-                );
-            },
-        );
+        self.animated(&format!("{path}/opacity"), &visual.opacity, |c, p, v| {
+            c.check(
+                (0.0..=1.0).contains(v),
+                || p.to_owned(),
+                "opacity must be within 0..=1",
+            );
+        });
         for (i, effect) in visual.effects.iter().enumerate() {
             let path = format!("{path}/effects/{i}");
             self.id(effect.id.as_uuid(), format!("{path}/id"));
@@ -424,7 +436,7 @@ impl Checker<'_> {
                     "parameter names must not be empty",
                 );
                 let first_type = value.values().next().map(ParamValue::type_name);
-                self.animated(&param_path, duration, value, |c, p, v| {
+                self.animated(&param_path, value, |c, p, v| {
                     c.check(
                         Some(v.type_name()) == first_type,
                         || p.to_owned(),
@@ -437,14 +449,11 @@ impl Checker<'_> {
     }
 
     fn audio(&mut self, path: &str, duration: Time, audio: &AudioMix) {
-        self.animated(
-            &format!("{path}/gainDb"),
-            duration,
-            &audio.gain_db,
-            |c, p, v| {
-                c.finite(p, *v);
-            },
-        );
+        self.animated(&format!("{path}/gainDb"), &audio.gain_db, |c, p, v| {
+            c.finite(p, *v);
+        });
+        self.grid(|| format!("{path}/fadeIn"), audio.fade_in);
+        self.grid(|| format!("{path}/fadeOut"), audio.fade_out);
         let fades = audio.fade_in.checked_add(audio.fade_out);
         self.check(
             !audio.fade_in.is_negative()
@@ -455,16 +464,21 @@ impl Checker<'_> {
         );
     }
 
-    fn caption(&mut self, path: &str, duration: Time, caption: &CaptionContent) {
+    /// Word times may lie outside the clip after a trim or split: they keep
+    /// their place in the speech, and only the words inside the clip show.
+    fn caption(&mut self, path: &str, caption: &CaptionContent) {
         self.text_style(&format!("{path}/content/style"), &caption.style);
-        let mut previous_end = Time::ZERO;
+        let mut previous_end: Option<Time> = None;
         for (i, word) in caption.words.iter().enumerate() {
+            let word_path = || format!("{path}/content/words/{i}");
             self.check(
-                word.start >= previous_end && word.start <= word.end && word.end <= duration,
-                || format!("{path}/content/words/{i}"),
-                "words must be ordered, must not overlap and must lie within the clip",
+                previous_end.is_none_or(|end| word.start >= end) && word.start <= word.end,
+                word_path,
+                "words must be ordered and must not overlap",
             );
-            previous_end = word.end;
+            self.grid(|| format!("{path}/content/words/{i}/start"), word.start);
+            self.grid(|| format!("{path}/content/words/{i}/end"), word.end);
+            previous_end = Some(word.end);
         }
     }
 
@@ -518,12 +532,13 @@ impl Checker<'_> {
         }
     }
 
-    /// Keyframes are non-empty, strictly increasing and within the clip; each
-    /// value passes `value`.
+    /// Keyframes are non-empty, strictly increasing and on the grid; each
+    /// value passes `value`. They may lie outside the clip: a trim or a split
+    /// keeps them where they are relative to the content, so the animation
+    /// continues across the cut and comes back when the clip is extended.
     fn animated<T>(
         &mut self,
         path: &str,
-        duration: Time,
         animated: &Animated<T>,
         mut value: impl FnMut(&mut Self, &str, &T),
     ) {
@@ -539,12 +554,11 @@ impl Checker<'_> {
                 for (i, keyframe) in keyframes.iter().enumerate() {
                     let path = format!("{path}/keyframes/{i}");
                     self.check(
-                        !keyframe.at.is_negative()
-                            && keyframe.at <= duration
-                            && previous.is_none_or(|p| keyframe.at > p),
+                        previous.is_none_or(|p| keyframe.at > p),
                         || format!("{path}/at"),
-                        "keyframes must be strictly increasing and within the clip",
+                        "keyframes must be strictly increasing",
                     );
+                    self.grid(|| format!("{path}/at"), keyframe.at);
                     if let Easing::CubicBezier { x1, y1, x2, y2 } = keyframe.easing {
                         self.check(
                             (0.0..=1.0).contains(&x1)

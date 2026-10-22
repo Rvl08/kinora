@@ -17,8 +17,12 @@ account, subscription or upload.
   - `docs/04-phase0-plan.md`: Phase 0 backlog, with the progress table in §3.1.
   - `docs/adr/` (0001–0007): binding decisions. Change one only through an amendment.
   - `docs/06-public-release-plan.md`: zero-cost distribution.
+  - `docs/07-frontend-guidelines.md`: binding UI architecture and design rules for `apps/desktop/ui`.
 
 ## 2. Status (22 Oct 2026). The source of truth is `docs/04-phase0-plan.md` §3.1
+
+**Start of a session:** read `docs/handoff.md` (last session's results, what is unverified, the next steps). Update it
+at the end of every session.
 
 | Done | Notes |
 |---|---|
@@ -32,18 +36,24 @@ account, subscription or upload.
 | P0-09 S3 AI runtime, P0-09b S3b cutout | ADR-0006: whisper Vulkan; Kokoro without espeak-ng; BiRefNet dynamic export |
 | P0-11 fixtures | `scripts/fixtures/`, 15 freely licensed fixtures (media outside git) |
 | P0-12 IPC contract | `crates/kinora-project` (project.json v0) and `crates/kinora-ipc`; ts-rs bindings in `apps/desktop/ui/src/lib/ipc/bindings.ts` and the JSON Schema are generated (`pnpm run ipc:generate`) and drift-tested |
+| Editing core (pre-Phase 1) | ADR-0004 amendment 2: timeline times on a **flick grid** (1/705,600,000 s). `kinora-project::edit`: atomic `apply`, exact undo/redo patches, `Editor` session, `journal.jsonl` crash recovery. Linux-tested; Windows sandbox run pending (`docs/spikes/edit-core-report.md`) |
 
 **In progress or not done:**
 - **P0-05b:** static release FFmpeg built in CI (`scripts/ffmpeg/release*`, `.github/workflows/ffmpeg-release.yml`).
   Check `git log` and the docs/04 table before touching it: it may already be committed.
-- **Edit timebase (ADR-0004 amendment 1):** decide before Phase 1's `apply`: snap to timeline frames or to a
-  global flick tick. Adding times with coprime denominators can otherwise overflow.
 - **P0-10 / Spike S4:** NSIS installer with wizard + MSIX (winapp CLI); test install in a clean Windows Sandbox.
 - **P0-13:** Phase 0 go/no-go gate, then the Phase 1 backlog.
 - **P0-14:** public channels. Register with SignPath Foundation (needs a first release and the "Code signing
   policy" section) and the Microsoft Store. The owner does the registrations.
 - **Untested hardware:** iGPU (Intel/AMD), QSV/AMF encoders, 8 GB laptops.
-- **Phase 1 (MVP editor) has not started.** Its first step is setting up Impeccable (§4).
+- **Phase 1 (MVP editor) has not started**, apart from the editing core above and the UI foundation:
+  - `apps/desktop/ui` follows `docs/07`;
+  - Impeccable is installed (`.claude/README.md`) and `PRODUCT.md` is written;
+  - the "cuci cetak" visual world (`src/lib/theme/tokens.css`) and the start screen are built, passed two Impeccable
+    finish reviews, and the design system is recorded in `apps/desktop/ui/DESIGN.md` (read it before UI work);
+  - not yet verified in WebView2 (there is no Tauri shell yet).
+- **Tauri shell:** must write the edit journal (header on open/save, append and sync each entry, atomic save); see
+  `docs/spikes/edit-core-report.md` §3.3.
 
 ## 3. Non-negotiable rules
 
@@ -79,7 +89,7 @@ first.
   `/impeccable init` and `/impeccable hooks on` (<https://impeccable.style>). The hooks need the owner's approval.
 - The goal is clean, elegant, professional and easy for anyone. **No "AI slop":** no generic purple gradients,
   identical cards or decorative icons.
-- Follow docs/03 §6.6:
+- Follow `docs/07-frontend-guidelines.md` (structure, read-model data flow, i18n, tokens, a11y, testing) and docs/03 §6.6:
   - progressive disclosure, and ≤ 2 clicks for common actions;
   - honest progress for AI jobs, which can always be cancelled;
   - dark and light themes; WCAG AA contrast; keyboard-first for pro users;
@@ -92,7 +102,8 @@ first.
   CI runs `cargo clippy -D warnings`.
 - Typed errors (`thiserror`). Errors cross IPC as safe, serialisable values: no panics, no internal paths.
 - Every project change is a **Command** (undo/redo, journal). The UI, Copilot, MCP and scripts all go through it (ADR-0004).
-- Timeline time is **rational**, never floating point.
+- Timeline time is **rational**, never floating point, and on the flick grid (`Time::is_on_grid`); round
+  explicitly with `scale_to_grid`/`round_to_grid`, never implicitly.
 - Treat media, project files, templates and effect packages as **untrusted input**: bounds checks, no unbounded allocation, fuzz the parsers.
 
 **Data and schema**
@@ -143,6 +154,7 @@ decision means a new ADR or an amendment, plus an update to the docs/04 progress
 ```sh
 corepack pnpm install
 corepack pnpm run lint && corepack pnpm run format:check && corepack pnpm run licenses:check
+corepack pnpm run ui:check && corepack pnpm run ui:test && corepack pnpm run ui:build   # apps/desktop/ui
 cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace
 cargo deny check
 corepack pnpm run ffmpeg:fetch | ffmpeg:verify          # dev FFmpeg (Windows)

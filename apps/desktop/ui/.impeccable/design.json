@@ -1,0 +1,792 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-22T14:09:52.920Z",
+  "title": "Design System: Kinora",
+  "extensions": {
+    "colorMeta": {
+      "surface-base": {
+        "role": "neutral",
+        "displayName": "Film-Rebate Charcoal",
+        "canonical": "oklch(0.205 0.011 55)",
+        "cssVariable": "--surface-base",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.011 55)",
+          "oklch(0.27 0.011 55)",
+          "oklch(0.39 0.011 55)",
+          "oklch(0.51 0.011 55)",
+          "oklch(0.63 0.011 55)",
+          "oklch(0.75 0.011 55)",
+          "oklch(0.86 0.011 55)",
+          "oklch(0.95 0.011 55)"
+        ]
+      },
+      "surface-sunken": {
+        "role": "neutral",
+        "displayName": "Rebate Deep",
+        "canonical": "oklch(0.175 0.01 55)",
+        "cssVariable": "--surface-sunken",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.01 55)",
+          "oklch(0.27 0.01 55)",
+          "oklch(0.39 0.01 55)",
+          "oklch(0.51 0.01 55)",
+          "oklch(0.63 0.01 55)",
+          "oklch(0.75 0.01 55)",
+          "oklch(0.86 0.01 55)",
+          "oklch(0.95 0.01 55)"
+        ]
+      },
+      "surface-print": {
+        "role": "neutral",
+        "displayName": "Print Border",
+        "canonical": "oklch(0.78 0.01 80)",
+        "cssVariable": "--surface-print",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.01 80)",
+          "oklch(0.27 0.01 80)",
+          "oklch(0.39 0.01 80)",
+          "oklch(0.51 0.01 80)",
+          "oklch(0.63 0.01 80)",
+          "oklch(0.75 0.01 80)",
+          "oklch(0.86 0.01 80)",
+          "oklch(0.95 0.01 80)"
+        ]
+      },
+      "surface-unexposed": {
+        "role": "neutral",
+        "displayName": "Unexposed Frame",
+        "canonical": "oklch(0.28 0.008 55)",
+        "cssVariable": "--surface-unexposed",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.008 55)",
+          "oklch(0.27 0.008 55)",
+          "oklch(0.39 0.008 55)",
+          "oklch(0.51 0.008 55)",
+          "oklch(0.63 0.008 55)",
+          "oklch(0.75 0.008 55)",
+          "oklch(0.86 0.008 55)",
+          "oklch(0.95 0.008 55)"
+        ]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Print White",
+        "canonical": "oklch(0.955 0.008 85)",
+        "cssVariable": "--text-primary",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.008 85)",
+          "oklch(0.27 0.008 85)",
+          "oklch(0.39 0.008 85)",
+          "oklch(0.51 0.008 85)",
+          "oklch(0.63 0.008 85)",
+          "oklch(0.75 0.008 85)",
+          "oklch(0.86 0.008 85)",
+          "oklch(0.95 0.008 85)"
+        ]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Secondary Text",
+        "canonical": "oklch(0.79 0.012 75)",
+        "cssVariable": "--text-secondary",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.012 75)",
+          "oklch(0.27 0.012 75)",
+          "oklch(0.39 0.012 75)",
+          "oklch(0.51 0.012 75)",
+          "oklch(0.63 0.012 75)",
+          "oklch(0.75 0.012 75)",
+          "oklch(0.86 0.012 75)",
+          "oklch(0.95 0.012 75)"
+        ]
+      },
+      "text-tertiary": {
+        "role": "neutral",
+        "displayName": "Tertiary Text",
+        "canonical": "oklch(0.7 0.016 65)",
+        "cssVariable": "--text-tertiary",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.016 65)",
+          "oklch(0.27 0.016 65)",
+          "oklch(0.39 0.016 65)",
+          "oklch(0.51 0.016 65)",
+          "oklch(0.63 0.016 65)",
+          "oklch(0.75 0.016 65)",
+          "oklch(0.86 0.016 65)",
+          "oklch(0.95 0.016 65)"
+        ]
+      },
+      "text-on-accent": {
+        "role": "neutral",
+        "displayName": "Text on Orange",
+        "canonical": "oklch(0.18 0.02 50)",
+        "cssVariable": "--text-on-accent",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.02 50)",
+          "oklch(0.27 0.02 50)",
+          "oklch(0.39 0.02 50)",
+          "oklch(0.51 0.02 50)",
+          "oklch(0.63 0.02 50)",
+          "oklch(0.75 0.02 50)",
+          "oklch(0.86 0.02 50)",
+          "oklch(0.95 0.02 50)"
+        ]
+      },
+      "text-accent": {
+        "role": "primary",
+        "displayName": "Bright Negative Text",
+        "canonical": "oklch(0.76 0.14 55)",
+        "cssVariable": "--text-accent",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.14 55)",
+          "oklch(0.27 0.14 55)",
+          "oklch(0.39 0.14 55)",
+          "oklch(0.51 0.14 55)",
+          "oklch(0.63 0.14 55)",
+          "oklch(0.75 0.14 55)",
+          "oklch(0.86 0.14 55)",
+          "oklch(0.95 0.14 55)"
+        ]
+      },
+      "border-subtle": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "oklch(0.36 0.012 55)",
+        "cssVariable": "--border-subtle",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.012 55)",
+          "oklch(0.27 0.012 55)",
+          "oklch(0.39 0.012 55)",
+          "oklch(0.51 0.012 55)",
+          "oklch(0.63 0.012 55)",
+          "oklch(0.75 0.012 55)",
+          "oklch(0.86 0.012 55)",
+          "oklch(0.95 0.012 55)"
+        ]
+      },
+      "border-control": {
+        "role": "neutral",
+        "displayName": "Control Stroke",
+        "canonical": "oklch(0.54 0.014 55)",
+        "cssVariable": "--border-control",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.014 55)",
+          "oklch(0.27 0.014 55)",
+          "oklch(0.39 0.014 55)",
+          "oklch(0.51 0.014 55)",
+          "oklch(0.63 0.014 55)",
+          "oklch(0.75 0.014 55)",
+          "oklch(0.86 0.014 55)",
+          "oklch(0.95 0.014 55)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Negative-Base Orange",
+        "canonical": "oklch(0.72 0.155 52)",
+        "cssVariable": "--accent",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.155 52)",
+          "oklch(0.27 0.155 52)",
+          "oklch(0.39 0.155 52)",
+          "oklch(0.51 0.155 52)",
+          "oklch(0.63 0.155 52)",
+          "oklch(0.75 0.155 52)",
+          "oklch(0.86 0.155 52)",
+          "oklch(0.95 0.155 52)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Bright Negative",
+        "canonical": "oklch(0.76 0.14 55)",
+        "cssVariable": "--accent-hover",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.14 55)",
+          "oklch(0.27 0.14 55)",
+          "oklch(0.39 0.14 55)",
+          "oklch(0.51 0.14 55)",
+          "oklch(0.63 0.14 55)",
+          "oklch(0.75 0.14 55)",
+          "oklch(0.86 0.14 55)",
+          "oklch(0.95 0.14 55)"
+        ]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Negative Wash",
+        "canonical": "oklch(0.72 0.155 52 / 0.14)",
+        "cssVariable": "--accent-soft",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.155 52)",
+          "oklch(0.27 0.155 52)",
+          "oklch(0.39 0.155 52)",
+          "oklch(0.51 0.155 52)",
+          "oklch(0.63 0.155 52)",
+          "oklch(0.75 0.155 52)",
+          "oklch(0.86 0.155 52)",
+          "oklch(0.95 0.155 52)"
+        ]
+      },
+      "status-danger": {
+        "role": "status",
+        "displayName": "Safelight Red",
+        "canonical": "oklch(0.7 0.17 28)",
+        "cssVariable": "--status-danger",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.17 28)",
+          "oklch(0.27 0.17 28)",
+          "oklch(0.39 0.17 28)",
+          "oklch(0.51 0.17 28)",
+          "oklch(0.63 0.17 28)",
+          "oklch(0.75 0.17 28)",
+          "oklch(0.86 0.17 28)",
+          "oklch(0.95 0.17 28)"
+        ]
+      },
+      "focus-ring": {
+        "role": "primary",
+        "displayName": "Focus Ring",
+        "canonical": "oklch(0.76 0.14 55)",
+        "cssVariable": "--focus-ring",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.14 55)",
+          "oklch(0.27 0.14 55)",
+          "oklch(0.39 0.14 55)",
+          "oklch(0.51 0.14 55)",
+          "oklch(0.63 0.14 55)",
+          "oklch(0.75 0.14 55)",
+          "oklch(0.86 0.14 55)",
+          "oklch(0.95 0.14 55)"
+        ]
+      },
+      "selection": {
+        "role": "primary",
+        "displayName": "Selection",
+        "canonical": "oklch(0.72 0.155 52 / 0.35)",
+        "cssVariable": "--selection",
+        "theme": "dark",
+        "tonalRamp": [
+          "oklch(0.15 0.155 52)",
+          "oklch(0.27 0.155 52)",
+          "oklch(0.39 0.155 52)",
+          "oklch(0.51 0.155 52)",
+          "oklch(0.63 0.155 52)",
+          "oklch(0.75 0.155 52)",
+          "oklch(0.86 0.155 52)",
+          "oklch(0.95 0.155 52)"
+        ]
+      },
+      "surface-base-light": {
+        "role": "neutral",
+        "displayName": "Photo Paper",
+        "canonical": "oklch(0.958 0.003 250)",
+        "cssVariable": "--surface-base",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.003 250)",
+          "oklch(0.27 0.003 250)",
+          "oklch(0.39 0.003 250)",
+          "oklch(0.51 0.003 250)",
+          "oklch(0.63 0.003 250)",
+          "oklch(0.75 0.003 250)",
+          "oklch(0.86 0.003 250)",
+          "oklch(0.95 0.003 250)"
+        ]
+      },
+      "surface-sunken-light": {
+        "role": "neutral",
+        "displayName": "Paper Shade",
+        "canonical": "oklch(0.925 0.005 250)",
+        "cssVariable": "--surface-sunken",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.005 250)",
+          "oklch(0.27 0.005 250)",
+          "oklch(0.39 0.005 250)",
+          "oklch(0.51 0.005 250)",
+          "oklch(0.63 0.005 250)",
+          "oklch(0.75 0.005 250)",
+          "oklch(0.86 0.005 250)",
+          "oklch(0.95 0.005 250)"
+        ]
+      },
+      "surface-print-light": {
+        "role": "neutral",
+        "displayName": "Bright Print Paper",
+        "canonical": "oklch(0.995 0.003 85)",
+        "cssVariable": "--surface-print",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.003 85)",
+          "oklch(0.27 0.003 85)",
+          "oklch(0.39 0.003 85)",
+          "oklch(0.51 0.003 85)",
+          "oklch(0.63 0.003 85)",
+          "oklch(0.75 0.003 85)",
+          "oklch(0.86 0.003 85)",
+          "oklch(0.95 0.003 85)"
+        ]
+      },
+      "surface-unexposed-light": {
+        "role": "neutral",
+        "displayName": "Unexposed Frame (light)",
+        "canonical": "oklch(0.86 0.006 80)",
+        "cssVariable": "--surface-unexposed",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.006 80)",
+          "oklch(0.27 0.006 80)",
+          "oklch(0.39 0.006 80)",
+          "oklch(0.51 0.006 80)",
+          "oklch(0.63 0.006 80)",
+          "oklch(0.75 0.006 80)",
+          "oklch(0.86 0.006 80)",
+          "oklch(0.95 0.006 80)"
+        ]
+      },
+      "text-primary-light": {
+        "role": "neutral",
+        "displayName": "Lab Ink",
+        "canonical": "oklch(0.23 0.015 50)",
+        "cssVariable": "--text-primary",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.015 50)",
+          "oklch(0.27 0.015 50)",
+          "oklch(0.39 0.015 50)",
+          "oklch(0.51 0.015 50)",
+          "oklch(0.63 0.015 50)",
+          "oklch(0.75 0.015 50)",
+          "oklch(0.86 0.015 50)",
+          "oklch(0.95 0.015 50)"
+        ]
+      },
+      "text-secondary-light": {
+        "role": "neutral",
+        "displayName": "Secondary Text (light)",
+        "canonical": "oklch(0.42 0.016 55)",
+        "cssVariable": "--text-secondary",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.016 55)",
+          "oklch(0.27 0.016 55)",
+          "oklch(0.39 0.016 55)",
+          "oklch(0.51 0.016 55)",
+          "oklch(0.63 0.016 55)",
+          "oklch(0.75 0.016 55)",
+          "oklch(0.86 0.016 55)",
+          "oklch(0.95 0.016 55)"
+        ]
+      },
+      "text-tertiary-light": {
+        "role": "neutral",
+        "displayName": "Tertiary Text (light)",
+        "canonical": "oklch(0.49 0.018 55)",
+        "cssVariable": "--text-tertiary",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.018 55)",
+          "oklch(0.27 0.018 55)",
+          "oklch(0.39 0.018 55)",
+          "oklch(0.51 0.018 55)",
+          "oklch(0.63 0.018 55)",
+          "oklch(0.75 0.018 55)",
+          "oklch(0.86 0.018 55)",
+          "oklch(0.95 0.018 55)"
+        ]
+      },
+      "text-on-accent-light": {
+        "role": "neutral",
+        "displayName": "Text on Orange (light)",
+        "canonical": "oklch(0.995 0.003 85)",
+        "cssVariable": "--text-on-accent",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.003 85)",
+          "oklch(0.27 0.003 85)",
+          "oklch(0.39 0.003 85)",
+          "oklch(0.51 0.003 85)",
+          "oklch(0.63 0.003 85)",
+          "oklch(0.75 0.003 85)",
+          "oklch(0.86 0.003 85)",
+          "oklch(0.95 0.003 85)"
+        ]
+      },
+      "text-accent-light": {
+        "role": "primary",
+        "displayName": "Bright Negative Text (light)",
+        "canonical": "oklch(0.51 0.15 42)",
+        "cssVariable": "--text-accent",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.15 42)",
+          "oklch(0.27 0.15 42)",
+          "oklch(0.39 0.15 42)",
+          "oklch(0.51 0.15 42)",
+          "oklch(0.63 0.15 42)",
+          "oklch(0.75 0.15 42)",
+          "oklch(0.86 0.15 42)",
+          "oklch(0.95 0.15 42)"
+        ]
+      },
+      "border-subtle-light": {
+        "role": "neutral",
+        "displayName": "Rule (light)",
+        "canonical": "oklch(0.86 0.006 250)",
+        "cssVariable": "--border-subtle",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.006 250)",
+          "oklch(0.27 0.006 250)",
+          "oklch(0.39 0.006 250)",
+          "oklch(0.51 0.006 250)",
+          "oklch(0.63 0.006 250)",
+          "oklch(0.75 0.006 250)",
+          "oklch(0.86 0.006 250)",
+          "oklch(0.95 0.006 250)"
+        ]
+      },
+      "border-control-light": {
+        "role": "neutral",
+        "displayName": "Control Stroke (light)",
+        "canonical": "oklch(0.62 0.008 250)",
+        "cssVariable": "--border-control",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.008 250)",
+          "oklch(0.27 0.008 250)",
+          "oklch(0.39 0.008 250)",
+          "oklch(0.51 0.008 250)",
+          "oklch(0.63 0.008 250)",
+          "oklch(0.75 0.008 250)",
+          "oklch(0.86 0.008 250)",
+          "oklch(0.95 0.008 250)"
+        ]
+      },
+      "accent-light": {
+        "role": "primary",
+        "displayName": "Deep Negative Orange",
+        "canonical": "oklch(0.56 0.155 44)",
+        "cssVariable": "--accent",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.155 44)",
+          "oklch(0.27 0.155 44)",
+          "oklch(0.39 0.155 44)",
+          "oklch(0.51 0.155 44)",
+          "oklch(0.63 0.155 44)",
+          "oklch(0.75 0.155 44)",
+          "oklch(0.86 0.155 44)",
+          "oklch(0.95 0.155 44)"
+        ]
+      },
+      "accent-hover-light": {
+        "role": "primary",
+        "displayName": "Bright Negative (light)",
+        "canonical": "oklch(0.52 0.15 42)",
+        "cssVariable": "--accent-hover",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.15 42)",
+          "oklch(0.27 0.15 42)",
+          "oklch(0.39 0.15 42)",
+          "oklch(0.51 0.15 42)",
+          "oklch(0.63 0.15 42)",
+          "oklch(0.75 0.15 42)",
+          "oklch(0.86 0.15 42)",
+          "oklch(0.95 0.15 42)"
+        ]
+      },
+      "accent-soft-light": {
+        "role": "primary",
+        "displayName": "Negative Wash (light)",
+        "canonical": "oklch(0.56 0.155 44 / 0.1)",
+        "cssVariable": "--accent-soft",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.155 44)",
+          "oklch(0.27 0.155 44)",
+          "oklch(0.39 0.155 44)",
+          "oklch(0.51 0.155 44)",
+          "oklch(0.63 0.155 44)",
+          "oklch(0.75 0.155 44)",
+          "oklch(0.86 0.155 44)",
+          "oklch(0.95 0.155 44)"
+        ]
+      },
+      "status-danger-light": {
+        "role": "status",
+        "displayName": "Safelight Red (light)",
+        "canonical": "oklch(0.52 0.18 28)",
+        "cssVariable": "--status-danger",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.18 28)",
+          "oklch(0.27 0.18 28)",
+          "oklch(0.39 0.18 28)",
+          "oklch(0.51 0.18 28)",
+          "oklch(0.63 0.18 28)",
+          "oklch(0.75 0.18 28)",
+          "oklch(0.86 0.18 28)",
+          "oklch(0.95 0.18 28)"
+        ]
+      },
+      "focus-ring-light": {
+        "role": "primary",
+        "displayName": "Focus Ring (light)",
+        "canonical": "oklch(0.51 0.15 42)",
+        "cssVariable": "--focus-ring",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.15 42)",
+          "oklch(0.27 0.15 42)",
+          "oklch(0.39 0.15 42)",
+          "oklch(0.51 0.15 42)",
+          "oklch(0.63 0.15 42)",
+          "oklch(0.75 0.15 42)",
+          "oklch(0.86 0.15 42)",
+          "oklch(0.95 0.15 42)"
+        ]
+      },
+      "selection-light": {
+        "role": "primary",
+        "displayName": "Selection (light)",
+        "canonical": "oklch(0.56 0.155 44 / 0.22)",
+        "cssVariable": "--selection",
+        "theme": "light",
+        "tonalRamp": [
+          "oklch(0.15 0.155 44)",
+          "oklch(0.27 0.155 44)",
+          "oklch(0.39 0.155 44)",
+          "oklch(0.51 0.155 44)",
+          "oklch(0.63 0.155 44)",
+          "oklch(0.75 0.155 44)",
+          "oklch(0.86 0.155 44)",
+          "oklch(0.95 0.155 44)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The one screen heading. Archivo 87.5% width."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings and the empty-state caption."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Band headings (drop band)."
+      },
+      "ratio-value": {
+        "displayName": "Ratio Value",
+        "purpose": "The ratio written inside a ratio frame; tabular."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Every sentence; 13px minimum; system UI face."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Button labels and project names."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Settings labels and secondary path lines."
+      },
+      "label": {
+        "displayName": "Edge-Print Label",
+        "purpose": "Edge prints, ratio captions, shortcut keys: uppercase, 75% width, tracked, tabular."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "KINORA in the top bar: Archivo 800, uppercase, 75% width."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Exponential ease-out for every shipped state transition."
+      },
+      {
+        "name": "duration-fast",
+        "value": "120ms",
+        "purpose": "Hover and border/colour state changes on buttons, frames, prints and the drop band rule."
+      },
+      {
+        "name": "duration-base",
+        "value": "200ms",
+        "purpose": "Drop band background fill while a file is dragged over the window."
+      },
+      {
+        "name": "duration-develop",
+        "value": "360ms",
+        "purpose": "Reserved for the one designed motion moment; unused in the shipped build."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all durations 0ms under prefers-reduced-motion: reduce",
+        "purpose": "Set in tokens.css."
+      }
+    ],
+    "breakpoints": [],
+    "focus": {
+      "value": "outline: 2px solid var(--focus-ring); outline-offset: 2px",
+      "purpose": "Global :focus-visible treatment from app.css."
+    },
+    "layout": {
+      "startColumn": "minmax(22rem, 38%)",
+      "contactSheetCell": "minmax(14.5rem, 1fr), row gap 24px, column gap 0",
+      "ratioHeight": "min(10rem, calc((100cqi - 3rem) / 3.34))",
+      "printStage": "7.5rem",
+      "note": "Container queries, no media breakpoints; 1366x768 is the comfort floor."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action of a screen.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Ekspor</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 2.25rem; padding: 0 var(--space-4); border: var(--hairline) solid transparent; border-radius: var(--radius-control); font-family: var(--font-ui); font-weight: 600; font-size: var(--text-sm); white-space: nowrap; cursor: pointer; transition: background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out); } .ds-btn:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); } .ds-btn-primary { background: var(--accent); color: var(--text-on-accent); } .ds-btn-primary:hover { background: var(--accent-hover); }"
+    },
+    {
+      "name": "Secondary Button with shortcut",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The default variant: hairline stroke, accent on hover, optional icon and shortcut key.",
+      "html": "<button class=\"ds-btn2\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2\"/></svg><span>Buka proyek…</span><kbd class=\"ds-key\">Ctrl+O</kbd></button>",
+      "css": ".ds-btn2 { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 2.25rem; padding: 0 var(--space-4); background: transparent; border: var(--hairline) solid var(--border-control); border-radius: var(--radius-control); color: var(--text-primary); font-family: var(--font-ui); font-weight: 600; font-size: var(--text-sm); cursor: pointer; transition: border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out); } .ds-btn2:hover { border-color: var(--accent); color: var(--text-accent); } .ds-btn2:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); } .ds-key { margin-left: var(--space-1); font-family: var(--font-display); font-stretch: var(--edge-stretch); font-weight: 600; font-size: var(--text-xs); letter-spacing: var(--edge-tracking); text-transform: uppercase; color: var(--text-tertiary); }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Low-emphasis action for dense areas.",
+      "html": "<button class=\"ds-btn-quiet\">Batal</button>",
+      "css": ".ds-btn-quiet { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0 var(--space-2); background: transparent; border: var(--hairline) solid transparent; border-radius: var(--radius-control); color: var(--text-secondary); font-family: var(--font-ui); font-weight: 600; font-size: var(--text-sm); cursor: pointer; transition: color var(--duration-fast) var(--ease-out); } .ds-btn-quiet:hover { color: var(--text-primary); } .ds-btn-quiet:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); }"
+    },
+    {
+      "name": "Ratio Frames",
+      "kind": "custom",
+      "refersTo": "ratio-frame-primary",
+      "description": "New-project choice drawn as the shape it creates; the default is filled with the accent; one height, one baseline.",
+      "html": "<div class=\"ds-ratios\"><button class=\"ds-ratio ds-ratio-primary\"><span class=\"ds-frame\" style=\"aspect-ratio:9/16\"><span class=\"ds-value\">9:16</span></span><span class=\"ds-cap\"><span class=\"ds-name\">Vertikal</span><kbd class=\"ds-use\">Ctrl+N</kbd></span></button><button class=\"ds-ratio\"><span class=\"ds-frame\" style=\"aspect-ratio:16/9\"><span class=\"ds-value\">16:9</span></span><span class=\"ds-cap\"><span class=\"ds-name\">Lanskap</span><span class=\"ds-use\">YouTube, layar lebar</span></span></button><button class=\"ds-ratio\"><span class=\"ds-frame\" style=\"aspect-ratio:1\"><span class=\"ds-value\">1:1</span></span><span class=\"ds-cap\"><span class=\"ds-name\">Persegi</span><span class=\"ds-use\">Feed</span></span></button></div>",
+      "css": ".ds-ratios { display: flex; align-items: flex-start; gap: var(--space-3); } .ds-ratio { display: grid; gap: var(--space-2); justify-items: start; padding: 0; border: 0; background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; } .ds-ratio:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); } .ds-frame { display: flex; align-items: flex-end; height: 8rem; padding: var(--space-2) var(--space-3); border: 2px solid var(--border-control); border-radius: var(--radius-print); transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out); } .ds-ratio:hover .ds-frame { border-color: var(--accent); } .ds-ratio-primary .ds-frame { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); } .ds-ratio-primary:hover .ds-frame { border-color: var(--accent-hover); background: var(--accent-hover); } .ds-value { font-family: var(--font-display); font-stretch: var(--edge-stretch); font-weight: 700; font-size: var(--text-xl); line-height: 1; font-variant-numeric: tabular-nums; } .ds-cap { display: grid; gap: 0.125rem; font-family: var(--font-display); font-stretch: var(--edge-stretch); font-weight: 600; font-size: var(--text-xs); letter-spacing: var(--edge-tracking); text-transform: uppercase; white-space: nowrap; } .ds-ratio-primary .ds-name { color: var(--text-accent); } .ds-use { color: var(--text-tertiary); font: inherit; }"
+    },
+    {
+      "name": "Print on the Contact Sheet",
+      "kind": "card",
+      "refersTo": "print-paper",
+      "description": "A recent project: paper-bordered print on one baseline over its edge print, then the name; the whole print opens the project.",
+      "html": "<div class=\"ds-sheet\"><button class=\"ds-print\"><span class=\"ds-stage\"><span class=\"ds-paper\" style=\"aspect-ratio:9/16;height:100%\"><span class=\"ds-image\"></span></span></span><span class=\"ds-edge\"><span class=\"ds-num\">01</span><span>9:16</span><span>Hari ini, 12.03</span><span class=\"ds-dur\">0:58</span></span><span class=\"ds-pname\">Liburan di Bali (contoh)</span></button></div>",
+      "css": ".ds-sheet { padding: var(--space-6); background: var(--surface-sunken); max-width: 16rem; } .ds-print { display: grid; width: 100%; padding: 0; border: 0; background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; font-family: var(--font-ui); font-size: var(--text-sm); } .ds-print:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); } .ds-stage { display: flex; align-items: flex-end; justify-content: center; height: 7.5rem; margin: 0 var(--space-3) var(--space-3); } .ds-paper { display: block; padding: var(--print-border); background: var(--surface-print); border-radius: var(--radius-print); transition: background-color var(--duration-fast) var(--ease-out); } .ds-image { display: block; width: 100%; height: 100%; background: var(--surface-unexposed); } .ds-print:hover .ds-paper, .ds-print:focus-visible .ds-paper { background: var(--text-primary); } .ds-edge { display: flex; align-items: baseline; gap: var(--space-3); min-height: 1.75rem; padding: var(--space-1) var(--space-3); background: var(--surface-base); font-family: var(--font-display); font-stretch: var(--edge-stretch); font-weight: 600; font-size: var(--text-xs); line-height: 1.5rem; letter-spacing: var(--edge-tracking); text-transform: uppercase; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-tertiary); } .ds-num { color: var(--text-accent); } .ds-dur { margin-left: auto; color: var(--text-secondary); } .ds-pname { padding: var(--space-2) var(--space-3) 0; font-weight: 600; } .ds-print:hover .ds-pname { color: var(--text-accent); }"
+    },
+    {
+      "name": "Edge Print",
+      "kind": "custom",
+      "refersTo": "edge-print",
+      "description": "The signature strip: frame number, ratio, date, duration against the right edge; status in safelight red when a project is missing.",
+      "html": "<p class=\"ds-edge2\"><span class=\"ds-n\">04</span><span>1:1</span><span>13 Okt</span><span class=\"ds-d\">0:30</span></p><p class=\"ds-edge2\"><span class=\"ds-n\">05</span><span class=\"ds-s\">Folder tidak ditemukan</span><span class=\"ds-d\"></span></p>",
+      "css": ".ds-edge2 { display: flex; align-items: baseline; gap: var(--space-3); min-height: 1.75rem; margin: 0 0 var(--space-2); padding: var(--space-1) var(--space-3); background: var(--surface-base); font-family: var(--font-display); font-stretch: var(--edge-stretch); font-weight: 600; font-size: var(--text-xs); line-height: 1.5rem; letter-spacing: var(--edge-tracking); text-transform: uppercase; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-tertiary); } .ds-n { color: var(--text-accent); } .ds-d { margin-left: auto; color: var(--text-secondary); } .ds-s { color: var(--status-danger); }"
+    },
+    {
+      "name": "Drop Band",
+      "kind": "custom",
+      "refersTo": "button-secondary",
+      "description": "Order-form band ruled above and below; turns accent with a soft wash while a file is dragged over the window (shown here in its active state on hover).",
+      "html": "<section class=\"ds-band\"><div><h2 class=\"ds-bt\">Seret video ke sini</h2><p class=\"ds-bh\">Proyek vertikal baru langsung dibuat dari video itu.</p></div><button class=\"ds-bb\">Pilih video…</button></section>",
+      "css": ".ds-band { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; border-block: var(--hairline) solid var(--border-subtle); font-family: var(--font-ui); font-size: var(--text-sm); color: var(--text-primary); transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-base) var(--ease-out); } .ds-band:hover { border-color: var(--accent); background: var(--accent-soft); padding-inline: var(--space-3); } .ds-bt { margin: 0; font-family: var(--font-display); font-stretch: 87.5%; font-weight: 650; font-size: var(--text-md); } .ds-band:hover .ds-bt { color: var(--text-accent); } .ds-bh { margin: 0; color: var(--text-secondary); } .ds-bb { min-height: 2.25rem; padding: 0 var(--space-4); background: transparent; border: var(--hairline) solid var(--border-control); border-radius: var(--radius-control); color: var(--text-primary); font: inherit; font-weight: 600; cursor: pointer; } .ds-bb:hover { border-color: var(--accent); color: var(--text-accent); } .ds-bb:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); }"
+    },
+    {
+      "name": "Settings Select",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "Native select with inline caption label, used for language and appearance.",
+      "html": "<label class=\"ds-field\"><span>Tampilan</span><select class=\"ds-select\"><option>Ikuti sistem</option><option>Gelap</option><option>Terang</option></select></label>",
+      "css": ".ds-field { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--text-tertiary); font-family: var(--font-ui); font-size: var(--text-xs); } .ds-select { min-height: 2rem; padding: 0 var(--space-2); border: var(--hairline) solid var(--border-subtle); border-radius: var(--radius-control); background: var(--surface-base); color: var(--text-primary); font: inherit; } .ds-select:hover { border-color: var(--border-control); } .ds-select:focus-visible { outline: var(--focus-width) solid var(--focus-ring); outline-offset: var(--focus-offset); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Amplop Cuci-Cetak",
+    "overview": "Kinora's UI is the neighbourhood photo lab. Work comes back to the creator the way prints came back from the *cuci cetak* counter: a contact sheet read at a glance, each print standing on its own strip of edge-print numbers. The dark theme is the darkroom (warm film-rebate charcoal, print-white type); the light theme is bright photographic paper with the lab's warm ink. One accent, the orange of colour-negative base, marks the action; darkroom safelight red marks a problem.\n\nSurfaces are flat and matte. Hierarchy comes from space, type voice and order-form hairlines, never from boxes, gradients or glow. Two type voices share the work: the Windows system face carries every sentence, and condensed Archivo carries the lab's printed voice (headings, the wordmark, and the edge-print caps with tabular numbers). Density is calm: one column to start something, one sunken field holding past work.\n\nThe system was built from a refusal of the category default: a grey dashboard of identical project cards with a blue accent. The PRODUCT.md commitment \"no generic purple gradients, identical cards or decorative icons\" holds across every surface.",
+    "keyCharacteristics": [
+      "Warm charcoal darkroom and near-neutral photo paper, both themes first-class and AA-checked.",
+      "One accent (negative-base orange) for the primary action, selection, hover and focus.",
+      "Edge-print strips: condensed caps, open tracking, tabular numbers, duration set against the right edge.",
+      "Prints in thin paper borders, one height, one baseline, whatever their ratio.",
+      "Hairline ruling instead of boxes; 1px print corners, 4px control corners."
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Orange is the only hue that signals intent: the primary action, selection, hover and focus. No second accent; status colours never stand in for decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Layer Rule",
+        "body": "Components read `--surface-*`, `--text-*`, `--border-*`, `--accent*`, `--status-*`, `--focus-ring`. Raw `--pigment-*` values and literal colours stay inside tokens.css.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Archivo never sets a sentence; the system face never sets an edge print. Paragraphs, hints and errors are always the system UI font.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every number that can change or be compared (frame numbers, durations, ratios, timecodes) uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Baseline Rule",
+        "body": "Frames and prints in a row share one height (ratio frames by `--ratio-height`, prints 7.5rem) and stand bottom-aligned on one line; width follows each item's ratio.",
+        "section": "layout"
+      },
+      {
+        "name": "The Matte Rule",
+        "body": "No gradients, no glow, no resting shadows. A surface is distinguished by its tone or a hairline, never by light.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use only semantic tokens from tokens.css in components, and check every new pair for WCAG AA in both themes.",
+      "**Do** keep one accent: negative-base orange for the primary action, selection, hover and focus.",
+      "**Do** set edge prints, ratio captions and shortcut keys in Archivo at 75% width, 600, uppercase, 0.06em tracking, tabular figures.",
+      "**Do** keep sentences in the system UI face at 13px minimum.",
+      "**Do** stand frames and prints on one baseline at one height, with their width following the ratio.",
+      "**Do** separate fields with 1px hairlines and tonal steps (`surface-sunken`) rather than boxes.",
+      "**Do** pair every status colour with text, and give every icon a visible label.",
+      "**Do** use `--duration-fast`/`--duration-base` with `--ease-out`; the reduced-motion query already zeroes them."
+    ],
+    "donts": [
+      "**Don't** add gradients, glow, or resting shadows.",
+      "**Don't** introduce a second accent hue or a blue \"app\" accent.",
+      "**Don't** tint print images or let a print border carry the accent colour.",
+      "**Don't** round corners beyond 4px or use pill shapes.",
+      "**Don't** set paragraphs or error messages in Archivo.",
+      "**Don't** line up identical cards; past work is a contact sheet of prints, not a card grid."
+    ]
+  }
+}

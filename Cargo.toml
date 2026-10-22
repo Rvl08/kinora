@@ -21,7 +21,7 @@ serde = { version = "1.0.229", features = ["derive"] }
 # `float_roundtrip`: a saved f64 reads back bit for bit (docs/spikes/P0-12-report.md).
 serde_json = { version = "1.0.154", features = ["float_roundtrip"] }
 thiserror = "2.0.21"
-uuid = { version = "1.28.0", features = ["v7", "serde"] }
+uuid = { version = "1.28.0", features = ["v5", "v7", "serde"] }
 
 # Code generators are pinned exactly: their output is checked in and compared
 # byte for byte by tests, so an upgrade must be a deliberate, reviewed diff.

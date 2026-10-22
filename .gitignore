@@ -34,3 +34,16 @@ Thumbs.db
 /scripts/*/sandbox/generated/
 /scripts/sandbox/generated/
 /tests/sandbox-out/
+
+# Impeccable (design skill, see .claude/README.md): the platform engine binary is
+# downloaded and SHA-256-verified by the launcher; hooks and consent are per machine.
+.claude/skills/impeccable/scripts/bin/
+.claude/settings.local.json
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.impeccable/*.ndjson
+# Impeccable working files: decision rounds (raw seed keys), screenshots, comps, build state.
+**/.impeccable/questions/
+**/.impeccable/review/
+**/.impeccable/mocks/
+**/.impeccable/build/

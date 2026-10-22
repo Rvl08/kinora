@@ -1,6 +1,6 @@
 //! The document tree: project, settings, timelines, tracks and clips.
 
-use kinora_core::{FrameRate, Rational, Time};
+use kinora_core::{FrameRate, Rational, Rounding, Time};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -206,7 +206,9 @@ pub enum TrackKind {
 ///
 /// Timing: the clip occupies `[start, start + duration)` on the timeline. For
 /// media, the source range is derived, never stored twice:
-/// `sourceIn .. sourceIn + duration × speed`.
+/// `sourceIn .. sourceIn + duration × speed` (rounded to the flick, see
+/// [`Speed::source_duration`]). Every time here is on the edit grid
+/// (ADR-0004 amendment 2).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "ts-rs", derive(ts_rs::TS))]
@@ -304,10 +306,28 @@ impl Speed {
         rate: Rational::ONE,
     };
 
-    /// How many source seconds play during `duration` timeline seconds.
+    /// How many source seconds play during `duration` timeline seconds,
+    /// rounded to the nearest flick so source times stay on the edit grid
+    /// (at most half a flick, 0.7 ns, from the exact value). `None` when
+    /// `duration` is off the grid or the result is out of range.
+    ///
+    /// This is the one mapping from timeline to source time; the validator,
+    /// the editing core and the renderer all use it.
     pub fn source_duration(self, duration: Time) -> Option<Time> {
         match self {
-            Self::Constant { rate } => duration.checked_mul(rate),
+            Self::Constant { rate } => duration.scale_to_grid(rate, Rounding::Nearest),
+        }
+    }
+
+    /// The timeline duration that plays `source` source seconds: the exact
+    /// quotient rounded down to the flick, so its source range
+    /// ([`Self::source_duration`]) never exceeds `source`. (It is not always
+    /// the longest such duration: rounding the source back can absorb a few
+    /// more flicks.) `None` when `source` is off the grid or the result is
+    /// out of range.
+    pub fn timeline_duration(self, source: Time) -> Option<Time> {
+        match self {
+            Self::Constant { rate } => source.div_to_grid(rate, Rounding::Down),
         }
     }
 }

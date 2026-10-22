@@ -8,16 +8,16 @@ use proptest::prelude::*;
 
 const SAMPLE: &str = include_str!("fixtures/v0/sample.kinora/project.json");
 
-/// Timebases real media uses: whole seconds, PAL/film/NTSC frames, audio
-/// sample rates, MPEG-TS ticks. Arbitrary coprime denominators would overflow
-/// `u32` when added (the validator rejects that document, correctly), which is
-/// why the editing core keeps times on such timebases (P0-12 report §9).
+/// Timebases on the edit grid (ADR-0004 amendment 2): whole seconds,
+/// PAL/film/NTSC frames, audio sample rates, MPEG-TS ticks. Off-grid times
+/// are rejected by the validator; `document.rs` covers that.
 const TIMEBASES: &[u32] = &[
-    1, 2, 10, 24, 25, 30, 50, 60, 1000, 1001, 24_000, 30_000, 44_100, 48_000, 60_000, 90_000,
+    1, 2, 10, 24, 25, 30, 50, 60, 1000, 24_000, 30_000, 44_100, 48_000, 60_000, 90_000,
 ];
 
 fn time() -> impl Strategy<Value = Time> {
-    (0_i64..=100_000_000, prop::sample::select(TIMEBASES))
+    // Up to 5·10^6 s each, so sums stay within the grid's ±147 days.
+    (0_i64..=5_000_000, prop::sample::select(TIMEBASES))
         .prop_map(|(num, den)| Time::new(num, den).expect("in range by construction"))
 }
 
@@ -73,10 +73,6 @@ proptest! {
         let earliest = Time::from_secs(9).expect("in range");
         clip.start = earliest.checked_add(start).expect("in range");
         clip.duration = duration.checked_add(Time::from_rational(Rational::new(1, 1000).expect("valid"))).expect("in range");
-        if let Some(Animated::Keyframes { keyframes }) = clip.visual.as_mut().map(|v| &mut v.opacity) {
-            // Keep keyframes inside the clip.
-            keyframes.retain(|k| k.at <= duration);
-        }
         let json = to_json(&project).expect("valid document");
         prop_assert_eq!(from_json(&json).expect("reads back"), project);
     }

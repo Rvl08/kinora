@@ -4,6 +4,7 @@ use std::fmt;
 use std::io;
 
 use kinora_project::LoadError;
+use kinora_project::edit::{EditError, EditRule, EntityKind, HistoryError};
 use kinora_project::version::MigrationError;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -70,10 +71,16 @@ pub enum IpcError {
     },
     /// The edit is well-formed but not allowed here (it would overlap a
     /// clip, cut outside a clip, …).
-    #[error("the edit was rejected: {reason}")]
+    #[error("the edit was rejected ({rule}): {reason}")]
     EditRejected {
-        /// What rule the edit breaks.
+        /// Which rule the edit breaks; the UI explains it in its own words.
+        rule: EditRule,
+        /// Details in English, for logs and developer tools.
         reason: String,
+        /// JSON Pointer to the failing command inside the request's
+        /// `command`, e.g. `/params/commands/2`; empty for the command
+        /// itself.
+        command: String,
     },
     /// Undo was requested with an empty undo history.
     #[error("nothing to undo")]
@@ -237,6 +244,62 @@ impl From<LoadError> for IpcError {
     }
 }
 
+/// Maps a refused edit. [`EditError::Internal`] becomes
+/// [`IpcError::Internal`]: the shell logs the original error under the new
+/// incident id before returning it. `notFound` has no command pointer: the
+/// identifier it carries already names what the failing command referred to.
+impl From<EditError> for IpcError {
+    fn from(error: EditError) -> Self {
+        let command = error.command_pointer();
+        match error.root() {
+            EditError::NotFound { entity, id } => Self::NotFound {
+                entity: (*entity).into(),
+                id: id.to_string(),
+            },
+            EditError::Rejected { rule, message } => Self::EditRejected {
+                rule: *rule,
+                reason: message.clone(),
+                command,
+            },
+            EditError::Invalid { issues } => Self::EditRejected {
+                rule: EditRule::InvalidResult,
+                reason: issues.first().map(ToString::to_string).unwrap_or_default(),
+                command,
+            },
+            EditError::InBatch { .. } | EditError::Internal(_) => Self::internal(),
+        }
+    }
+}
+
+/// Maps a failed apply, undo or redo; see `From<EditError>`.
+impl From<HistoryError> for IpcError {
+    fn from(error: HistoryError) -> Self {
+        match error {
+            HistoryError::RevisionConflict { expected, current } => {
+                Self::RevisionConflict { expected, current }
+            }
+            HistoryError::NothingToUndo => Self::NothingToUndo,
+            HistoryError::NothingToRedo => Self::NothingToRedo,
+            HistoryError::Edit(error) => error.into(),
+            HistoryError::RevisionsExhausted => Self::internal(),
+        }
+    }
+}
+
+impl From<EntityKind> for Entity {
+    fn from(kind: EntityKind) -> Self {
+        match kind {
+            EntityKind::Media => Self::Media,
+            EntityKind::Timeline => Self::Timeline,
+            EntityKind::Track => Self::Track,
+            EntityKind::Clip => Self::Clip,
+            EntityKind::Effect => Self::Effect,
+            EntityKind::Transition => Self::Transition,
+            EntityKind::Marker => Self::Marker,
+        }
+    }
+}
+
 /// Identifies one internal failure in the local log.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
 pub struct IncidentId(Uuid);
@@ -301,6 +364,46 @@ mod tests {
             "{}",
             problems[0].message
         );
+    }
+
+    #[test]
+    fn edit_errors_carry_a_rule_and_the_failing_command() {
+        let error = EditError::InBatch {
+            index: 2,
+            error: Box::new(EditError::Rejected {
+                rule: EditRule::Overlap,
+                message: "the clip would overlap clip x".into(),
+            }),
+        };
+        assert_eq!(
+            serde_json::to_value(IpcError::from(error)).expect("serialise"),
+            json!({
+                "code": "editRejected",
+                "rule": "overlap",
+                "reason": "the clip would overlap clip x",
+                "command": "/params/commands/2"
+            })
+        );
+        let id = Uuid::now_v7();
+        let missing = IpcError::from(HistoryError::Edit(EditError::NotFound {
+            entity: EntityKind::Transition,
+            id,
+        }));
+        assert_eq!(
+            missing,
+            IpcError::NotFound {
+                entity: Entity::Transition,
+                id: id.to_string()
+            }
+        );
+        assert_eq!(
+            IpcError::from(HistoryError::NothingToUndo),
+            IpcError::NothingToUndo
+        );
+        assert!(matches!(
+            IpcError::from(EditError::Internal("bug")),
+            IpcError::Internal { .. }
+        ));
     }
 
     #[test]

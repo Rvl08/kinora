@@ -6,7 +6,15 @@ import ts from 'typescript-eslint';
 
 export default ts.config(
   {
-    ignores: ['**/target/**', '**/node_modules/**', '**/dist/**', 'vendor/**', 'spikes/**'],
+    // `.claude/` holds third-party tooling (Impeccable), not Kinora code.
+    ignores: [
+      '**/target/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      'vendor/**',
+      'spikes/**',
+      '.claude/**',
+    ],
   },
   js.configs.recommended,
   ...ts.configs.recommended,

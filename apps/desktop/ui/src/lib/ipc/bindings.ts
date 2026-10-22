@@ -100,7 +100,8 @@ export type CaptionContent = {
 text: string,
 /**
  * Word timings for karaoke-style highlighting; empty when unknown.
- * Ordered, non-overlapping and within the clip.
+ * Ordered and non-overlapping. Words outside the clip (after a trim or
+ * split) are kept but not shown.
  */
 words: Array<CaptionWord>,
 /**
@@ -144,7 +145,9 @@ export type ChannelLayout = "mono" | "stereo";
  *
  * Timing: the clip occupies `[start, start + duration)` on the timeline. For
  * media, the source range is derived, never stored twice:
- * `sourceIn .. sourceIn + duration × speed`.
+ * `sourceIn .. sourceIn + duration × speed` (rounded to the flick, see
+ * [`Speed::source_duration`]). Every time here is on the edit grid
+ * (ADR-0004 amendment 2).
  */
 export type Clip = {
 /**
@@ -350,7 +353,27 @@ track: Track, } } | { "op": "removeTrack", "params": {
 /**
  * The track.
  */
-track: TrackId, } } | { "op": "insertClip", "params": {
+track: TrackId, } } | { "op": "updateTrack", "params": {
+/**
+ * The track.
+ */
+track: TrackId,
+/**
+ * New display name.
+ */
+name: string | null,
+/**
+ * Silences the track's audio.
+ */
+muted: boolean | null,
+/**
+ * Hides the track's pictures.
+ */
+hidden: boolean | null,
+/**
+ * Protects the track from edits.
+ */
+locked: boolean | null, } } | { "op": "insertClip", "params": {
 /**
  * The track.
  */
@@ -446,7 +469,109 @@ param: string,
 /**
  * The new value.
  */
-value: Animated<ParamValue>, } };
+value: Animated<ParamValue>, } } | { "op": "renameClip", "params": {
+/**
+ * The clip.
+ */
+clip: ClipId,
+/**
+ * The new name; `null` shows the content's name.
+ */
+name: string | null, } } | { "op": "setClipEnabled", "params": {
+/**
+ * The clip.
+ */
+clip: ClipId,
+/**
+ * `false` keeps the clip but neither draws nor plays it.
+ */
+enabled: boolean, } } | { "op": "setTransform", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new transform.
+ */
+transform: Transform, } } | { "op": "setCrop", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new crop.
+ */
+crop: Crop, } } | { "op": "setOpacity", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new opacity.
+ */
+opacity: Animated<number>, } } | { "op": "setBlendMode", "params": {
+/**
+ * The clip; must have picture properties.
+ */
+clip: ClipId,
+/**
+ * The new blend mode.
+ */
+blendMode: BlendMode, } } | { "op": "setAudioMix", "params": {
+/**
+ * The clip; on an audio track, or video media on a video track.
+ */
+clip: ClipId,
+/**
+ * The new sound properties.
+ */
+audio: AudioMix, } } | { "op": "setText", "params": {
+/**
+ * The clip; must be a text clip.
+ */
+clip: ClipId,
+/**
+ * The new content.
+ */
+content: TextContent, } } | { "op": "setCaption", "params": {
+/**
+ * The clip; must be a caption clip.
+ */
+clip: ClipId,
+/**
+ * The new content.
+ */
+content: CaptionContent, } } | { "op": "addTransition", "params": {
+/**
+ * The track holding both clips.
+ */
+track: TrackId,
+/**
+ * The transition, with a fresh id.
+ */
+transition: Transition, } } | { "op": "removeTransition", "params": {
+/**
+ * The transition.
+ */
+transition: TransitionId, } } | { "op": "addMarker", "params": {
+/**
+ * The timeline.
+ */
+timeline: TimelineId,
+/**
+ * The marker, with a fresh id.
+ */
+marker: Marker, } } | { "op": "removeMarker", "params": {
+/**
+ * The marker.
+ */
+marker: MarkerId, } };
+
+/**
+ * The editing rules a command can break. Serialised in camelCase; the UI
+ * shows a localised explanation per rule.
+ */
+export type EditRule = "trackLocked" | "overlap" | "outsideClip" | "emptyClip" | "sourceRange" | "trackKind" | "otherTimeline" | "index" | "duplicateId" | "inUse" | "notApplicable" | "offGrid" | "outOfRange" | "notAdjacent" | "transitionExists" | "transitionTooLong" | "batchTooLarge" | "invalidResult";
 
 /**
  * An effect applied to a clip.
@@ -587,9 +712,19 @@ expected: Revision,
  */
 current: Revision, } | { "code": "editRejected",
 /**
- * What rule the edit breaks.
+ * Which rule the edit breaks; the UI explains it in its own words.
  */
-reason: string, } | { "code": "nothingToUndo" } | { "code": "nothingToRedo" } | { "code": "projectTooNew",
+rule: EditRule,
+/**
+ * Details in English, for logs and developer tools.
+ */
+reason: string,
+/**
+ * JSON Pointer to the failing command inside the request's
+ * `command`, e.g. `/params/commands/2`; empty for the command
+ * itself.
+ */
+command: string, } | { "code": "nothingToUndo" } | { "code": "nothingToRedo" } | { "code": "projectTooNew",
 /**
  * The file's format version.
  */
@@ -665,7 +800,8 @@ error: IpcError, } | { "kind": "cancelled" };
 export type Keyframe<T> = {
 /**
  * When, relative to the start of the owning clip, so moving the clip
- * moves its animation. Within `0..=clip.duration`.
+ * moves its animation. May lie outside `0..=clip.duration` after a trim
+ * or split, which keep keyframes in place relative to the content.
  */
 at: Time,
 /**
@@ -1010,10 +1146,45 @@ num: number,
 den: number, };
 
 /**
+ * A project on the recent-projects list.
+ *
+ * Read from the shell's recent list and the project's own `project.json`;
+ * fields the shell could not read (a moved folder, a damaged file) are
+ * `null`, and `available` tells the UI whether opening can work.
+ */
+export type RecentProject = {
+/**
+ * The `.kinora` folder, as the user chose it; passed back unchanged to
+ * `open_project`.
+ */
+path: string,
+/**
+ * The project's display name.
+ */
+name: string,
+/**
+ * When it was last opened, in milliseconds since the Unix epoch (UTC).
+ * At most 2^53 − 1.
+ */
+openedAt: number,
+/**
+ * Canvas and frame rate of the project's first timeline.
+ */
+format: VideoFormat | null,
+/**
+ * Length of the project's first timeline: the end of its last clip.
+ */
+duration: Time | null,
+/**
+ * `false` when the folder or its `project.json` can no longer be read.
+ */
+available: boolean, };
+
+/**
  * Counter of document states in the current session: every applied command,
  * undo or redo increments it. Requests that edit carry the revision they were
  * made against, so an edit computed from a stale UI state is rejected with
- * [`IpcError::RevisionConflict`] instead of being applied to the wrong
+ * [`HistoryError::RevisionConflict`] instead of being applied to the wrong
  * document. Not stored in `project.json`.
  */
 export type Revision = number;
@@ -1444,6 +1615,11 @@ export type Commands = {
    * a `job:progress` event.
    */
   cancel_job: { args: CancelJobArgs; output: null };
+  /**
+   * The recently opened projects, most recent first, for the start
+   * screen.
+   */
+  list_recent_projects: { args: null; output: Array<RecentProject> };
 };
 
 /** Every IPC event: `listen(name)` delivers the payload. */

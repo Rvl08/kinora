@@ -1,7 +1,7 @@
 //! Semantic checks: the rules of a well-formed document that the types and
 //! the JSON Schema cannot express.
 
-use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt;
 
 use kinora_core::{MAX_SAFE_INTEGER, Time};
@@ -41,7 +41,7 @@ pub fn validate(project: &Project) -> Vec<Issue> {
     let mut checker = Checker {
         project,
         issues: Vec::new(),
-        ids: HashMap::new(),
+        ids: HashSet::new(),
     };
     checker.project();
     checker.issues
@@ -50,8 +50,10 @@ pub fn validate(project: &Project) -> Vec<Issue> {
 struct Checker<'a> {
     project: &'a Project,
     issues: Vec<Issue>,
-    /// Every identifier seen, with where it was first seen.
-    ids: HashMap<Uuid, String>,
+    /// Every identifier seen. Where it was first seen is looked up only
+    /// for a duplicate ([`first_use`]), so a valid document allocates no
+    /// path per entity.
+    ids: HashSet<Uuid>,
 }
 
 impl Checker<'_> {
@@ -69,18 +71,19 @@ impl Checker<'_> {
     }
 
     /// Identifiers are unique across the whole document, whatever their kind.
-    fn id(&mut self, id: Uuid, path: String) {
-        if let Some(first) = self.ids.get(&id) {
-            let message = format!("identifier {id} is already used at {first}");
-            self.issue(path, message);
-        } else {
-            self.ids.insert(id, path);
+    fn id(&mut self, id: Uuid, path: impl FnOnce() -> String) {
+        if !self.ids.insert(id) {
+            let first = first_use(self.project, id).unwrap_or_default();
+            self.issue(
+                path(),
+                format!("identifier {id} is already used at {first}"),
+            );
         }
     }
 
     fn project(&mut self) {
         let project = self.project;
-        self.id(project.id.as_uuid(), "/id".into());
+        self.id(project.id.as_uuid(), || "/id".into());
         self.format("/settings/defaultFormat", project.settings.default_format);
         let rate = project.settings.audio.sample_rate;
         self.check(
@@ -109,10 +112,24 @@ impl Checker<'_> {
                 "canvas edges must be even and within 2..=16384",
             );
         }
+        self.check(
+            format.frame_rate.is_grid_aligned(),
+            || format!("{path}/frameRate"),
+            "a frame must last a whole number of flicks (1/705600000 s)",
+        );
+    }
+
+    /// Times on the timeline axis lie on the edit grid (ADR-0004 amendment 2).
+    fn grid(&mut self, path: impl FnOnce() -> String, time: Time) {
+        self.check(
+            time.is_on_grid(),
+            path,
+            "time must be a whole number of flicks (1/705600000 s) within ±(2^53 - 1)",
+        );
     }
 
     fn media(&mut self, path: &str, asset: &MediaAsset) {
-        self.id(asset.id.as_uuid(), format!("{path}/id"));
+        self.id(asset.id.as_uuid(), || format!("{path}/id"));
 
         let digest = &asset.hash.digest;
         self.check(
@@ -197,7 +214,7 @@ impl Checker<'_> {
     }
 
     fn timeline(&mut self, path: &str, timeline: &Timeline) {
-        self.id(timeline.id.as_uuid(), format!("{path}/id"));
+        self.id(timeline.id.as_uuid(), || format!("{path}/id"));
         self.format(&format!("{path}/format"), timeline.format);
         for (i, track) in timeline.tracks.iter().enumerate() {
             self.track(&format!("{path}/tracks/{i}"), track);
@@ -205,12 +222,14 @@ impl Checker<'_> {
         let mut previous = Time::ZERO;
         for (i, marker) in timeline.markers.iter().enumerate() {
             let path = format!("{path}/markers/{i}");
-            self.id(marker.id.as_uuid(), format!("{path}/id"));
+            self.id(marker.id.as_uuid(), || format!("{path}/id"));
             self.check(
                 marker.start >= previous,
                 || format!("{path}/start"),
                 "markers must be ordered by start, from 0",
             );
+            self.grid(|| format!("{path}/start"), marker.start);
+            self.grid(|| format!("{path}/duration"), marker.duration);
             self.check(
                 !marker.duration.is_negative(),
                 || format!("{path}/duration"),
@@ -221,7 +240,7 @@ impl Checker<'_> {
     }
 
     fn track(&mut self, path: &str, track: &Track) {
-        self.id(track.id.as_uuid(), format!("{path}/id"));
+        self.id(track.id.as_uuid(), || format!("{path}/id"));
         let mut previous_end = Time::ZERO;
         for (i, clip) in track.clips.iter().enumerate() {
             let clip_path = format!("{path}/clips/{i}");
@@ -235,9 +254,19 @@ impl Checker<'_> {
                 previous_end = end;
             }
         }
+        // A clip ends at one cut and starts at another, so it may appear once
+        // as `from` and once as `to`.
+        let (mut outgoing, mut incoming) = (HashSet::new(), HashSet::new());
         for (i, transition) in track.transitions.iter().enumerate() {
             let path = format!("{path}/transitions/{i}");
-            self.id(transition.id.as_uuid(), format!("{path}/id"));
+            let first_out = outgoing.insert(transition.from);
+            let first_in = incoming.insert(transition.to);
+            self.check(
+                first_out && first_in,
+                || path.clone(),
+                "a cut has at most one transition",
+            );
+            self.id(transition.id.as_uuid(), || format!("{path}/id"));
             self.effect_ref(&format!("{path}/effect"), &transition.effect);
             let find = |id| track.clips.iter().find(|c| c.id == id);
             let (Some(from), Some(to)) = (find(transition.from), find(transition.to)) else {
@@ -250,6 +279,7 @@ impl Checker<'_> {
                 "`from` must end exactly where `to` starts",
             );
             let d = transition.duration;
+            self.grid(|| format!("{path}/duration"), d);
             self.check(
                 d.is_positive() && d <= from.duration && d <= to.duration,
                 || format!("{path}/duration"),
@@ -259,7 +289,7 @@ impl Checker<'_> {
     }
 
     fn clip(&mut self, path: &str, track: TrackKind, clip: &Clip) {
-        self.id(clip.id.as_uuid(), format!("{path}/id"));
+        self.id(clip.id.as_uuid(), || format!("{path}/id"));
         self.check(
             !clip.start.is_negative(),
             || format!("{path}/start"),
@@ -270,8 +300,10 @@ impl Checker<'_> {
             || format!("{path}/duration"),
             "duration must be positive",
         );
+        self.grid(|| format!("{path}/start"), clip.start);
+        self.grid(|| format!("{path}/duration"), clip.duration);
         self.check(
-            clip.end().is_some(),
+            clip.end().is_some_and(Time::is_on_grid),
             || format!("{path}/duration"),
             "start + duration is out of range",
         );
@@ -316,7 +348,7 @@ impl Checker<'_> {
         );
 
         if let Some(visual) = &clip.visual {
-            self.visual(&format!("{path}/visual"), clip.duration, visual);
+            self.visual(&format!("{path}/visual"), visual);
         }
         if let Some(audio) = &clip.audio {
             self.audio(&format!("{path}/audio"), clip.duration, audio);
@@ -325,7 +357,7 @@ impl Checker<'_> {
             ClipContent::Text(text) => {
                 self.text_style(&format!("{path}/content/style"), &text.style)
             }
-            ClipContent::Caption(caption) => self.caption(path, clip.duration, caption),
+            ClipContent::Caption(caption) => self.caption(path, caption),
             ClipContent::Solid(solid) => self.color(&format!("{path}/content/color"), solid.color),
             ClipContent::Media(_) | ClipContent::Adjustment => {}
         }
@@ -350,6 +382,7 @@ impl Checker<'_> {
             || format!("{path}/content/sourceIn"),
             "source in-point must not be negative",
         );
+        self.grid(|| format!("{path}/content/sourceIn"), content.source_in);
         let project = self.project;
         let Some(asset) = project.media(content.media) else {
             self.issue(
@@ -372,11 +405,10 @@ impl Checker<'_> {
         Some(asset.kind)
     }
 
-    fn visual(&mut self, path: &str, duration: Time, visual: &Visual) {
+    fn visual(&mut self, path: &str, visual: &Visual) {
         let transform = &visual.transform;
         self.animated(
             &format!("{path}/transform/position"),
-            duration,
             &transform.position,
             |c, p, v| {
                 c.vec2(p, *v);
@@ -384,7 +416,6 @@ impl Checker<'_> {
         );
         self.animated(
             &format!("{path}/transform/scale"),
-            duration,
             &transform.scale,
             |c, p, v| {
                 c.vec2(p, *v);
@@ -392,7 +423,6 @@ impl Checker<'_> {
         );
         self.animated(
             &format!("{path}/transform/rotation"),
-            duration,
             &transform.rotation,
             |c, p, v| {
                 c.finite(p, *v);
@@ -400,21 +430,16 @@ impl Checker<'_> {
         );
         self.vec2(&format!("{path}/transform/anchor"), transform.anchor);
         self.crop(&format!("{path}/crop"), visual.crop);
-        self.animated(
-            &format!("{path}/opacity"),
-            duration,
-            &visual.opacity,
-            |c, p, v| {
-                c.check(
-                    (0.0..=1.0).contains(v),
-                    || p.to_owned(),
-                    "opacity must be within 0..=1",
-                );
-            },
-        );
+        self.animated(&format!("{path}/opacity"), &visual.opacity, |c, p, v| {
+            c.check(
+                (0.0..=1.0).contains(v),
+                || p.to_owned(),
+                "opacity must be within 0..=1",
+            );
+        });
         for (i, effect) in visual.effects.iter().enumerate() {
             let path = format!("{path}/effects/{i}");
-            self.id(effect.id.as_uuid(), format!("{path}/id"));
+            self.id(effect.id.as_uuid(), || format!("{path}/id"));
             self.effect_ref(&format!("{path}/effect"), &effect.effect);
             for (name, value) in &effect.params {
                 let param_path = format!("{path}/params/{}", escape_pointer(name));
@@ -424,7 +449,7 @@ impl Checker<'_> {
                     "parameter names must not be empty",
                 );
                 let first_type = value.values().next().map(ParamValue::type_name);
-                self.animated(&param_path, duration, value, |c, p, v| {
+                self.animated(&param_path, value, |c, p, v| {
                     c.check(
                         Some(v.type_name()) == first_type,
                         || p.to_owned(),
@@ -437,14 +462,11 @@ impl Checker<'_> {
     }
 
     fn audio(&mut self, path: &str, duration: Time, audio: &AudioMix) {
-        self.animated(
-            &format!("{path}/gainDb"),
-            duration,
-            &audio.gain_db,
-            |c, p, v| {
-                c.finite(p, *v);
-            },
-        );
+        self.animated(&format!("{path}/gainDb"), &audio.gain_db, |c, p, v| {
+            c.finite(p, *v);
+        });
+        self.grid(|| format!("{path}/fadeIn"), audio.fade_in);
+        self.grid(|| format!("{path}/fadeOut"), audio.fade_out);
         let fades = audio.fade_in.checked_add(audio.fade_out);
         self.check(
             !audio.fade_in.is_negative()
@@ -455,16 +477,21 @@ impl Checker<'_> {
         );
     }
 
-    fn caption(&mut self, path: &str, duration: Time, caption: &CaptionContent) {
+    /// Word times may lie outside the clip after a trim or split: they keep
+    /// their place in the speech, and only the words inside the clip show.
+    fn caption(&mut self, path: &str, caption: &CaptionContent) {
         self.text_style(&format!("{path}/content/style"), &caption.style);
-        let mut previous_end = Time::ZERO;
+        let mut previous_end: Option<Time> = None;
         for (i, word) in caption.words.iter().enumerate() {
+            let word_path = || format!("{path}/content/words/{i}");
             self.check(
-                word.start >= previous_end && word.start <= word.end && word.end <= duration,
-                || format!("{path}/content/words/{i}"),
-                "words must be ordered, must not overlap and must lie within the clip",
+                previous_end.is_none_or(|end| word.start >= end) && word.start <= word.end,
+                word_path,
+                "words must be ordered and must not overlap",
             );
-            previous_end = word.end;
+            self.grid(|| format!("{path}/content/words/{i}/start"), word.start);
+            self.grid(|| format!("{path}/content/words/{i}/end"), word.end);
+            previous_end = Some(word.end);
         }
     }
 
@@ -518,12 +545,13 @@ impl Checker<'_> {
         }
     }
 
-    /// Keyframes are non-empty, strictly increasing and within the clip; each
-    /// value passes `value`.
+    /// Keyframes are non-empty, strictly increasing and on the grid; each
+    /// value passes `value`. They may lie outside the clip: a trim or a split
+    /// keeps them where they are relative to the content, so the animation
+    /// continues across the cut and comes back when the clip is extended.
     fn animated<T>(
         &mut self,
         path: &str,
-        duration: Time,
         animated: &Animated<T>,
         mut value: impl FnMut(&mut Self, &str, &T),
     ) {
@@ -539,12 +567,11 @@ impl Checker<'_> {
                 for (i, keyframe) in keyframes.iter().enumerate() {
                     let path = format!("{path}/keyframes/{i}");
                     self.check(
-                        !keyframe.at.is_negative()
-                            && keyframe.at <= duration
-                            && previous.is_none_or(|p| keyframe.at > p),
+                        previous.is_none_or(|p| keyframe.at > p),
                         || format!("{path}/at"),
-                        "keyframes must be strictly increasing and within the clip",
+                        "keyframes must be strictly increasing",
                     );
+                    self.grid(|| format!("{path}/at"), keyframe.at);
                     if let Easing::CubicBezier { x1, y1, x2, y2 } = keyframe.easing {
                         self.check(
                             (0.0..=1.0).contains(&x1)
@@ -619,6 +646,44 @@ impl Checker<'_> {
     fn finite(&mut self, path: &str, v: f64) {
         self.check(v.is_finite(), || path.to_owned(), "number must be finite");
     }
+}
+
+/// Where `id` is used first, in the order the checker visits entities.
+fn first_use(project: &Project, id: Uuid) -> Option<String> {
+    if project.id.as_uuid() == id {
+        return Some("/id".into());
+    }
+    if let Some(i) = project.media.iter().position(|m| m.id.as_uuid() == id) {
+        return Some(format!("/media/{i}/id"));
+    }
+    for (t, timeline) in project.timelines.iter().enumerate() {
+        let path = format!("/timelines/{t}");
+        if timeline.id.as_uuid() == id {
+            return Some(format!("{path}/id"));
+        }
+        for (k, track) in timeline.tracks.iter().enumerate() {
+            let path = format!("{path}/tracks/{k}");
+            if track.id.as_uuid() == id {
+                return Some(format!("{path}/id"));
+            }
+            for (c, clip) in track.clips.iter().enumerate() {
+                if clip.id.as_uuid() == id {
+                    return Some(format!("{path}/clips/{c}/id"));
+                }
+                let effects = clip.visual.iter().flat_map(|v| &v.effects);
+                if let Some(e) = effects.into_iter().position(|e| e.id.as_uuid() == id) {
+                    return Some(format!("{path}/clips/{c}/visual/effects/{e}/id"));
+                }
+            }
+            if let Some(x) = track.transitions.iter().position(|x| x.id.as_uuid() == id) {
+                return Some(format!("{path}/transitions/{x}/id"));
+            }
+        }
+        if let Some(m) = timeline.markers.iter().position(|m| m.id.as_uuid() == id) {
+            return Some(format!("{path}/markers/{m}/id"));
+        }
+    }
+    None
 }
 
 /// `a.b.c`: lowercase first segment, then segments of ASCII letters, digits
@@ -696,6 +761,23 @@ mod tests {
         ] {
             assert!(!is_portable_relative_path(bad), "{bad}");
         }
+    }
+
+    #[test]
+    fn duplicates_name_the_first_use() {
+        use crate::model::ProjectSettings;
+        let mut project = Project::new("Dup", ProjectSettings::default());
+        let mut copy = project.timelines[0].clone();
+        copy.id = crate::id::TimelineId::from_uuid(project.id.as_uuid());
+        project.timelines.push(copy);
+        let issues = validate(&project);
+        assert_eq!(issues.len(), 1, "{issues:?}");
+        assert_eq!(issues[0].path, "/timelines/1/id");
+        assert!(
+            issues[0].message.ends_with("is already used at /id"),
+            "{}",
+            issues[0].message
+        );
     }
 
     #[test]

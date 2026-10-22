@@ -6,17 +6,20 @@
 //! Commands carry every identifier they create (e.g. the right half of a
 //! split), so replaying a journal is deterministic.
 //!
-//! **Phase 0 draft:** this module fixes the wire shape (`{ "op", "params" }`)
-//! and a first set of operations. `validate → apply → inverse` arrives with
-//! the editing core in Phase 1, together with the remaining operations.
+//! [`crate::edit`] validates and applies them and records how to undo them.
+//! Every time a command carries must lie on the edit grid (ADR-0004
+//! amendment 2); the UI snaps positions to timeline frames before sending.
 
 use kinora_core::Time;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::id::{ClipId, EffectInstanceId, MediaId, TimelineId, TrackId};
+use crate::id::{ClipId, EffectInstanceId, MarkerId, MediaId, TimelineId, TrackId, TransitionId};
 use crate::media::MediaAsset;
-use crate::model::{Clip, EffectInstance, Speed, Track};
+use crate::model::{
+    AudioMix, BlendMode, Clip, Crop, EffectInstance, Marker, Speed, Track, Transform, Transition,
+};
+use crate::text::{CaptionContent, TextContent};
 use crate::value::{Animated, ParamValue};
 
 /// One change to a document, serialised as `{ "op": "<name>", "params": { … } }`.
@@ -62,6 +65,20 @@ pub enum EditCommand {
         /// The track.
         track: TrackId,
     },
+    /// Changes a track's name and switches; `null` leaves a field as it is.
+    /// Allowed on locked tracks, so they can be unlocked.
+    UpdateTrack {
+        /// The track.
+        track: TrackId,
+        /// New display name.
+        name: Option<String>,
+        /// Silences the track's audio.
+        muted: Option<bool>,
+        /// Hides the track's pictures.
+        hidden: Option<bool>,
+        /// Protects the track from edits.
+        locked: Option<bool>,
+    },
     /// Places a clip on a track where there is room.
     InsertClip {
         /// The track.
@@ -104,7 +121,8 @@ pub enum EditCommand {
         /// Identifier for the new right part.
         new_clip: ClipId,
     },
-    /// Changes a media clip's speed, keeping its start and source in-point.
+    /// Changes a media clip's speed, keeping its start, its source in-point
+    /// and the length of source it plays; the timeline duration follows.
     SetSpeed {
         /// The clip.
         clip: ClipId,
@@ -138,6 +156,138 @@ pub enum EditCommand {
         /// The new value.
         value: Animated<ParamValue>,
     },
+    /// Sets or clears a clip's display name.
+    RenameClip {
+        /// The clip.
+        clip: ClipId,
+        /// The new name; `null` shows the content's name.
+        name: Option<String>,
+    },
+    /// Enables or disables a clip.
+    SetClipEnabled {
+        /// The clip.
+        clip: ClipId,
+        /// `false` keeps the clip but neither draws nor plays it.
+        enabled: bool,
+    },
+    /// Replaces a clip's placement on the canvas.
+    SetTransform {
+        /// The clip; must have picture properties.
+        clip: ClipId,
+        /// The new transform.
+        transform: Transform,
+    },
+    /// Replaces a clip's crop.
+    SetCrop {
+        /// The clip; must have picture properties.
+        clip: ClipId,
+        /// The new crop.
+        crop: Crop,
+    },
+    /// Replaces a clip's opacity, constant or keyframed.
+    SetOpacity {
+        /// The clip; must have picture properties.
+        clip: ClipId,
+        /// The new opacity.
+        opacity: Animated<f64>,
+    },
+    /// Changes how a clip combines with the layers below.
+    SetBlendMode {
+        /// The clip; must have picture properties.
+        clip: ClipId,
+        /// The new blend mode.
+        blend_mode: BlendMode,
+    },
+    /// Replaces a clip's gain and fades.
+    SetAudioMix {
+        /// The clip; on an audio track, or video media on a video track.
+        clip: ClipId,
+        /// The new sound properties.
+        audio: AudioMix,
+    },
+    /// Replaces the text and style of a title.
+    SetText {
+        /// The clip; must be a text clip.
+        clip: ClipId,
+        /// The new content.
+        content: TextContent,
+    },
+    /// Replaces the text, words and style of a caption cue.
+    SetCaption {
+        /// The clip; must be a caption clip.
+        clip: ClipId,
+        /// The new content.
+        content: CaptionContent,
+    },
+    /// Adds a transition across the cut between two adjacent clips.
+    AddTransition {
+        /// The track holding both clips.
+        track: TrackId,
+        /// The transition, with a fresh id.
+        transition: Transition,
+    },
+    /// Removes a transition.
+    RemoveTransition {
+        /// The transition.
+        transition: TransitionId,
+    },
+    /// Adds a marker to a timeline, keeping markers ordered by start.
+    AddMarker {
+        /// The timeline.
+        timeline: TimelineId,
+        /// The marker, with a fresh id.
+        marker: Marker,
+    },
+    /// Removes a marker.
+    RemoveMarker {
+        /// The marker.
+        marker: MarkerId,
+    },
+}
+
+impl EditCommand {
+    /// The wire name of the operation, e.g. `"splitClip"`.
+    pub const fn op_name(&self) -> &'static str {
+        match self {
+            Self::Batch { .. } => "batch",
+            Self::ImportMedia { .. } => "importMedia",
+            Self::RemoveMedia { .. } => "removeMedia",
+            Self::AddTrack { .. } => "addTrack",
+            Self::RemoveTrack { .. } => "removeTrack",
+            Self::UpdateTrack { .. } => "updateTrack",
+            Self::InsertClip { .. } => "insertClip",
+            Self::RemoveClip { .. } => "removeClip",
+            Self::MoveClip { .. } => "moveClip",
+            Self::TrimClip { .. } => "trimClip",
+            Self::SplitClip { .. } => "splitClip",
+            Self::SetSpeed { .. } => "setSpeed",
+            Self::AddEffect { .. } => "addEffect",
+            Self::RemoveEffect { .. } => "removeEffect",
+            Self::SetEffectParam { .. } => "setEffectParam",
+            Self::RenameClip { .. } => "renameClip",
+            Self::SetClipEnabled { .. } => "setClipEnabled",
+            Self::SetTransform { .. } => "setTransform",
+            Self::SetCrop { .. } => "setCrop",
+            Self::SetOpacity { .. } => "setOpacity",
+            Self::SetBlendMode { .. } => "setBlendMode",
+            Self::SetAudioMix { .. } => "setAudioMix",
+            Self::SetText { .. } => "setText",
+            Self::SetCaption { .. } => "setCaption",
+            Self::AddTransition { .. } => "addTransition",
+            Self::RemoveTransition { .. } => "removeTransition",
+            Self::AddMarker { .. } => "addMarker",
+            Self::RemoveMarker { .. } => "removeMarker",
+        }
+    }
+
+    /// The undo-history label: a batch's own label, otherwise the operation
+    /// name, which the UI translates.
+    pub fn label(&self) -> &str {
+        match self {
+            Self::Batch { label, .. } => label,
+            other => other.op_name(),
+        }
+    }
 }
 
 /// An edge of a clip.
@@ -191,6 +341,40 @@ mod tests {
             serde_json::from_value::<EditCommand>(value).expect("parse"),
             command
         );
+    }
+
+    #[test]
+    fn op_names_match_the_wire_tag() {
+        let commands = [
+            EditCommand::RemoveMedia {
+                media: MediaId::generate(),
+            },
+            EditCommand::SetClipEnabled {
+                clip: ClipId::generate(),
+                enabled: false,
+            },
+            EditCommand::RemoveMarker {
+                marker: MarkerId::generate(),
+            },
+            EditCommand::Batch {
+                label: "Tidy up".into(),
+                commands: Vec::new(),
+            },
+        ];
+        for command in commands {
+            let value = serde_json::to_value(&command).expect("serialise");
+            assert_eq!(value["op"], command.op_name());
+        }
+        let batch = EditCommand::Batch {
+            label: "Tidy up".into(),
+            commands: Vec::new(),
+        };
+        assert_eq!(batch.label(), "Tidy up");
+        let rename = EditCommand::RenameClip {
+            clip: ClipId::generate(),
+            name: None,
+        };
+        assert_eq!(rename.label(), "renameClip");
     }
 
     #[test]

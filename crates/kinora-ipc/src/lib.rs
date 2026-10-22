@@ -39,29 +39,6 @@ pub mod event;
 pub use command::{COMMAND_NAMES, IpcCommand};
 pub use error::{Entity, IncidentId, IoErrorKind, IpcError, ProjectProblem};
 pub use event::{EVENT_NAMES, IpcEvent};
-
-use serde::{Deserialize, Serialize};
-use ts_rs::TS;
-
-/// Counter of document states in the current session: every applied command,
-/// undo or redo increments it. Requests that edit carry the revision they were
-/// made against, so an edit computed from a stale UI state is rejected with
-/// [`IpcError::RevisionConflict`] instead of being applied to the wrong
-/// document. Not stored in `project.json`.
-#[derive(
-    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, TS,
-)]
-pub struct Revision(pub u32);
-
-impl Revision {
-    /// The next revision, or `None` after `u32::MAX` edits.
-    pub fn next(self) -> Option<Self> {
-        self.0.checked_add(1).map(Self)
-    }
-}
-
-impl std::fmt::Display for Revision {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
+/// The session's revision counter, owned by the editing core
+/// ([`kinora_project::Editor`]); requests that edit carry it.
+pub use kinora_project::Revision;

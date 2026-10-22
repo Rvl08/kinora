@@ -258,7 +258,7 @@
     },
     "Clip": {
       "additionalProperties": false,
-      "description": "An item on a track.\n\nTiming: the clip occupies `[start, start + duration)` on the timeline. For\nmedia, the source range is derived, never stored twice:\n`sourceIn .. sourceIn + duration × speed`.",
+      "description": "An item on a track.\n\nTiming: the clip occupies `[start, start + duration)` on the timeline. For\nmedia, the source range is derived, never stored twice:\n`sourceIn .. sourceIn + duration × speed` (rounded to the flick, see\n[`Speed::source_duration`]). Every time here is on the edit grid\n(ADR-0004 amendment 2).",
       "properties": {
         "audio": {
           "anyOf": [
@@ -386,7 +386,7 @@
               "type": "string"
             },
             "words": {
-              "description": "Word timings for karaoke-style highlighting; empty when unknown.\nOrdered, non-overlapping and within the clip.",
+              "description": "Word timings for karaoke-style highlighting; empty when unknown.\nOrdered and non-overlapping. Words outside the clip (after a trim or\nsplit) are kept but not shown.",
               "items": {
                 "$ref": "#/$defs/CaptionWord"
               },
@@ -734,7 +734,7 @@
       "properties": {
         "at": {
           "$ref": "#/$defs/Time",
-          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. Within `0..=clip.duration`."
+          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. May lie outside `0..=clip.duration` after a trim\nor split, which keep keyframes in place relative to the content."
         },
         "easing": {
           "$ref": "#/$defs/Easing",
@@ -754,7 +754,7 @@
       "properties": {
         "at": {
           "$ref": "#/$defs/Time",
-          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. Within `0..=clip.duration`."
+          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. May lie outside `0..=clip.duration` after a trim\nor split, which keep keyframes in place relative to the content."
         },
         "easing": {
           "$ref": "#/$defs/Easing",
@@ -774,7 +774,7 @@
       "properties": {
         "at": {
           "$ref": "#/$defs/Time",
-          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. Within `0..=clip.duration`."
+          "description": "When, relative to the start of the owning clip, so moving the clip\nmoves its animation. May lie outside `0..=clip.duration` after a trim\nor split, which keep keyframes in place relative to the content."
         },
         "easing": {
           "$ref": "#/$defs/Easing",

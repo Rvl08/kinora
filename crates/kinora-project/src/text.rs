@@ -31,7 +31,8 @@ pub struct CaptionContent {
     /// The cue text as displayed.
     pub text: String,
     /// Word timings for karaoke-style highlighting; empty when unknown.
-    /// Ordered, non-overlapping and within the clip.
+    /// Ordered and non-overlapping. Words outside the clip (after a trim or
+    /// split) are kept but not shown.
     pub words: Vec<CaptionWord>,
     /// How it looks.
     pub style: TextStyle,

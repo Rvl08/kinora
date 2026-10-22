@@ -1,6 +1,6 @@
 //! Property tests for exact rational time (ADR-0004).
 
-use kinora_core::{FrameRate, MAX_SAFE_INTEGER, Rational, Time};
+use kinora_core::{FLICKS_PER_SECOND, FrameRate, MAX_SAFE_INTEGER, Rational, Rounding, Time};
 use proptest::prelude::*;
 
 /// Rationals in the range a timeline actually uses: up to ±10^9 over
@@ -25,6 +25,22 @@ fn frame_rate() -> impl Strategy<Value = FrameRate> {
         Just(FrameRate::NTSC_59_94),
         (1_i64..=1000, 1_u32..=1001).prop_map(|(n, d)| FrameRate::new(n, d).expect("positive")),
     ]
+}
+
+/// Grid times up to about four hours, the length of a long edit.
+fn grid_time() -> impl Strategy<Value = Time> {
+    (-10_000_000_000_000_i64..=10_000_000_000_000)
+        .prop_map(|flicks| Time::from_flicks(flicks).expect("in range by construction"))
+}
+
+/// Speeds an editor offers: 1/100× to 100×, any denominator up to 1000.
+fn speed() -> impl Strategy<Value = Rational> {
+    (1_i64..=100_000, 1_u32..=1000)
+        .prop_map(|(n, d)| Rational::new(n, d).expect("valid"))
+        .prop_filter("1/100..=100", |r| {
+            *r >= Rational::new(1, 100).expect("valid")
+                && *r <= Rational::new(100, 1).expect("valid")
+        })
 }
 
 fn gcd(mut a: u64, mut b: u64) -> u64 {
@@ -163,5 +179,77 @@ proptest! {
         prop_assert_eq!(back, a);
         let time: Time = serde_json::from_str(&json).expect("parse as time");
         prop_assert_eq!(time.as_rational(), a);
+    }
+
+    #[test]
+    fn grid_times_add_without_leaving_the_grid(a in grid_time(), b in grid_time()) {
+        let sum = a.checked_add(b).expect("grid sums never overflow the denominator");
+        prop_assert_eq!(sum.flicks(), Some(a.flicks().expect("on grid") + b.flicks().expect("on grid")));
+        let diff = a.checked_sub(b).expect("grid differences never overflow the denominator");
+        prop_assert!(diff.is_on_grid());
+    }
+
+    #[test]
+    fn grid_round_trip(flicks in -MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER) {
+        let time = Time::from_flicks(flicks).expect("in range");
+        prop_assert_eq!(time.flicks(), Some(flicks));
+        prop_assert_eq!(time.round_to_grid(), Some(time));
+    }
+
+    #[test]
+    fn rounding_to_the_grid_is_within_half_a_flick(secs in rational()) {
+        let time = Time::from_rational(secs);
+        // The grid spans ±(2^53 − 1) flicks; beyond it there is nothing to
+        // round to. Compare in i128 flicks: |secs · F| <= 2^53 − 1 (+ ½).
+        let scaled = i128::from(secs.num()) * i128::from(FLICKS_PER_SECOND);
+        let limit = (i128::from(MAX_SAFE_INTEGER) * 2 + 1) * i128::from(secs.den());
+        let Some(rounded) = time.round_to_grid() else {
+            prop_assert!(2 * scaled.abs() >= limit, "in range but not rounded: {}", secs);
+            return Ok(());
+        };
+        prop_assert!(rounded.is_on_grid());
+        // |time - rounded| <= 1/2 flick, compared exactly.
+        let half_flick = Rational::new(1, 2 * u32::try_from(FLICKS_PER_SECOND).expect("fits")).expect("valid");
+        let distance = time.as_rational().checked_sub(rounded.as_rational());
+        if let Some(distance) = distance {
+            prop_assert!(distance <= half_flick && distance.neg() <= half_flick);
+        }
+    }
+
+    #[test]
+    fn scaling_is_monotonic_and_close(a in grid_time(), b in grid_time(), rate in speed()) {
+        let (lo, hi) = if a <= b { (a, b) } else { (b, a) };
+        for rounding in [Rounding::Nearest, Rounding::Down] {
+            let slo = lo.scale_to_grid(rate, rounding).expect("in range");
+            let shi = hi.scale_to_grid(rate, rounding).expect("in range");
+            prop_assert!(slo <= shi, "rounding keeps order");
+            // Within one flick of the exact product, and never above it when
+            // rounding down.
+            let exact = i128::from(hi.flicks().expect("on grid")) * i128::from(rate.num());
+            let scaled = i128::from(shi.flicks().expect("on grid")) * i128::from(rate.den());
+            prop_assert!((scaled - exact).abs() <= i128::from(rate.den()));
+            if rounding == Rounding::Down {
+                prop_assert!(scaled <= exact);
+            }
+        }
+    }
+
+    /// The editing core derives a timeline duration from a source length by
+    /// rounding down, so mapping it back never plays more than that length.
+    #[test]
+    fn rounding_down_never_grows_the_source_range(source in grid_time(), rate in speed()) {
+        let source = if source.is_negative() { Time::ZERO.checked_sub(source).expect("in range") } else { source };
+        let timeline = source.div_to_grid(rate, Rounding::Down).expect("in range");
+        let back = timeline.scale_to_grid(rate, Rounding::Nearest).expect("in range");
+        prop_assert!(back <= source);
+    }
+
+    #[test]
+    fn aligned_frames_lie_on_the_grid(frame in -10_000_000_i64..=10_000_000, rate in frame_rate()) {
+        let start = Time::from_frames(frame, rate).expect("in range");
+        // The grid spans ±(2^53 − 1) flicks, about ±147 days.
+        if rate.is_grid_aligned() && start.as_secs_f64().abs() < 1.2e7 {
+            prop_assert!(start.is_on_grid());
+        }
     }
 }

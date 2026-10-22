@@ -12,12 +12,15 @@
 //!   rules the type system cannot express (references resolve, clips do not
 //!   overlap, keyframes are ordered).
 //! - [`EditCommand`] is the serialisable mutation vocabulary (ADR-0004 §3).
-//!   This crate defines its shape; applying and inverting arrive in Phase 1.
+//!   [`edit`] applies commands atomically and undoes them exactly;
+//!   [`Editor`] is the editing session with undo, redo and the crash
+//!   recovery journal.
 //!
 //! The JSON Schema in `schema/project.v0.json` is generated from these types
 //! by [`schema::project_schema`] and checked by tests.
 
 pub mod command;
+pub mod edit;
 pub mod id;
 mod io;
 pub mod media;
@@ -29,6 +32,7 @@ pub mod value;
 pub mod version;
 
 pub use command::{ClipEdge, EditCommand};
+pub use edit::{EditError, EditRule, Editor, HistoryError, Revision};
 pub use io::{LoadError, MAX_DOCUMENT_BYTES, SaveError, from_json, to_json};
 pub use kinora_core::{FrameRate, Rational, Time};
 pub use model::{

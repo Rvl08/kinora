@@ -1,8 +1,53 @@
 //! Time positions, durations and frame rates on top of [`Rational`].
+//!
+//! # The edit grid
+//!
+//! Adding rationals with unrelated denominators makes the denominator grow
+//! until it no longer fits (`1/1633 + 805774/3051` already exceeds `u32`).
+//! Every time on a timeline therefore lies on one global grid of
+//! [`FLICKS_PER_SECOND`] ticks per second (ADR-0004 amendment 2). A flick,
+//! 1/705,600,000 s, divides the frame durations of 24, 25, 30, 48, 50, 60,
+//! 90, 100 and 120 fps, of their NTSC variants (24000/1001, 30000/1001,
+//! 60000/1001, 120000/1001), and the sample durations of 8 to 192 kHz audio
+//! and the 90 kHz MPEG clock. Sums and differences of grid times stay on the
+//! grid, so editing never overflows a denominator; results that leave it (a
+//! duration times a speed) are rounded to the nearest flick, explicitly,
+//! through [`Time::round_to_grid`] and [`Time::scale_to_grid`].
+//!
+//! A grid time also keeps its flick count within ±(2^53 − 1), about 147 days,
+//! so it converts to and from an exact integer of flicks.
 
 use std::fmt;
 
-use crate::{Rational, RationalError};
+use crate::{MAX_SAFE_INTEGER, Rational, RationalError};
+
+/// Ticks per second of the edit grid: one flick is 1/705,600,000 s
+/// (2^9 · 3^2 · 5^5 · 7^2). See the module documentation.
+pub const FLICKS_PER_SECOND: i64 = 705_600_000;
+
+/// [`FLICKS_PER_SECOND`] as a denominator.
+const FLICKS_DEN: u32 = 705_600_000;
+
+/// How a result between two grid times is brought onto the grid.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Rounding {
+    /// The nearest grid time; halves round towards positive infinity.
+    Nearest,
+    /// The grid time at or below the exact value (towards negative infinity).
+    /// Use it when the result must not exceed a limit, e.g. a timeline
+    /// duration whose source range must stay within the media.
+    Down,
+}
+
+impl Rounding {
+    /// `num / den` rounded to an integer; `den > 0`.
+    fn div(self, num: i128, den: i128) -> i128 {
+        match self {
+            Self::Nearest => (2 * num + den).div_euclid(2 * den),
+            Self::Down => num.div_euclid(den),
+        }
+    }
+}
 
 /// A point or a span on a time axis, in seconds, as an exact rational.
 ///
@@ -73,6 +118,71 @@ impl Time {
     /// This time moved back to the start of its frame at `rate`.
     pub fn snap_to_frame(self, rate: FrameRate) -> Option<Self> {
         Self::from_frames(self.frame_floor(rate)?, rate)
+    }
+
+    /// `flicks / FLICKS_PER_SECOND` seconds. `None` when
+    /// `|flicks| > MAX_SAFE_INTEGER`.
+    pub fn from_flicks(flicks: i64) -> Option<Self> {
+        if flicks.unsigned_abs() > MAX_SAFE_INTEGER.unsigned_abs() {
+            return None;
+        }
+        Rational::new(flicks, FLICKS_DEN).ok().map(Self)
+    }
+
+    /// The exact number of flicks, or `None` when this time is not on the
+    /// edit grid (a fraction of a flick, or more than ±(2^53 − 1) flicks).
+    pub fn flicks(self) -> Option<i64> {
+        let den = i64::from(self.0.den());
+        if FLICKS_PER_SECOND % den != 0 {
+            return None;
+        }
+        let flicks = i128::from(self.0.num()) * i128::from(FLICKS_PER_SECOND / den);
+        i64::try_from(flicks)
+            .ok()
+            .filter(|f| f.unsigned_abs() <= MAX_SAFE_INTEGER.unsigned_abs())
+    }
+
+    /// `true` when this time lies on the edit grid; see [`Self::flicks`].
+    pub fn is_on_grid(self) -> bool {
+        self.flicks().is_some()
+    }
+
+    /// The grid time nearest to this one (halves round towards positive
+    /// infinity). `None` when the result is beyond the grid's range.
+    pub fn round_to_grid(self) -> Option<Self> {
+        let num = i128::from(self.0.num()) * i128::from(FLICKS_PER_SECOND);
+        let flicks = Rounding::Nearest.div(num, i128::from(self.0.den()));
+        Self::from_flicks(i64::try_from(flicks).ok()?)
+    }
+
+    /// `self · factor`, brought onto the grid by `rounding`; e.g. the source
+    /// duration a timeline duration plays at some speed. `self` must be on
+    /// the grid. `None` when it is not or when the result is out of range.
+    pub fn scale_to_grid(self, factor: Rational, rounding: Rounding) -> Option<Self> {
+        self.scale_flicks(i128::from(factor.num()), i128::from(factor.den()), rounding)
+    }
+
+    /// `self / divisor`, brought onto the grid by `rounding`; e.g. the
+    /// timeline duration of a source duration at some speed. `self` must be
+    /// on the grid. `None` when it is not, when `divisor` is zero, or when the
+    /// result is out of range.
+    pub fn div_to_grid(self, divisor: Rational, rounding: Rounding) -> Option<Self> {
+        self.scale_flicks(
+            i128::from(divisor.den()),
+            i128::from(divisor.num()),
+            rounding,
+        )
+    }
+
+    /// `flicks(self) · mul / div`, rounded. Both factors stay below 2^53 and
+    /// the flick count below 2^53, so the product fits `i128`.
+    fn scale_flicks(self, mul: i128, div: i128, rounding: Rounding) -> Option<Self> {
+        if div == 0 {
+            return None;
+        }
+        let (mul, div) = if div < 0 { (-mul, -div) } else { (mul, div) };
+        let flicks = rounding.div(i128::from(self.flicks()?) * mul, div);
+        Self::from_flicks(i64::try_from(flicks).ok()?)
     }
 
     /// `self + rhs`, or `None` when out of range.
@@ -175,6 +285,15 @@ impl FrameRate {
     pub fn as_f64(self) -> f64 {
         self.0.to_f64()
     }
+
+    /// `true` when one frame lasts a whole number of flicks, so every frame
+    /// boundary lies on the edit grid. Timelines require it; media streams
+    /// may have any rate.
+    pub fn is_grid_aligned(self) -> bool {
+        // A frame lasts den/num s = FLICKS·den/num flicks.
+        let flicks = i128::from(FLICKS_PER_SECOND) * i128::from(self.0.den());
+        flicks % i128::from(self.0.num()) == 0
+    }
 }
 
 impl TryFrom<Rational> for FrameRate {
@@ -207,7 +326,7 @@ impl schemars::JsonSchema for FrameRate {
                 "num": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": crate::MAX_SAFE_INTEGER
+                    "maximum": MAX_SAFE_INTEGER
                 },
                 "den": {
                     "type": "integer",
@@ -290,6 +409,114 @@ mod tests {
         assert_eq!(FrameRate::new(0, 1), Err(RationalError::NotPositive));
         assert_eq!(FrameRate::new(-30, 1), Err(RationalError::NotPositive));
         assert_eq!(FrameRate::new(30, 0), Err(RationalError::ZeroDenominator));
+    }
+
+    #[test]
+    fn common_rates_are_grid_aligned() {
+        for (num, den) in [
+            (24, 1),
+            (25, 1),
+            (30, 1),
+            (48, 1),
+            (50, 1),
+            (60, 1),
+            (90, 1),
+            (100, 1),
+            (120, 1),
+            (24_000, 1001),
+            (30_000, 1001),
+            (60_000, 1001),
+            (120_000, 1001),
+        ] {
+            let rate = FrameRate::new(num, den).expect("valid");
+            assert!(rate.is_grid_aligned(), "{rate}");
+            let frame = rate.frame_duration().expect("in range");
+            assert!(frame.is_on_grid(), "{rate}");
+        }
+        // Audio sample periods and the MPEG clock.
+        for hz in [
+            8_000, 11_025, 16_000, 22_050, 32_000, 44_100, 48_000, 88_200, 96_000, 176_400,
+            192_000, 90_000,
+        ] {
+            assert!(t(1, hz).is_on_grid(), "{hz} Hz");
+        }
+        // 1/1001 s and the 1/15360 s timebase of many MP4 files are not.
+        assert!(!t(1, 1001).is_on_grid());
+        assert!(!t(1, 15_360).is_on_grid());
+        assert!(!FrameRate::new(1001, 1).expect("valid").is_grid_aligned());
+    }
+
+    #[test]
+    fn flicks_convert_exactly_within_range() {
+        assert_eq!(Time::from_flicks(FLICKS_PER_SECOND), Some(t(1, 1)));
+        assert_eq!(t(1001, 30_000).flicks(), Some(23_543_520));
+        assert_eq!(Time::from_flicks(-7).and_then(Time::flicks), Some(-7));
+        assert_eq!(
+            Time::from_flicks(MAX_SAFE_INTEGER).and_then(Time::flicks),
+            Some(MAX_SAFE_INTEGER)
+        );
+        assert_eq!(Time::from_flicks(MAX_SAFE_INTEGER + 1), None);
+        // A whole number of seconds beyond the grid's ±2^53 flicks.
+        assert_eq!(t(MAX_SAFE_INTEGER, 1).flicks(), None);
+    }
+
+    #[test]
+    fn rounds_to_the_nearest_flick() {
+        let flick = Time::from_flicks(1).expect("in range");
+        assert_eq!(
+            t(1, 1001).round_to_grid().and_then(Time::flicks),
+            Some(704_895)
+        );
+        // Exactly half a flick rounds up, also for negative values.
+        assert_eq!(t(1, 2 * FLICKS_DEN).round_to_grid(), Some(flick));
+        assert_eq!(t(-1, 2 * FLICKS_DEN).round_to_grid(), Some(Time::ZERO));
+        assert_eq!(t(3, 2).round_to_grid(), Some(t(3, 2)));
+    }
+
+    #[test]
+    fn scales_on_the_grid() {
+        let second = Time::from_secs(1).expect("in range");
+        let third = Rational::new(1, 3).expect("valid");
+        // 705,600,000 / 3 is exact.
+        assert_eq!(
+            second.scale_to_grid(third, Rounding::Nearest),
+            Some(t(1, 3))
+        );
+        assert_eq!(second.div_to_grid(third, Rounding::Nearest), Some(t(3, 1)));
+        // 1 flick × 1/3 rounds to 0; 2 flicks × 1/3 rounds to 1.
+        let flicks = |n| Time::from_flicks(n).expect("in range");
+        assert_eq!(
+            flicks(1).scale_to_grid(third, Rounding::Nearest),
+            Some(Time::ZERO)
+        );
+        assert_eq!(
+            flicks(2).scale_to_grid(third, Rounding::Nearest),
+            Some(flicks(1))
+        );
+        assert_eq!(
+            flicks(-2).scale_to_grid(third, Rounding::Nearest),
+            Some(flicks(-1))
+        );
+        assert_eq!(second.div_to_grid(Rational::ZERO, Rounding::Nearest), None);
+        // Down rounds towards negative infinity.
+        assert_eq!(
+            flicks(2).scale_to_grid(third, Rounding::Down),
+            Some(Time::ZERO)
+        );
+        assert_eq!(
+            flicks(-1).scale_to_grid(third, Rounding::Down),
+            Some(flicks(-1))
+        );
+        assert_eq!(
+            t(1, 1001).scale_to_grid(third, Rounding::Nearest),
+            None,
+            "off the grid"
+        );
+        assert_eq!(
+            flicks(MAX_SAFE_INTEGER)
+                .scale_to_grid(Rational::new(2, 1).expect("valid"), Rounding::Nearest),
+            None
+        );
     }
 
     #[test]

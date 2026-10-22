@@ -1,5 +1,6 @@
 //! IPC commands: requests from the UI to the shell.
 
+use kinora_project::edit::EditorState;
 use kinora_project::id::ProjectId;
 use kinora_project::{EditCommand, Project, ProjectSettings};
 use serde::de::DeserializeOwned;
@@ -176,6 +177,19 @@ pub struct ProjectState {
     pub undo_label: Option<String>,
     /// Label of the step redo would re-apply; `null` when there is none.
     pub redo_label: Option<String>,
+}
+
+impl ProjectState {
+    /// The state of an editing session on `project`.
+    pub fn new(project: ProjectId, state: EditorState) -> Self {
+        Self {
+            project,
+            revision: state.revision,
+            dirty: state.dirty,
+            undo_label: state.undo_label,
+            redo_label: state.redo_label,
+        }
+    }
 }
 
 /// The document together with its session state.

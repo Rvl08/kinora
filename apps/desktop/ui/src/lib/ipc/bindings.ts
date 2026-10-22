@@ -568,6 +568,12 @@ marker: Marker, } } | { "op": "removeMarker", "params": {
 marker: MarkerId, } };
 
 /**
+ * The editing rules a command can break. Serialised in camelCase; the UI
+ * shows a localised explanation per rule.
+ */
+export type EditRule = "trackLocked" | "overlap" | "outsideClip" | "emptyClip" | "sourceRange" | "trackKind" | "otherTimeline" | "index" | "duplicateId" | "inUse" | "notApplicable" | "offGrid" | "outOfRange" | "notAdjacent" | "transitionExists" | "transitionTooLong" | "batchTooLarge" | "invalidResult";
+
+/**
  * An effect applied to a clip.
  */
 export type EffectInstance = {
@@ -706,9 +712,19 @@ expected: Revision,
  */
 current: Revision, } | { "code": "editRejected",
 /**
- * What rule the edit breaks.
+ * Which rule the edit breaks; the UI explains it in its own words.
  */
-reason: string, } | { "code": "nothingToUndo" } | { "code": "nothingToRedo" } | { "code": "projectTooNew",
+rule: EditRule,
+/**
+ * Details in English, for logs and developer tools.
+ */
+reason: string,
+/**
+ * JSON Pointer to the failing command inside the request's
+ * `command`, e.g. `/params/commands/2`; empty for the command
+ * itself.
+ */
+command: string, } | { "code": "nothingToUndo" } | { "code": "nothingToRedo" } | { "code": "projectTooNew",
 /**
  * The file's format version.
  */
@@ -1133,7 +1149,7 @@ den: number, };
  * Counter of document states in the current session: every applied command,
  * undo or redo increments it. Requests that edit carry the revision they were
  * made against, so an edit computed from a stale UI state is rejected with
- * [`IpcError::RevisionConflict`] instead of being applied to the wrong
+ * [`HistoryError::RevisionConflict`] instead of being applied to the wrong
  * document. Not stored in `project.json`.
  */
 export type Revision = number;

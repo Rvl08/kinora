@@ -161,6 +161,9 @@ pub enum EditRule {
     TransitionTooLong,
     /// Batches are nested too deeply or hold too many commands.
     BatchTooLarge,
+    /// The result would break a rule of the document format
+    /// ([`EditError::Invalid`]).
+    InvalidResult,
 }
 
 impl fmt::Display for EditRule {
@@ -184,6 +187,7 @@ impl fmt::Display for EditRule {
             Self::TransitionExists => "transitionExists",
             Self::TransitionTooLong => "transitionTooLong",
             Self::BatchTooLarge => "batchTooLarge",
+            Self::InvalidResult => "invalidResult",
         };
         f.write_str(name)
     }

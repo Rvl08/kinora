@@ -26,6 +26,28 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  # Defines Publish-Patch for the Windows jobs (dot-source it in a step).
+  # Smart App Control blocks rustfmt and freshly built generators on the
+  # developer's machine (CLAUDE.md §5), so CI sends exact fixes back: a patch
+  # is gzipped, base64-encoded and split into error annotations titled
+  # "<name> patch part <i> of <n>", which anyone can read without signing in.
+  # Join the parts in order, decode, gunzip, then `git apply`.
+  PUBLISH_PATCH: |
+    function Publish-Patch([string]$Name, [string]$Path) {
+      if (-not (Test-Path $Path) -or (Get-Item $Path).Length -eq 0) { return }
+      $raw = [IO.File]::ReadAllBytes($Path)
+      $buffer = [IO.MemoryStream]::new()
+      $gzip = [IO.Compression.GZipStream]::new($buffer, [IO.Compression.CompressionLevel]::Optimal)
+      $gzip.Write($raw, 0, $raw.Length)
+      $gzip.Dispose()
+      $text = [Convert]::ToBase64String($buffer.ToArray())
+      $size = 4000
+      $count = [Math]::Ceiling($text.Length / $size)
+      for ($i = 0; $i -lt $count; $i++) {
+        $part = $text.Substring($i * $size, [Math]::Min($size, $text.Length - $i * $size))
+        Write-Output "::error title=$Name patch part $($i + 1) of $count::$part"
+      }
+    }
 
 jobs:
   rust:
@@ -45,14 +67,19 @@ jobs:
       # matters on machines where Smart App Control blocks rustfmt and
       # freshly built generators (CLAUDE.md §5).
       - name: Formatting
+        id: fmt
         run: |
           cargo fmt --all --check 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\fmt.log"
           exit $LASTEXITCODE
+      # Clippy and tests run even when formatting fails, so one CI round
+      # reports every kind of problem.
       - name: Clippy
+        if: success() || failure()
         run: |
           cargo clippy --workspace --all-targets --locked -- -D warnings 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\clippy.log"
           exit $LASTEXITCODE
       - name: Tests
+        if: success() || failure()
         run: |
           cargo test --workspace --locked 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\test.log"
           exit $LASTEXITCODE
@@ -64,9 +91,86 @@ jobs:
           cargo run -p kinora-ipc --example generate --locked
           git diff --exit-code -- apps/desktop/ui/src/lib/ipc/bindings.ts crates/kinora-project/schema 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\drift.diff"
           exit $LASTEXITCODE
+      # GitHub keeps ten error annotations per step, and each log yields up
+      # to three, hence two steps.
       - name: Report a failure as annotations
         if: failure()
-        run: node scripts/ci/report-failure.mjs "$env:RUNNER_TEMP\fmt.log" "$env:RUNNER_TEMP\clippy.log" "$env:RUNNER_TEMP\test.log" "$env:RUNNER_TEMP\drift.diff"
+        run: node scripts/ci/report-failure.mjs "$env:RUNNER_TEMP\fmt.log" "$env:RUNNER_TEMP\clippy.log"
+      - name: Report a failure as annotations (tests, drift)
+        if: failure()
+        run: node scripts/ci/report-failure.mjs "$env:RUNNER_TEMP\test.log" "$env:RUNNER_TEMP\drift.diff"
+      - name: Publish the binding and schema fix as a patch
+        if: failure()
+        run: |
+          . ([ScriptBlock]::Create($env:PUBLISH_PATCH))
+          git diff --output="$env:RUNNER_TEMP\drift.patch" -- apps/desktop/ui/src/lib/ipc/bindings.ts crates/kinora-project/schema
+          Publish-Patch drift "$env:RUNNER_TEMP\drift.patch"
+      - name: Publish the formatting fix as a patch
+        if: failure() && steps.fmt.outcome == 'failure'
+        run: |
+          . ([ScriptBlock]::Create($env:PUBLISH_PATCH))
+          cargo fmt --all
+          git diff --output="$env:RUNNER_TEMP\rustfmt.patch" -- '*.rs'
+          Publish-Patch rustfmt "$env:RUNNER_TEMP\rustfmt.patch"
+
+  desktop:
+    name: Desktop app (Tauri, clippy, release build)
+    runs-on: windows-latest
+    defaults:
+      run:
+        # Its own Cargo workspace; Cargo there also reads its .cargo/config.toml.
+        working-directory: apps/desktop/src-tauri
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Install pinned toolchain
+        # Reads the repository's rust-toolchain.toml.
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: apps/desktop/src-tauri -> target
+      - name: Formatting
+        id: fmt
+        run: |
+          cargo fmt --check 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\desktop-fmt.log"
+          exit $LASTEXITCODE
+      - name: Install UI dependencies
+        if: success() || failure()
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+      # A release build embeds ui/dist (tauri::generate_context!).
+      - name: Build the UI
+        id: ui
+        if: success() || failure()
+        working-directory: .
+        run: pnpm run ui:build
+      - name: Clippy
+        if: (success() || failure()) && steps.ui.outcome == 'success'
+        run: |
+          cargo clippy --locked --all-targets --features custom-protocol -- -D warnings 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\desktop-clippy.log"
+          exit $LASTEXITCODE
+      - name: Release build
+        if: (success() || failure()) && steps.ui.outcome == 'success'
+        run: |
+          cargo build --locked --release --features custom-protocol 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\desktop-build.log"
+          exit $LASTEXITCODE
+      - name: Report a failure as annotations
+        if: failure()
+        working-directory: .
+        run: node scripts/ci/report-failure.mjs "$env:RUNNER_TEMP\desktop-fmt.log" "$env:RUNNER_TEMP\desktop-clippy.log" "$env:RUNNER_TEMP\desktop-build.log"
+      - name: Publish the formatting fix as a patch
+        if: failure() && steps.fmt.outcome == 'failure'
+        run: |
+          . ([ScriptBlock]::Create($env:PUBLISH_PATCH))
+          cargo fmt
+          git diff --output="$env:RUNNER_TEMP\desktop-rustfmt.patch" -- '*.rs'
+          Publish-Patch desktop-rustfmt "$env:RUNNER_TEMP\desktop-rustfmt.patch"
 
   web:
     name: Web (lint, format, licences, UI check, test, build)
@@ -111,7 +215,7 @@ jobs:
         run: node scripts/ffmpeg/fetch.mjs
 
   cargo-deny:
-    name: cargo-deny (${{ matrix.checks }})
+    name: cargo-deny (${{ matrix.checks }}, ${{ matrix.manifest }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -119,6 +223,11 @@ jobs:
         checks:
           - licenses bans sources
           - advisories
+        # The desktop app is a separate Cargo workspace with its own lockfile;
+        # both follow the same policy (deny.toml).
+        manifest:
+          - Cargo.toml
+          - apps/desktop/src-tauri/Cargo.toml
     # A new advisory in a dependency must not block unrelated pull requests;
     # the weekly scheduled run and push to main still report it.
     continue-on-error: ${{ matrix.checks == 'advisories' && github.event_name == 'pull_request' }}
@@ -128,7 +237,9 @@ jobs:
           persist-credentials: false
       - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
         with:
+          manifest-path: ${{ matrix.manifest }}
           command: check ${{ matrix.checks }}
+          command-arguments: --config deny.toml
 
   dco:
     name: DCO sign-off

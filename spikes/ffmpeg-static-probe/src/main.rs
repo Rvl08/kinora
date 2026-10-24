@@ -385,7 +385,20 @@ fn encode_audio(case: &AudioCase, path: &Path) -> Result<usize, String> {
         while enc.receive_packet(&mut pkt).is_ok() {
             pkt.set_stream(0);
             pkt.rescale_ts(Rational(1, RATE), ost_tb);
-            pkt.write_interleaved(octx).map_err(err("mux"))?;
+            // Describe the packet before muxing: the muxer may fail without
+            // logging anything (FLAC, CI run 40065912310).
+            let what = format!(
+                "packet {packets}: size {} pts {:?} dts {:?} duration {} side data {}, stream extradata {} bytes",
+                pkt.size(),
+                pkt.pts(),
+                pkt.dts(),
+                pkt.duration(),
+                pkt.side_data().count(),
+                // SAFETY: stream 0 exists (added above); codecpar is owned by it.
+                unsafe { (*octx.stream(0).ok_or("no stream")?.parameters().as_ptr()).extradata_size },
+            );
+            pkt.write_interleaved(octx)
+                .map_err(|e| format!("mux {what}: {e}"))?;
             packets += 1;
         }
         Ok(())
@@ -428,6 +441,15 @@ fn decode_audio(case: &AudioCase, path: &Path) -> Result<(usize, f64, String), S
     let mut decoded = frame::Audio::empty();
     let mut take = |dec: &mut decoder::Audio| -> Result<(), String> {
         while dec.receive_frame(&mut decoded).is_ok() {
+            // WAV without a channel mask decodes to an "unspecified" layout,
+            // which swr_convert_frame treats as different from the default
+            // stereo layout and rejects with "Input changed" (CI run
+            // 40065912310, pcm_s16le). Name it the default layout for its
+            // channel count before building or running the resampler.
+            if decoded.channel_layout().is_empty() {
+                let channels = i32::from(decoded.channels());
+                decoded.set_channel_layout(ChannelLayout::default(channels));
+            }
             if resampler.is_none() {
                 resampler = Some(
                     resampling::Context::get(
@@ -504,6 +526,23 @@ fn audio_round_trip(case: &AudioCase, dir: &Path) -> Value {
 
 fn filter_and_scale() -> Result<Value, String> {
     let source = synth_frame(format::Pixel::YUV420P, 0);
+
+    // Scale first: the buffer source below takes the frame's references and
+    // leaves it blank (av_buffersrc_add_frame), and swscale then rejected the
+    // blank frame with "Input changed" (CI run 40065912310).
+    let mut scaler = scaling::Context::get(
+        format::Pixel::YUV420P,
+        W,
+        H,
+        format::Pixel::RGB24,
+        W / 2,
+        H / 2,
+        scaling::Flags::BILINEAR,
+    )
+    .map_err(err("swscale"))?;
+    let mut rgb = frame::Video::empty();
+    scaler.run(&source, &mut rgb).map_err(err("scale"))?;
+
     let mut graph = filter::Graph::new();
     let args = format!(
         "video_size={W}x{H}:pix_fmt={}:time_base=1/{FPS}:pixel_aspect=1/1",
@@ -542,19 +581,6 @@ fn filter_and_scale() -> Result<Value, String> {
         .sink()
         .frame(&mut filtered)
         .map_err(err("pull"))?;
-
-    let mut scaler = scaling::Context::get(
-        format::Pixel::YUV420P,
-        W,
-        H,
-        format::Pixel::RGB24,
-        W / 2,
-        H / 2,
-        scaling::Flags::BILINEAR,
-    )
-    .map_err(err("swscale"))?;
-    let mut rgb = frame::Video::empty();
-    scaler.run(&source, &mut rgb).map_err(err("scale"))?;
 
     let ok = (filtered.width(), filtered.height()) == (176, 128)
         && (rgb.width(), rgb.height()) == (W / 2, H / 2);

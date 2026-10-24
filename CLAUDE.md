@@ -60,7 +60,8 @@ at the end of every session.
 - **Zero cost.** No paid service, certificate or subscription. Use free programmes and design around their
   limits (example: SignPath signs only our own artifacts, so FFmpeg is linked statically).
 - **Licences.**
-  - Only permissive components (MIT, BSD, Apache, ISC, zlib, CC0/CC-BY data). LGPL is allowed only for FFmpeg.
+  - Only permissive components (MIT, BSD, Apache, ISC, zlib, CC0/CC-BY data). LGPL is allowed only for FFmpeg and the LGPL libraries ADR-0005 lists for it (LAME), linked as ADR-0005
+    amendment 3 describes.
   - Never GPL/AGPL, non-commercial (NC), or "research only".
   - Banned by name: x264, x265, libvidstab, espeak-ng, RVM, F5-TTS, NLLB, SCRFD, RMBG (BRIA).
   - `cargo deny`, `pnpm run licenses:check` and `pnpm run ffmpeg:verify` must pass.
@@ -125,15 +126,15 @@ decision means a new ADR or an amendment, plus an update to the docs/04 progress
 | | **Local: Claude Desktop on the owner's Windows 11** | **Cloud: Claude Code on the web (Linux container)** |
 |---|---|---|
 | Good for | MSVC and FFmpeg builds, GPU work (NVENC, DirectML, Vulkan), WebView2, installer, signing, **all final testing** | Platform-independent Rust crates (`kinora-project`, `kinora-core`, IPC contract, timeline logic), Svelte/TS UI with Impeccable, docs, CI workflows, Node scripts |
-| Cannot | Run freshly built executables directly: **Smart App Control** blocks them (os error 4551) | Build or run Windows binaries, test GPUs/WebView2/the installer, use Windows Sandbox. Large downloads may be blocked |
-| How | Native builds and tests go through `scripts/sandbox/invoke.ps1` (queued Windows Sandbox; read `scripts/sandbox/README.md`) | `cargo test -p <crate>` for portable crates; `pnpm` lint/format/test |
+| Cannot | Run freshly built executables: **Smart App Control** blocks them (os error 4551), **inside Windows Sandbox too** (SAC is enforced there since 24 Oct 2026; it was in evaluation mode before) | Build or run Windows binaries, test GPUs/WebView2/the installer, use Windows Sandbox. Large downloads may be blocked |
+| How | Windows builds and tests run on **GitHub Actions `windows-latest`** (owner's decision, 24 Oct): commit to a `wip/*` branch; the owner pushes and opens a PR, and CI is the evidence. Interactive tests (WebView2, installer) wait for a Hyper-V dev VM the owner sets up. `scripts/sandbox/` only works for signed or reputable binaries now | `cargo test -p <crate>` for portable crates; `pnpm` lint/format/test |
 
 **Cloud session rules:**
 - Set the git identity first:
   `git config user.name Rvl08 && git config user.email 150601118+Rvl08@users.noreply.github.com`.
 - Work on a branch and keep commits small, each signed off with `-s`.
 - Do not edit `vendor/`, `models/cache`, `tests/media` or Windows-only scripts you cannot test.
-- When work needs Windows verification, say so and leave clear test steps (e.g. which Sandbox job to run).
+- When work needs Windows verification, say so and leave clear test steps (e.g. which CI job or workflow proves it).
   Never claim it was tested if it was not.
 - Don't download model weights or large media; use small synthetic data in tests.
 - Code that compiles only on Windows needs `#[cfg(windows)]` with a portable stub or fallback, so the

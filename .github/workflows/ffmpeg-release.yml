@@ -61,13 +61,22 @@ jobs:
         with:
           path: vendor/.cache/ffmpeg-release
           key: ffmpeg-release-${{ hashFiles('scripts/ffmpeg/release-sources.json') }}
+      # Output is also teed to a file so a failure can be reported as public
+      # annotations (job logs need a signed-in user; annotations do not).
       - name: Build and run the release gate
-        run: node scripts/ffmpeg/release/build.mjs --work C:\kf --dist dist
+        run: |
+          node scripts/ffmpeg/release/build.mjs --work C:\kf --dist dist 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\build-output.log"
+          exit $LASTEXITCODE
       - name: Install pinned Rust toolchain
         # Reads rust-toolchain.toml.
         run: rustup toolchain install
       - name: Link, run and inspect the Rust probe
-        run: powershell -ExecutionPolicy Bypass -File scripts/ffmpeg/release/probe.ps1 -Out dist\probe -Target C:\kf\target
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts/ffmpeg/release/probe.ps1 -Out dist\probe -Target C:\kf\target 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\probe-output.log"
+          exit $LASTEXITCODE
+      - name: Report a failure as annotations
+        if: failure()
+        run: node scripts/ffmpeg/release/report-failure.mjs "$env:RUNNER_TEMP\build-output.log" "$env:RUNNER_TEMP\probe-output.log"
       - name: Artifact name
         id: meta
         shell: bash

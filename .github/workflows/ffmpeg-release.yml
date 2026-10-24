@@ -79,7 +79,7 @@ jobs:
           exit $LASTEXITCODE
       - name: Report a failure as annotations
         if: failure()
-        run: node scripts/ffmpeg/release/report-failure.mjs "$env:RUNNER_TEMP\build-output.log" "$env:RUNNER_TEMP\probe-output.log"
+        run: node scripts/ci/report-failure.mjs "$env:RUNNER_TEMP\build-output.log" "$env:RUNNER_TEMP\probe-output.log"
       - name: Artifact name
         id: meta
         shell: bash

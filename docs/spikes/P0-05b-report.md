@@ -31,7 +31,7 @@
   - `/DEFAULTLIB`;
   - objek `/GL`.
 - **Lisensi FFmpeg:** tanpa `--enable-version3` → **LGPL-2.1-or-later**.
-- **Pelaporan kegagalan:** log job GitHub hanya bisa dibaca pengguna yang login. Karena itu [`report-failure.mjs`](../../scripts/ffmpeg/release/report-failure.mjs) menerbitkan 180 baris terakhir log build/probe sebagai *annotation*, yang bisa dibaca lewat API tanpa kredensial. Bila configure gagal, `build.mjs` mencetak ekor `ffbuild/config.log`.
+- **Pelaporan kegagalan:** log job GitHub hanya bisa dibaca pengguna yang login. Karena itu [`report-failure.mjs`](../../scripts/ci/report-failure.mjs) menerbitkan 180 baris terakhir log build/probe sebagai *annotation*, yang bisa dibaca lewat API tanpa kredensial. Bila configure gagal, `build.mjs` mencetak ekor `ffbuild/config.log`.
 
 ## 3. Hasil probe (link statis)
 

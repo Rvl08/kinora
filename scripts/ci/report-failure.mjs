@@ -3,10 +3,10 @@
 // Why: job logs of a public repository can only be read by signed-in users
 // (and the REST endpoint wants admin rights), while annotations are public
 // through the check-runs API. Reporting the failure there lets anyone, and
-// any tooling without credentials, see why the release build failed.
+// any tooling without credentials, see why a CI job failed.
 //
 // Usage (workflow step with `if: failure()`):
-//   node scripts/ffmpeg/release/report-failure.mjs <log> [<log>...]
+//   node scripts/ci/report-failure.mjs <log> [<log>...]
 // Missing or empty logs are skipped. GitHub keeps at most 10 error
 // annotations per step, so each log contributes up to 3 chunks of 60 lines.
 

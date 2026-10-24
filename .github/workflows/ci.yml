@@ -37,14 +37,34 @@ jobs:
         # Reads rust-toolchain.toml.
         run: rustup toolchain install
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
-      - run: cargo fmt --all --check
-      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - run: cargo test --workspace --locked
-      # cargo test already fails on drift; this step says which generated file is stale.
+      # Each step tees its output so a failure can be reported as public
+      # annotations: job logs need a signed-in user, annotations do not. The
+      # fmt and drift diffs are then directly applicable patches, which
+      # matters on machines where Smart App Control blocks rustfmt and
+      # freshly built generators (CLAUDE.md §5).
+      - name: Formatting
+        run: |
+          cargo fmt --all --check 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\fmt.log"
+          exit $LASTEXITCODE
+      - name: Clippy
+        run: |
+          cargo clippy --workspace --all-targets --locked -- -D warnings 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\clippy.log"
+          exit $LASTEXITCODE
+      - name: Tests
+        run: |
+          cargo test --workspace --locked 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\test.log"
+          exit $LASTEXITCODE
+      # cargo test already fails on drift; this step says which generated
+      # file is stale and publishes the diff to apply.
       - name: Generated IPC bindings and project schema are current
+        if: success() || failure()
         run: |
           cargo run -p kinora-ipc --example generate --locked
-          git diff --exit-code -- apps/desktop/ui/src/lib/ipc/bindings.ts crates/kinora-project/schema
+          git diff --exit-code -- apps/desktop/ui/src/lib/ipc/bindings.ts crates/kinora-project/schema 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\drift.diff"
+          exit $LASTEXITCODE
+      - name: Report a failure as annotations
+        if: failure()
+        run: node scripts/ci/report-failure.mjs "$env:RUNNER_TEMP\fmt.log" "$env:RUNNER_TEMP\clippy.log" "$env:RUNNER_TEMP\test.log" "$env:RUNNER_TEMP\drift.diff"
 
   web:
     name: Web (lint, format, licences, UI check, test, build)

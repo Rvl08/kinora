@@ -340,7 +340,8 @@ fn fill_ints<T: LeBytes>(
     }
 }
 
-fn encode_audio(case: &AudioCase, path: &Path) -> Result<usize, String> {
+/// Returns the packets muxed and the data-less (side-data only) packets skipped.
+fn encode_audio(case: &AudioCase, path: &Path) -> Result<(usize, usize), String> {
     let codec = encoder::find_by_name(case.encoder).ok_or("encoder not registered")?;
     let fmt = codec
         .audio()
@@ -378,11 +379,22 @@ fn encode_audio(case: &AudioCase, path: &Path) -> Result<usize, String> {
         1024
     };
     let mut packets = 0;
+    let mut side_data_only = 0usize;
     let mut drain = |enc: &mut encoder::audio::Encoder,
                      octx: &mut format::context::Output|
      -> Result<(), String> {
         let mut pkt = Packet::empty();
         while enc.receive_packet(&mut pkt).is_ok() {
+            // FLAC ends with a data-less packet that only carries the updated
+            // STREAMINFO (AV_PKT_DATA_NEW_EXTRADATA); this muxer path rejected
+            // it with "Invalid data" (CI run 40067496890, packet 11: size 0,
+            // side data 1). The probe proves codecs and linkage, not the
+            // STREAMINFO rewrite, so it skips such packets and reports how
+            // many; the Phase 1 exporter must handle them (P0-05b report).
+            if pkt.size() == 0 {
+                side_data_only += 1;
+                continue;
+            }
             pkt.set_stream(0);
             pkt.rescale_ts(Rational(1, RATE), ost_tb);
             // Describe the packet before muxing: the muxer may fail without
@@ -415,7 +427,7 @@ fn encode_audio(case: &AudioCase, path: &Path) -> Result<usize, String> {
     enc.send_eof().map_err(err("send eof"))?;
     drain(&mut enc, &mut octx)?;
     octx.write_trailer().map_err(err("write trailer"))?;
-    Ok(packets)
+    Ok((packets, side_data_only))
 }
 
 /// Decodes, converts to packed f32 through swresample, and measures length and level.
@@ -505,14 +517,14 @@ fn audio_round_trip(case: &AudioCase, dir: &Path) -> Value {
     let path = dir.join(case.file);
     let total = RATE as usize * AUDIO_SECONDS;
     let expected_rms = f64::from(AMPLITUDE) / 2f64.sqrt();
-    let result = encode_audio(case, &path).and_then(|packets| {
+    let result = encode_audio(case, &path).and_then(|(packets, side_data_only)| {
         let (samples, rms, demuxer) = decode_audio(case, &path)?;
         let length_ok = samples as f64 >= 0.95 * total as f64 && samples as f64 <= 1.10 * total as f64;
         let level_ok = (rms - expected_rms).abs() <= 0.1 * expected_rms;
         Ok(json!({
             "ok": length_ok && level_ok, "packets": packets, "samples": samples,
             "rms": (rms * 1000.0).round() / 1000.0, "expectedRms": (expected_rms * 1000.0).round() / 1000.0,
-            "demuxer": demuxer,
+            "demuxer": demuxer, "sideDataOnlyPacketsSkipped": side_data_only,
         }))
     });
     let mut value = result.unwrap_or_else(|e| json!({ "ok": false, "error": e }));

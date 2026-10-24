@@ -639,6 +639,15 @@ weight: number,
 italic: boolean, };
 
 /**
+ * Arguments of [`ForgetRecentProject`].
+ */
+export type ForgetRecentProjectArgs = {
+/**
+ * The entry's `path`, exactly as `list_recent_projects` returned it.
+ */
+path: string, };
+
+/**
  * Frames per second as an exact, strictly positive rational, e.g. NTSC
  * `30000/1001` instead of `29.97`.
  *
@@ -1148,14 +1157,14 @@ den: number, };
 /**
  * A project on the recent-projects list.
  *
- * Read from the shell's recent list and the project's own `project.json`;
- * fields the shell could not read (a moved folder, a damaged file) are
- * `null`, and `available` tells the UI whether opening can work.
+ * `name`, `format` and `duration` are what the project held when it was
+ * last opened or saved (`null` when unknown); `available` is checked each
+ * time the list is read and tells the UI whether opening can work.
  */
 export type RecentProject = {
 /**
- * The `.kinora` folder, as the user chose it; passed back unchanged to
- * `open_project`.
+ * The `.kinora` folder, fully resolved; passed back unchanged to
+ * `open_project` or `forget_recent_project`.
  */
 path: string,
 /**
@@ -1581,7 +1590,8 @@ export type Commands = {
   create_project: { args: CreateProjectArgs; output: ProjectOpened };
   /**
    * Opens a project folder, migrating an older format and replaying the
-   * journal of an unclean shutdown.
+   * journal of an unclean shutdown. Creating or opening a project puts it
+   * first on the recent-projects list.
    */
   open_project: { args: OpenProjectArgs; output: ProjectOpened };
   /**
@@ -1620,6 +1630,12 @@ export type Commands = {
    * screen.
    */
   list_recent_projects: { args: null; output: Array<RecentProject> };
+  /**
+   * Removes a project from the recent-projects list; succeeds when it is
+   * not listed. The project folder is not touched. After "find folder",
+   * the UI opens the new folder and then forgets the old path.
+   */
+  forget_recent_project: { args: ForgetRecentProjectArgs; output: null };
 };
 
 /** Every IPC event: `listen(name)` delivers the payload. */

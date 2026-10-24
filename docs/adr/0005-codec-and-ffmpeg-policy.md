@@ -1,6 +1,6 @@
 # ADR-0005 — Kebijakan codec & build FFmpeg
 
-- **Status:** Accepted (19 Okt 2026), **diamandemen** 19 Okt 2026 (Amandemen 1, P0-05) 20 Okt 2026 (Amandemen 2, Spike S2), dan 21 Okt 2026 (Amandemen 3, distribusi tanpa biaya) · **Keputusan terkait:** D2
+- **Status:** Accepted (19 Okt 2026), **diamandemen** 19 Okt 2026 (Amandemen 1, P0-05) 20 Okt 2026 (Amandemen 2, Spike S2), 21 Okt 2026 (Amandemen 3, distribusi tanpa biaya), dan 24 Okt 2026 (Amandemen 4, P0-05b terverifikasi) · **Keputusan terkait:** D2
 
 ## Konteks
 Lisensi proyek permisif (ADR-0002) melarang komponen GPL. FFmpeg berlisensi LGPL-2.1+ bila dibangun tanpa
@@ -72,3 +72,12 @@ SignPath hanya menandatangani artefak yang dibangun dari source proyek, dan Smar
    - `THIRD_PARTY_NOTICES` dan dokumentasi build menjelaskan caranya. Teks lisensi dan tautan source tetap disertakan di installer.
 3. Build dev (P0-05, BtbN shared) tidak berubah. Yang berubah hanya build rilis.
 4. Yang perlu dikonfirmasi saat mendaftar SignPath: FFmpeg statis di dalam exe kita dianggap artefak proyek (praktik yang sama dengan crate Rust pihak ketiga).
+
+## Amandemen 4 — Build rilis statis terverifikasi (24 Okt 2026, P0-05b)
+Rincian dan bukti: [Laporan P0-05b](../spikes/P0-05b-report.md), CI run 40068909424.
+1. **Lisensi:** FFmpeg dibangun **tanpa `--enable-version3`** (tidak ada library yang membutuhkannya), sehingga hasilnya **LGPL-2.1-or-later**. LAME (LGPL-2.0+) adalah satu-satunya library LGPL lain dan mengikuti aturan tautan statis Amandemen 3.
+2. **CRT statis** (`/MT`, LIBCMT) di semua library dan di Rust (`+crt-static`). Objek `/GL` (LTCG) dilarang: SVT-AV1 tanpa LTO, libvpx `WholeProgramOptimization=false`.
+3. **Header NVIDIA:** nv-codec-headers 12.2 (driver ≥ 551.76), dipilih karena cakupan perangkatnya lebih luas daripada 13.x.
+4. **`scripts/ffmpeg/release-components.json` adalah satu-satunya sumber kebenaran** untuk build dan gerbang rilis, dengan grup baru `parsers`, `hwaccels`, `hwdevices`, `platform` (termasuk `w32threads`), dan `implicit`. Komponen yang dipilih configure secara otomatis harus tercatat di `implicit`, kalau tidak gerbang gagal.
+5. **Gerbang rilis** (`pnpm run ffmpeg:verify:ship` = `verify.mjs --release`) membaca library statis tanpa menjalankan apa pun. Gerbang ini wajib lulus sebelum artefak diterbitkan; artefak hanya diterbitkan lewat dispatch manual dengan `publish: true`, bersama semua arsip sumber.
+6. **Biaya ukuran:** FFmpeg statis menambah **20,66 MB** (belum dikompresi) pada exe. Ukuran terkompresi di installer diukur di S4.

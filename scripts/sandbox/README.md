@@ -1,5 +1,11 @@
 # scripts/sandbox
 
+> **Status, 24 Oct 2026:** Smart App Control is now **enforced inside Windows Sandbox** too
+> (`VerifiedAndReputablePolicyState = 1`, previously 2). Unsigned, unreputed binaries are blocked there: the pinned
+> toolchain's `cargo.exe`, build scripts, test binaries, MSYS2's `bash.exe`. Windows builds and tests therefore run on
+> GitHub Actions (`windows-latest`) instead. The runner below still works for signed or reputable tools only. Never try
+> to disable or work around Smart App Control, inside the sandbox included.
+
 Runs a job script inside Windows Sandbox and waits for it. The dev machine enforces Smart App Control, which
 blocks freshly built unsigned executables (Cargo build scripts and test binaries, FFmpeg's configure probes),
 so anything that builds and runs native code runs here.

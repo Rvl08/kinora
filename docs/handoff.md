@@ -4,8 +4,40 @@ Dokumen ini menjembatani satu sesi kerja ke sesi berikutnya: apa yang baru seles
 apa langkah pertama berikutnya. Sumber kebenaran progres tetap tabel [04](04-phase0-plan.md) §3.1; aturan kerja ada
 di `CLAUDE.md`. Perbarui dokumen ini di akhir setiap sesi.
 
-**Terakhir diperbarui:** 22 Okt 2026, akhir sesi cloud (Claude Code di web). Sesi berikutnya: Claude Desktop di
-Windows 11 milik pemilik.
+**Terakhir diperbarui:** 24 Okt 2026, sesi Claude Desktop (Windows). Riwayat sesi cloud 22 Okt ada di §1–§5 di bawah;
+pembaruan 24 Okt ada di §0.
+
+## 0. Pembaruan 24 Okt 2026 (Claude Desktop, Windows)
+
+**Temuan penting: Smart App Control kini aktif penuh di Windows Sandbox.**
+- Nilai `VerifiedAndReputablePolicyState` adalah 1 (21–22 Okt masih 2).
+- Code Integrity memblokir `cargo.exe` toolchain 1.99.1 yang dipin, sehingga build script, biner tes, `bash.exe` MSYS2,
+  dan probe configure ikut terblokir (log: `tests/sandbox-out/diag/job.log`, lokal saja).
+- **Keputusan pemilik:** build dan tes Windows berjalan di **GitHub Actions `windows-latest`** sekarang. Uji interaktif
+  (WebView2, installer) menunggu **VM Hyper-V** (Windows 11 Enterprise Evaluation, gratis 90 hari) yang disiapkan
+  pemilik sendiri. SAC di host tidak diubah.
+
+**Diverifikasi sesi ini:**
+- CI GitHub hijau untuk PR `claude/loving-clarke-ayhpkl` (`7bdaa68`) dan merge ke `main` (`d2e746d`), termasuk runner
+  `windows-latest` (fmt, clippy, tes, cargo-deny, cek *drift* binding). Ini menggantikan job sandbox `ipc-contract` yang
+  diminta §3.
+- Layar awal di Chromium (aplikasi Claude Desktop) pada 1366×768 dan 1920×1080: keadaan penuh, kosong, galat, dan
+  memuat tampil benar; tidak ada galat di konsol; fokus Tab terlihat (cincin amber). Uji WebView2 sesungguhnya tetap
+  menunggu shell Tauri (Sprint B) dan VM.
+
+**P0-05b (FFmpeg statis): ✅ terverifikasi di GitHub Actions** (run 40068909424, commit `ce84f83`, PR #4).
+- Build statis LGPL-2.1+, gerbang rilis, dan probe Rust (9 codec, impor hanya DLL sistem) lulus. Tambahan exe 20,66 MB.
+- Butuh 10 putaran CI. Pemilik mengizinkan Claude push **hanya** ke branch `wip/p0-05b-ffmpeg-static` selama iterasi
+  ini; izin itu berakhir di sini.
+- Kegagalan CI kini terbaca tanpa login: workflow menerbitkan akhir log sebagai *annotation*. Pemantau di sisi Claude
+  menghormati batas API GitHub tanpa login (60 permintaan/jam) dan memberi tahu bila gagal atau macet.
+- **Langkah pemilik:** merge PR #4 ke `main`. Opsional: Actions → *FFmpeg release build* → Run workflow dengan
+  `publish: true` untuk menerbitkan artefak sebagai GitHub Release.
+- Untuk exporter Fase 1: tangani paket STREAMINFO akhir FLAC dan jebakan `ffmpeg-next` (laporan P0-05b, temuan 8–9).
+
+**Riwayat lokal dirapikan** (atas izin pemilik): commit `c522310` tanpa DCO diganti oleh commit ber-DCO di branch
+P0-05b. Cadangan lengkap ada di branch lokal `backup/pre-rewrite-2026-10-24`, yang boleh dihapus setelah semuanya
+di-push.
 
 ## 1. Hasil sesi 22 Okt 2026 (cloud)
 

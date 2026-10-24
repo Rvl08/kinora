@@ -10,6 +10,7 @@
 | 06 | [Rencana Publikasi & Distribusi Tanpa Biaya](06-public-release-plan.md) | Microsoft Store (MSIX) + SignPath Foundation tanpa biaya, dampak arsitektur, audit kesiapan repo publik, keputusan yang dibutuhkan |
 | — | [Catatan serah terima](handoff.md) | Hasil sesi terakhir, yang belum diverifikasi, langkah pertama sesi berikutnya, keputusan yang menunggu pemilik |
 | 07 | [Pedoman Arsitektur & Desain Frontend](07-frontend-guidelines.md) | Struktur `apps/desktop/ui`, aliran data read-model, IPC, i18n, sistem desain & token, aksesibilitas, keamanan, performa, pengujian, proses Impeccable, definisi selesai |
+| 08 | [VM Pengembangan Hyper-V](08-dev-vm.md) | Windows 11 Enterprise Evaluation gratis untuk uji interaktif (WebView2, installer) di luar Smart App Control host |
 | S1 | [Laporan Spike S1](spikes/S1-report.md) | Pipeline preview: hasil terukur, temuan, syarat produksi |
 | S2 | [Laporan Spike S2](spikes/S2-report.md) | Decode/encode/ekspor: kecepatan, kualitas (VMAF), zero-copy, OpenH264 Cisco, komponen FFmpeg rilis |
 | S3 | [Laporan Spike S3](spikes/S3-report.md) | AI lokal: Whisper Vulkan/CPU + timestamp kata, BiRefNet DirectML, Kokoro tanpa espeak-ng, Silero VAD, memori, pengelola model |

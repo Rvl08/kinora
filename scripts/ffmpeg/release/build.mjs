@@ -683,8 +683,11 @@ async function buildFfmpeg() {
     '--disable-everything',
     ...configureFlags(spec),
     `--extra-cflags=-MT -I${fwd(prefix)}/include`,
-    // configure rewrites -L into link.exe's -libpath:.
-    `--extra-ldflags=-L${fwd(prefix)}/lib`,
+    // link.exe's own syntax: configure translates -L only for flags that come
+    // from pkg-config, so a plain -L here reached link.exe as /L... and was
+    // ignored (LNK4044), and check_lib tests (LAME) could not find their .lib
+    // (CI run 40059920565).
+    `--extra-ldflags=-libpath:${fwd(prefix)}/lib`,
   ];
   for (const flag of flags) {
     if (/^--enable-(gpl|nonfree|version3)$/.test(flag)) throw new Error(`refusing ${flag}`);

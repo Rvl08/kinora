@@ -513,6 +513,11 @@ const builders = {
       '/p:Configuration=Release',
       '/p:Platform=x64',
       '/p:UseEnv=true',
+      // The generated projects enable whole-program optimisation in Release:
+      // /GL objects are compiler IR, not COFF, so only the same MSVC version
+      // could link them and the release gate cannot inspect them
+      // (CI run 40060533206).
+      '/p:WholeProgramOptimization=false',
       '/v:minimal',
     ]);
     const [lib] = await files(dir, (n) => /^vpxmt\.lib$/i.test(n));

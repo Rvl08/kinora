@@ -64,7 +64,12 @@ export const GROUPS = {
 // Printed names (what `ffmpeg -demuxers` etc. show, and what the JSON uses)
 // that configure and the linker spell differently. Hyphens become
 // underscores generically (libvpx-vp9 -> libvpx_vp9).
-const RENAMED = { demuxers: { mpeg: 'mpegps' } };
+// The MP4 timed-text codec is "mov_text" to users but "movtext" to configure.
+const RENAMED = {
+  demuxers: { mpeg: 'mpegps' },
+  decoders: { mov_text: 'movtext' },
+  encoders: { mov_text: 'movtext' },
+};
 
 // Buffer sources and sinks are compiled into every libavfilter and cannot be
 // named on the configure line (configure would warn "did not match anything").

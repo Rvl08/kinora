@@ -64,6 +64,9 @@ jobs:
       # Output is also teed to a file so a failure can be reported as public
       # annotations (job logs need a signed-in user; annotations do not).
       - name: Build and run the release gate
+        # A full cold build takes ~15 min on windows-2025; anything far longer
+        # is a hang, and failing it early leaves time to read the report.
+        timeout-minutes: 90
         run: |
           node scripts/ffmpeg/release/build.mjs --work C:\kf --dist dist 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\build-output.log"
           exit $LASTEXITCODE

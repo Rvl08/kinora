@@ -1,0 +1,49 @@
+[package]
+name = "kinora-desktop"
+description = "Kinora's Windows desktop app: the Tauri 2 window over kinora-shell."
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.99"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Rvl08/kinora"
+publish = false
+default-run = "kinora"
+
+# Its own workspace, outside the repository's: building it needs the built UI
+# (ui/dist) and, on Linux, webkit2gtk, which `cargo test --workspace` at the
+# root must not depend on. CI builds it in the `desktop` job.
+[workspace]
+
+[[bin]]
+name = "kinora"
+path = "src/main.rs"
+
+[features]
+# Serves the built UI from the binary instead of the dev server. `tauri build`
+# enables it; CI passes `--features custom-protocol` for release builds.
+custom-protocol = ["tauri/custom-protocol"]
+
+[build-dependencies]
+# The command list for the permission manifest comes from the contract.
+kinora-ipc = { path = "../../../crates/kinora-ipc" }
+# Pinned exactly: the UI pins @tauri-apps/api 2.12.4 and
+# @tauri-apps/plugin-dialog 2.8.3, and the Rust and JS halves must match.
+tauri-build = { version = "=2.7.3", features = [] }
+
+[dependencies]
+kinora-ipc = { path = "../../../crates/kinora-ipc" }
+kinora-shell = { path = "../../../crates/kinora-shell" }
+log = { version = "0.4.34", features = ["std"] }
+tauri = { version = "=2.12.4", features = [] }
+tauri-plugin-dialog = "=2.8.3"
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_op_in_unsafe_fn = "deny"
+unused_qualifications = "warn"
+
+[lints.clippy]
+dbg_macro = "deny"
+todo = "warn"
+undocumented_unsafe_blocks = "deny"
+unwrap_used = "warn"

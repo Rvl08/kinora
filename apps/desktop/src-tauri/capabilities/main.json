@@ -1,0 +1,22 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "The main window: Kinora's own IPC commands, event listening, webview drag and drop, and the native open dialog. No file-system, shell or HTTP access: every path the UI passes is validated again in Rust.",
+  "windows": ["main"],
+  "permissions": [
+    "core:event:default",
+    "core:webview:default",
+    "dialog:allow-open",
+    "allow-create-project",
+    "allow-open-project",
+    "allow-save-project",
+    "allow-close-project",
+    "allow-get-project",
+    "allow-apply-command",
+    "allow-undo",
+    "allow-redo",
+    "allow-cancel-job",
+    "allow-list-recent-projects",
+    "allow-forget-recent-project"
+  ]
+}

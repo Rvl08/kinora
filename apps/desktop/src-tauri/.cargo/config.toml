@@ -1,0 +1,9 @@
+# Read by Cargo when it runs in this folder (CI's desktop job, `tauri dev`,
+# `tauri build`), on top of the repository's .cargo/config.toml.
+#
+# The C runtime is linked statically (/MT), as ADR-0005 amendment 3 and
+# ADR-0006 amendment 1 require: the release links static FFmpeg and ggml
+# built with /MT, and the installer ships no VC++ runtime DLLs. tauri-build's
+# own `staticVCRuntime` covers only vcruntime; this covers the UCRT as well.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

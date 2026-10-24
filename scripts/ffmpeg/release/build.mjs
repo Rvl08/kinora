@@ -577,9 +577,10 @@ async function normaliseDependencies() {
     if (existsSync(join(lib, from))) await rename(join(lib, from), join(lib, to));
   }
   await rm(join(prefix, 'bin'), { recursive: true, force: true });
+  const present = new Set((await readdir(lib)).map((n) => n.toLowerCase()));
   for (const file of await files(join(prefix, 'lib', 'pkgconfig'), (n) => n.endsWith('.pc'))) {
     const text = await readFile(file, 'utf8');
-    const fixed = text
+    let fixed = text
       .split(/\r?\n/)
       .map((line) => {
         if (/^prefix=/.test(line)) return `prefix=${fwd(prefix)}`;
@@ -589,9 +590,71 @@ async function normaliseDependencies() {
         return line;
       })
       .join('\n');
+    // Every -lNAME of our own libraries must resolve to NAME.lib, the only
+    // name configure's MSVC wrapper tries. CMake projects name static MSVC
+    // libraries differently (libNAME.lib, NAMEmt.lib, libNAME.a).
+    const libsLine = /^Libs:.*$/m.exec(fixed)?.[0] ?? '';
+    for (const [, name] of libsLine.matchAll(/\s-l([\w.+-]+)/g)) {
+      // configure's MSVC wrapper maps -lz to zlib.lib (renamed above).
+      const wanted = name === 'z' ? 'zlib' : name;
+      if (present.has(`${wanted}.lib`.toLowerCase()) || WINDOWS_SYSTEM_LIBS.has(name.toLowerCase()))
+        continue;
+      const candidate = [
+        `lib${name}.lib`,
+        `${name}mt.lib`,
+        `lib${name}mt.lib`,
+        `lib${name}.a`,
+      ].find((c) => present.has(c.toLowerCase()));
+      if (!candidate) {
+        // configure reports the missing library itself; just say which.
+        console.warn(`normalise: ${basename(file)} asks for -l${name}, no matching .lib found`);
+        continue;
+      }
+      await rename(join(lib, candidate), join(lib, `${name}.lib`));
+      present.delete(candidate.toLowerCase());
+      present.add(`${name}.lib`.toLowerCase());
+      console.log(`normalise: ${candidate} -> ${name}.lib (for ${basename(file)})`);
+    }
+    // libvpl's static dispatcher calls the registry, COM and shell path APIs;
+    // a static link needs their import libraries, which its .pc may omit.
+    if (basename(file) === 'vpl.pc') {
+      const needed = ['advapi32', 'ole32', 'shlwapi', 'uuid'].filter(
+        (n) => !new RegExp(`-l${n}\\b`, 'i').test(fixed),
+      );
+      if (needed.length) {
+        const extra = needed.map((n) => `-l${n}`).join(' ');
+        fixed = /^Libs\.private:/m.test(fixed)
+          ? fixed.replace(/^Libs\.private:(.*)$/m, (_, rest) => `Libs.private:${rest} ${extra}`)
+          : `${fixed.trimEnd()}\nLibs.private: ${extra}\n`;
+      }
+    }
     await writeFile(file, fixed);
+    console.log(`--- ${basename(file)}\n${fixed.trim()}`);
   }
+  console.log(
+    `static libraries: ${[...present]
+      .filter((n) => n.endsWith('.lib'))
+      .sort()
+      .join(' ')}`,
+  );
 }
+
+/** Import libraries of the Windows SDK; they live outside the prefix. */
+const WINDOWS_SYSTEM_LIBS = new Set([
+  'advapi32',
+  'bcrypt',
+  'd3d11',
+  'dxgi',
+  'kernel32',
+  'ole32',
+  'oleaut32',
+  'psapi',
+  'shell32',
+  'shlwapi',
+  'user32',
+  'uuid',
+  'ws2_32',
+]);
 
 // ---------------------------------------------------------------- FFmpeg
 
@@ -628,13 +691,25 @@ async function buildFfmpeg() {
   }
   configureLine = flags.join(' ');
   const quoted = flags.map((f) => `'${f.replaceAll("'", "'\\''")}'`).join(' ');
-  bash(
-    [
-      `export PKG_CONFIG_PATH='${posix(join(prefix, 'lib', 'pkgconfig'))}'`,
-      `'${posix(sourceDir.ffmpeg)}/configure' ${quoted} | tee configure.out`,
-    ].join('\n'),
-    { cwd: dir },
-  );
+  try {
+    bash(
+      [
+        `export PKG_CONFIG_PATH='${posix(join(prefix, 'lib', 'pkgconfig'))}'`,
+        `'${posix(sourceDir.ffmpeg)}/configure' ${quoted} | tee configure.out`,
+      ].join('\n'),
+      { cwd: dir },
+    );
+  } catch (error) {
+    // configure's own message rarely names the cause; config.log does. Print
+    // its tail so the CI failure report (report-failure.mjs) carries it.
+    const log = join(dir, 'ffbuild', 'config.log');
+    if (existsSync(log)) {
+      const lines = (await readFile(log, 'utf8')).split(/\r?\n/);
+      console.log(`--- ffbuild/config.log (last 120 of ${lines.length} lines)`);
+      console.log(lines.slice(-120).join('\n'));
+    }
+    throw error;
+  }
   // configure only warns about component names it does not know; for the
   // release that is an error (the JSON and the build would disagree).
   const warnings = (await readFile(join(dir, 'configure.out'), 'utf8'))

@@ -34,7 +34,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { createReadStream, createWriteStream, existsSync } from 'node:fs';
+import { createReadStream, existsSync } from 'node:fs';
 import {
   copyFile,
   cp,
@@ -48,7 +48,6 @@ import {
 } from 'node:fs/promises';
 import { availableParallelism } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
-import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 
@@ -154,12 +153,32 @@ async function fetchPinned(entry, file, urls) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       console.log(`download ${url}${attempt > 1 ? ` (attempt ${attempt})` : ''}`);
       try {
-        const response = await fetch(url, {
-          redirect: 'follow',
-          signal: AbortSignal.timeout(20 * 60 * 1000),
-        });
-        if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
-        await pipeline(Readable.fromWeb(response.body), createWriteStream(partial));
+        // Windows' own curl (System32, Microsoft-signed), not fetch(): undici
+        // aborted the whole process with an internal assertion on a
+        // SourceForge redirect chain (CI, 24 Oct 2026). A child process can
+        // only fail this attempt.
+        const result = spawnSync(
+          systemCurl,
+          [
+            '--fail',
+            '--location',
+            '--silent',
+            '--show-error',
+            '--proto-redir',
+            '=https',
+            '--connect-timeout',
+            '60',
+            '--max-time',
+            String(20 * 60),
+            '--output',
+            partial,
+            url,
+          ],
+          { stdio: ['ignore', 'inherit', 'pipe'], encoding: 'utf8' },
+        );
+        if (result.error) throw result.error;
+        if (result.status !== 0)
+          throw new Error(`curl exited with ${result.status}: ${(result.stderr ?? '').trim()}`);
         const digest = await sha256(partial);
         if (digest !== entry.sha256) {
           // A wrong digest is not a network glitch: do not retry this URL.
@@ -182,6 +201,7 @@ const archiveName = (entry) => entry.file ?? basename(new URL(entry.url).pathnam
 const entryUrls = (entry) => [...(entry.mirrors ?? []), entry.url];
 
 const systemTar = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe');
+const systemCurl = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'curl.exe');
 
 /**
  * Unpacks an archive into a fresh `dir` and returns the single top-level

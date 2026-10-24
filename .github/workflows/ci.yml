@@ -81,7 +81,7 @@ jobs:
       - name: Tests
         if: success() || failure()
         run: |
-          cargo test --workspace --locked 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\test.log"
+          cargo test --workspace --locked --no-fail-fast 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\test.log"
           exit $LASTEXITCODE
       # cargo test already fails on drift; this step says which generated
       # file is stale and publishes the diff to apply.
@@ -224,7 +224,8 @@ jobs:
           - licenses bans sources
           - advisories
         # The desktop app is a separate Cargo workspace with its own lockfile;
-        # both follow the same policy (deny.toml).
+        # both follow the same policy: cargo-deny finds the root deny.toml by
+        # walking up from the manifest.
         manifest:
           - Cargo.toml
           - apps/desktop/src-tauri/Cargo.toml
@@ -239,7 +240,6 @@ jobs:
         with:
           manifest-path: ${{ matrix.manifest }}
           command: check ${{ matrix.checks }}
-          command-arguments: --config deny.toml
 
   dco:
     name: DCO sign-off

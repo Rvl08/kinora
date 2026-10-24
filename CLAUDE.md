@@ -30,6 +30,7 @@ at the end of every session.
 | P0-02/03 repo, toolchain | Rust 1.99.1 pinned, pnpm via Corepack, ESLint/Prettier |
 | P0-04 CI | `.github/workflows/ci.yml` green on GitHub |
 | P0-05 FFmpeg dev build | BtbN LGPL shared build in `vendor/` (dev only) |
+| P0-05b FFmpeg release build | Static LGPL-2.1+ build (/MT) verified on GitHub Actions on 24 Oct (run 40068909424): release gate passes, and the Rust probe links statically and round-trips 9 codecs. ADR-0005 amendment 4; `docs/spikes/P0-05b-report.md` |
 | P0-06 signing pipeline | `scripts/signing/` (sign, verify gate, policy). Free providers not enrolled yet |
 | P0-07 S1 preview | ADR-0003 accepted for discrete GPUs |
 | P0-08 S2 export | NVENC paths and the component list for the release FFmpeg |
@@ -39,8 +40,6 @@ at the end of every session.
 | Editing core (pre-Phase 1) | ADR-0004 amendment 2: timeline times on a **flick grid** (1/705,600,000 s). `kinora-project::edit`: atomic `apply`, exact undo/redo patches, `Editor` session, `journal.jsonl` crash recovery. Linux-tested; Windows sandbox run pending (`docs/spikes/edit-core-report.md`) |
 
 **In progress or not done:**
-- **P0-05b:** static release FFmpeg built in CI (`scripts/ffmpeg/release*`, `.github/workflows/ffmpeg-release.yml`).
-  Check `git log` and the docs/04 table before touching it: it may already be committed.
 - **P0-10 / Spike S4:** NSIS installer with wizard + MSIX (winapp CLI); test install in a clean Windows Sandbox.
 - **P0-13:** Phase 0 go/no-go gate, then the Phase 1 backlog.
 - **P0-14:** public channels. Register with SignPath Foundation (needs a first release and the "Code signing

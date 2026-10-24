@@ -1,0 +1,185 @@
+{
+  "$comment": "Pinned inputs of Kinora's static release FFmpeg (P0-05b, ADR-0005 Amendment 3). Every archive is checked against its SHA-256 before use; `mirrors` are tried before `url`. `sources` are compiled into kinora.exe and must carry an LGPL/BSD/MIT/Apache/ISC/Zlib-class licence (never GPL); `licenseFiles` are paths inside the extracted archive that the artifact ships. `tools` only run during the build and are never shipped. Bump `revision` whenever flags change without a version change. Built by scripts/ffmpeg/release/build.mjs, checked by `node scripts/ffmpeg/verify.mjs --release`.",
+  "revision": 1,
+  "target": "x86_64-pc-windows-msvc",
+  "sources": [
+    {
+      "name": "ffmpeg",
+      "version": "8.1.3",
+      "url": "https://ffmpeg.org/releases/ffmpeg-8.1.3.tar.xz",
+      "mirrors": [],
+      "sha256": "7138d28c96d9d3e3af4ee3d8cad72741f8ffb40da90c1112235dea3ecd3178a3",
+      "license": "LGPL-2.1-or-later",
+      "licenseFiles": ["COPYING.LGPLv2.1", "LICENSE.md"],
+      "homepage": "https://ffmpeg.org/"
+    },
+    {
+      "name": "dav1d",
+      "version": "1.5.4",
+      "url": "https://downloads.videolan.org/pub/videolan/dav1d/1.5.4/dav1d-1.5.4.tar.xz",
+      "mirrors": [],
+      "sha256": "686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5",
+      "license": "BSD-2-Clause",
+      "licenseFiles": ["COPYING"],
+      "homepage": "https://code.videolan.org/videolan/dav1d"
+    },
+    {
+      "name": "svt-av1",
+      "version": "4.0.1",
+      "url": "https://github.com/AOMediaCodec/SVT-AV1/archive/refs/tags/v4.0.1.tar.gz",
+      "file": "SVT-AV1-4.0.1.tar.gz",
+      "mirrors": [],
+      "sha256": "fb3e983b82955575e01bce260d2bee6551f329db8154e4a0f69947093354d3dc",
+      "license": "BSD-3-Clause-Clear AND LicenseRef-AOM-Patent-License-1.0",
+      "licenseFiles": ["LICENSE.md", "LICENSE-BSD2.md", "PATENTS.md"],
+      "homepage": "https://github.com/AOMediaCodec/SVT-AV1"
+    },
+    {
+      "name": "libvpx",
+      "version": "1.17.0",
+      "url": "https://github.com/webmproject/libvpx/archive/refs/tags/v1.17.0.tar.gz",
+      "file": "libvpx-1.17.0.tar.gz",
+      "mirrors": [],
+      "sha256": "1020f184046187baa2985dbde38e0691f49c44088bca7a1842b0236c6081dc0a",
+      "license": "BSD-3-Clause AND LicenseRef-WebM-Patent-Grant",
+      "licenseFiles": ["LICENSE", "PATENTS", "AUTHORS"],
+      "homepage": "https://chromium.googlesource.com/webm/libvpx"
+    },
+    {
+      "name": "opus",
+      "version": "1.6.1",
+      "url": "https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz",
+      "mirrors": [],
+      "sha256": "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1",
+      "license": "BSD-3-Clause",
+      "licenseFiles": ["COPYING", "AUTHORS"],
+      "homepage": "https://opus-codec.org/"
+    },
+    {
+      "name": "lame",
+      "version": "3.100",
+      "url": "https://downloads.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz",
+      "mirrors": ["https://deb.debian.org/debian/pool/main/l/lame/lame_3.100.orig.tar.gz"],
+      "sha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+      "license": "LGPL-2.0-or-later",
+      "licenseFiles": ["COPYING", "LICENSE"],
+      "homepage": "https://lame.sourceforge.io/"
+    },
+    {
+      "name": "libvpl",
+      "version": "2.17.0",
+      "url": "https://github.com/intel/libvpl/archive/refs/tags/v2.17.0.tar.gz",
+      "file": "libvpl-2.17.0.tar.gz",
+      "mirrors": [],
+      "sha256": "4de3e2faf1e8307fb282e4a43f443191810f6a6b0a484fffa7995ba1c814c6ec",
+      "license": "MIT",
+      "licenseFiles": ["LICENSE"],
+      "homepage": "https://github.com/intel/libvpl"
+    },
+    {
+      "name": "nv-codec-headers",
+      "version": "12.2.72.0",
+      "url": "https://github.com/FFmpeg/nv-codec-headers/releases/download/n12.2.72.0/nv-codec-headers-12.2.72.0.tar.gz",
+      "mirrors": [],
+      "sha256": "c295a2ba8a06434d4bdc5c2208f8a825285210d71d91d572329b2c51fd0d4d03",
+      "license": "MIT",
+      "licenseFiles": ["include/ffnvcodec/nvEncodeAPI.h", "README"],
+      "homepage": "https://github.com/FFmpeg/nv-codec-headers",
+      "note": "SDK 12.2 headers: NVENC/NVDEC need NVIDIA driver 551.76+ on Windows. SDK 13 would raise that to 570+."
+    },
+    {
+      "name": "amf-headers",
+      "version": "1.5.3",
+      "url": "https://github.com/GPUOpen-LibrariesAndSDKs/AMF/releases/download/v1.5.3/AMF-headers-v1.5.3.tar.gz",
+      "mirrors": [],
+      "sha256": "0f521ad98041f8001147cded4a660127f18b1c27a801a5cd691bda1fa48381be",
+      "license": "MIT",
+      "licenseFiles": ["AMF/core/Version.h"],
+      "homepage": "https://github.com/GPUOpen-LibrariesAndSDKs/AMF"
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.2",
+      "url": "https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz",
+      "mirrors": ["https://zlib.net/zlib-1.3.2.tar.xz"],
+      "sha256": "d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3",
+      "license": "Zlib",
+      "licenseFiles": ["LICENSE"],
+      "homepage": "https://zlib.net/"
+    }
+  ],
+  "tools": [
+    {
+      "name": "msys2",
+      "version": "2026-09-27",
+      "url": "https://github.com/msys2/msys2-installer/releases/download/2026-09-27/msys2-base-x86_64-20260927.tar.zst",
+      "mirrors": ["https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20260927.tar.zst"],
+      "sha256": "8a2095647afbf799d113d0cae35f7544589d059819042635504e75bd2179bd02",
+      "purpose": "bash, make, perl and pkgconf for FFmpeg's and libvpx's configure scripts"
+    },
+    {
+      "name": "nasm",
+      "version": "2.16.03",
+      "url": "https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-win64.zip",
+      "mirrors": [],
+      "sha256": "3ee4782247bcb874378d02f7eab4e294a84d3d15f3f6ee2de2f47a46aa7226e6",
+      "purpose": "x86 assembly in FFmpeg, dav1d, SVT-AV1 and libvpx"
+    },
+    {
+      "name": "meson",
+      "version": "1.12.1",
+      "url": "https://github.com/mesonbuild/meson/releases/download/1.12.1/meson-1.12.1-64.msi",
+      "mirrors": [],
+      "sha256": "0e541b6ae656cd9c8f9d5f8ac9eddc22c68d37006ae1dfd055e3ab485519804d",
+      "purpose": "dav1d's build system (self-contained MSI, unpacked with msiexec /a, never installed)"
+    },
+    {
+      "name": "ninja",
+      "version": "1.13.2",
+      "url": "https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-win.zip",
+      "file": "ninja-1.13.2-win.zip",
+      "mirrors": [],
+      "sha256": "07fc8261b42b20e71d1720b39068c2e14ffcee6396b76fb7a795fb460b78dc65",
+      "purpose": "build backend for meson and CMake"
+    }
+  ],
+  "msys2Packages": {
+    "$comment": "Unpacked offline into the pinned base (no pacman, no keyring); the list is the dependency closure that base lacks. Old files stay on repo.msys2.org; the build cache keeps a copy.",
+    "baseUrl": "https://repo.msys2.org/msys/x86_64/",
+    "mirrors": ["https://mirror.msys2.org/msys/x86_64/"],
+    "files": [
+      {
+        "file": "make-4.4.1-3-x86_64.pkg.tar.zst",
+        "sha256": "af0bdba17f06fe037f0194069adaa31a8fe45f1a11381501896aea1fae37bd5d"
+      },
+      {
+        "file": "diffutils-3.12-1-x86_64.pkg.tar.zst",
+        "sha256": "7902c8ce3d4dd69a0f5e98dc9d5c83c17b23314ba486169db57ef6e2835ce3b6"
+      },
+      {
+        "file": "pkgconf-3.0.10-1-x86_64.pkg.tar.zst",
+        "sha256": "ab9fdaf563938752aecd8b5495954e1e04f6ac5721a6522b35374e548fc357c2"
+      },
+      {
+        "file": "libdb-6.2.32-6-x86_64.pkg.tar.zst",
+        "sha256": "27a35786f3aab14e625c02df7bcd8a9dda0da782ce4f0549a427a21316b4d179"
+      },
+      {
+        "file": "db-6.2.32-6-x86_64.pkg.tar.zst",
+        "sha256": "41bc94acad3b53eaa92227ec34412305f648848ffbc963bcad88274517e13e8d"
+      },
+      {
+        "file": "libgdbm-1.26-1-x86_64.pkg.tar.zst",
+        "sha256": "bb4b08b720dd3194db010589812e9c63bec3d29b32545e7cbd07b6443e51c5ed"
+      },
+      {
+        "file": "gdbm-1.26-1-x86_64.pkg.tar.zst",
+        "sha256": "1f8e949be2bbe488c5644132db78ecda288c9945922e7ed2447384734e2adba2"
+      },
+      {
+        "file": "perl-5.42.3-3-x86_64.pkg.tar.zst",
+        "sha256": "6a4dbc38cdcc53d16239904b5c87d2277cffc49ed92c6a7796f8bf6b49517d5b"
+      }
+    ]
+  }
+}

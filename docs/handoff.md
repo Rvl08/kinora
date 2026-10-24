@@ -25,14 +25,15 @@ pembaruan 24 Okt ada di §0.
   memuat tampil benar; tidak ada galat di konsol; fokus Tab terlihat (cincin amber). Uji WebView2 sesungguhnya tetap
   menunggu shell Tauri (Sprint B) dan VM.
 
-**P0-05b (FFmpeg statis):**
-- Skrip selesai dan di-commit di branch **`wip/p0-05b-ffmpeg-static`** (`f4ff35c`), **belum terverifikasi**: libvpx,
-  FFmpeg, gerbang rilis, probe, dan workflow belum pernah berjalan sampai selesai.
-- Langkah berikut: pemilik push branch itu dan membuka PR ke `main`. Workflow `FFmpeg release build` berjalan otomatis
-  pada PR yang mengubah `scripts/ffmpeg/**`. Perbaiki galat yang muncul dari log CI, lalu isi angka ukuran di laporan.
-- Keputusan teknis yang diambil: lisensi LGPL-2.1+ (tanpa `--enable-version3`), CRT statis `/MT`, header NVIDIA SDK
-  12.2 (driver ≥ 551.76, cakupan perangkat lebih luas daripada SDK 13). LAME (LGPL) diizinkan ADR-0005;
-  `CLAUDE.md` §3 sudah diselaraskan.
+**P0-05b (FFmpeg statis): ✅ terverifikasi di GitHub Actions** (run 40068909424, commit `ce84f83`, PR #4).
+- Build statis LGPL-2.1+, gerbang rilis, dan probe Rust (9 codec, impor hanya DLL sistem) lulus. Tambahan exe 20,66 MB.
+- Butuh 10 putaran CI. Pemilik mengizinkan Claude push **hanya** ke branch `wip/p0-05b-ffmpeg-static` selama iterasi
+  ini; izin itu berakhir di sini.
+- Kegagalan CI kini terbaca tanpa login: workflow menerbitkan akhir log sebagai *annotation*. Pemantau di sisi Claude
+  menghormati batas API GitHub tanpa login (60 permintaan/jam) dan memberi tahu bila gagal atau macet.
+- **Langkah pemilik:** merge PR #4 ke `main`. Opsional: Actions → *FFmpeg release build* → Run workflow dengan
+  `publish: true` untuk menerbitkan artefak sebagai GitHub Release.
+- Untuk exporter Fase 1: tangani paket STREAMINFO akhir FLAC dan jebakan `ffmpeg-next` (laporan P0-05b, temuan 8–9).
 
 **Riwayat lokal dirapikan** (atas izin pemilik): commit `c522310` tanpa DCO diganti oleh commit ber-DCO di branch
 P0-05b. Cadangan lengkap ada di branch lokal `backup/pre-rewrite-2026-10-24`, yang boleh dihapus setelah semuanya

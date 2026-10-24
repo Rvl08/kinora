@@ -1,0 +1,10 @@
+# The probe links Kinora's static release FFmpeg (P0-05b), not the shared
+# development build that the repository's .cargo/config.toml points at. This
+# file is closer to the crate, so its FFMPEG_DIR wins.
+[env]
+FFMPEG_DIR = { value = "../../vendor/ffmpeg-static", relative = true, force = true }
+
+# The release libraries are compiled with /MT (static CRT, ADR-0006
+# Amendment 1); Rust must match, or the link mixes two CRTs.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

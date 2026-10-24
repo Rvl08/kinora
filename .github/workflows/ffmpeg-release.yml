@@ -1,0 +1,129 @@
+# Kinora's static release FFmpeg (P0-05b, ADR-0005 Amendment 3): builds the
+# libraries from pinned sources, runs the release licence gate, proves they
+# link statically into a Rust executable, and uploads the artifact.
+# Publishing to a GitHub Release happens only on a manual run with
+# `publish: true`; the release also carries every source archive (LGPL).
+#
+# The same scripts run locally in Windows Sandbox:
+# scripts/ffmpeg/release/sandbox-job.ps1.
+#
+# Third-party actions are pinned to full commit SHAs (supply-chain safety);
+# the trailing comment names the release. Update them together with the
+# comment.
+
+name: FFmpeg release build
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the artifact and its sources as a GitHub Release
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/ffmpeg/**'
+      - 'spikes/ffmpeg-static-probe/**'
+      - '.github/workflows/ffmpeg-release.yml'
+  pull_request:
+    paths:
+      - 'scripts/ffmpeg/**'
+      - 'spikes/ffmpeg-static-probe/**'
+      - '.github/workflows/ffmpeg-release.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ffmpeg-release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build, verify, link probe
+    # A pinned image, not windows-latest: the MSVC version is a build input.
+    runs-on: windows-2025
+    timeout-minutes: 150
+    outputs:
+      name: ${{ steps.meta.outputs.name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      # Source archives, MSYS2, NASM, Meson and Ninja; build.mjs re-checks
+      # every SHA-256 on use, so a poisoned cache entry fails the build.
+      - name: Cache pinned downloads and tools
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vendor/.cache/ffmpeg-release
+          key: ffmpeg-release-${{ hashFiles('scripts/ffmpeg/release-sources.json') }}
+      # Output is also teed to a file so a failure can be reported as public
+      # annotations (job logs need a signed-in user; annotations do not).
+      - name: Build and run the release gate
+        # A full cold build takes ~15 min on windows-2025; anything far longer
+        # is a hang, and failing it early leaves time to read the report.
+        timeout-minutes: 90
+        run: |
+          node scripts/ffmpeg/release/build.mjs --work C:\kf --dist dist 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\build-output.log"
+          exit $LASTEXITCODE
+      - name: Install pinned Rust toolchain
+        # Reads rust-toolchain.toml.
+        run: rustup toolchain install
+      - name: Link, run and inspect the Rust probe
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts/ffmpeg/release/probe.ps1 -Out dist\probe -Target C:\kf\target 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\probe-output.log"
+          exit $LASTEXITCODE
+      - name: Report a failure as annotations
+        if: failure()
+        run: node scripts/ffmpeg/release/report-failure.mjs "$env:RUNNER_TEMP\build-output.log" "$env:RUNNER_TEMP\probe-output.log"
+      - name: Artifact name
+        id: meta
+        shell: bash
+        run: echo "name=$(node -p "require('./vendor/ffmpeg-static/kinora-ffmpeg.json').name")" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.meta.outputs.name }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.build.outputs.name }}
+          path: dist
+      # The tag is the artifact name (version + revision). gh refuses an
+      # existing tag, so a published build is never replaced: bump `revision`
+      # in release-sources.json instead.
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ needs.build.outputs.name }}
+        run: |
+          cd dist
+          {
+            echo "Kinora's static LGPL FFmpeg for x86_64-pc-windows-msvc, built by \`.github/workflows/ffmpeg-release.yml\` at ${GITHUB_SHA}."
+            echo
+            echo "- \`${NAME}.zip\`: static libraries, headers, licences, \`kinora-ffmpeg.json\` (configure line, toolchain)."
+            echo "- \`verify-release.json\`: release gate report. \`probe/\`: link proof (imports, sizes)."
+            echo "- \`SHA256SUMS\` and the source archives: the complete corresponding source (LGPL), see RELINKING.md."
+          } > notes.md
+          gh release create "$NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$NAME" \
+            --notes-file notes.md \
+            "${NAME}.zip" "${NAME}.zip.sha256" verify-release.json \
+            probe/probe.json probe/sizes.json probe/dependents.txt \
+            sources/*

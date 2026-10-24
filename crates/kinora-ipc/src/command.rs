@@ -1,5 +1,7 @@
 //! IPC commands: requests from the UI to the shell.
 
+use std::fmt;
+
 use kinora_project::edit::EditorState;
 use kinora_project::id::ProjectId;
 use kinora_project::{EditCommand, Project, ProjectSettings, Time, VideoFormat};
@@ -75,7 +77,8 @@ commands! {
     /// Creates a project folder `<parentDir>/<name>.kinora` and opens it.
     CreateProject = "create_project" (CreateProjectArgs) -> ProjectOpened;
     /// Opens a project folder, migrating an older format and replaying the
-    /// journal of an unclean shutdown.
+    /// journal of an unclean shutdown. Creating or opening a project puts it
+    /// first on the recent-projects list.
     OpenProject = "open_project" (OpenProjectArgs) -> ProjectOpened;
     /// Writes the open project to disk (`project.json`, then truncates the
     /// journal).
@@ -97,6 +100,10 @@ commands! {
     /// The recently opened projects, most recent first, for the start
     /// screen.
     ListRecentProjects = "list_recent_projects" (()) -> Vec<RecentProject>;
+    /// Removes a project from the recent-projects list; succeeds when it is
+    /// not listed. The project folder is not touched. After "find folder",
+    /// the UI opens the new folder and then forgets the old path.
+    ForgetRecentProject = "forget_recent_project" (ForgetRecentProjectArgs) -> ();
 }
 
 /// Arguments of [`CreateProject`].
@@ -156,6 +163,14 @@ pub struct HistoryArgs {
     /// The revision the UI showed when the user asked; a stale request (a
     /// double click) is rejected rather than undoing twice.
     pub base_revision: Revision,
+}
+
+/// Arguments of [`ForgetRecentProject`].
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ForgetRecentProjectArgs {
+    /// The entry's `path`, exactly as `list_recent_projects` returned it.
+    pub path: String,
 }
 
 /// Arguments of [`CancelJob`].
@@ -220,14 +235,14 @@ pub struct ProjectOpened {
 
 /// A project on the recent-projects list.
 ///
-/// Read from the shell's recent list and the project's own `project.json`;
-/// fields the shell could not read (a moved folder, a damaged file) are
-/// `null`, and `available` tells the UI whether opening can work.
+/// `name`, `format` and `duration` are what the project held when it was
+/// last opened or saved (`null` when unknown); `available` is checked each
+/// time the list is read and tells the UI whether opening can work.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RecentProject {
-    /// The `.kinora` folder, as the user chose it; passed back unchanged to
-    /// `open_project`.
+    /// The `.kinora` folder, fully resolved; passed back unchanged to
+    /// `open_project` or `forget_recent_project`.
     pub path: String,
     /// The project's display name.
     pub name: String,
@@ -251,5 +266,12 @@ impl JobId {
     /// A new, unique job id.
     pub fn generate() -> Self {
         Self(Uuid::now_v7())
+    }
+}
+
+/// The hyphenated lowercase UUID, as it is serialised.
+impl fmt::Display for JobId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(&self.0.hyphenated(), f)
     }
 }

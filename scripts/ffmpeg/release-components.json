@@ -1,5 +1,5 @@
 {
-  "$comment": "Draft component set for Kinora's trimmed release FFmpeg (P0-05b). Built with --disable-everything plus these. Names are FFmpeg component names as `ffmpeg -decoders|-encoders|-demuxers|-muxers|-bsfs|-protocols|-filters` print them (configure spells a few with underscores, e.g. libvpx_vp9). Validated by scripts/ffmpeg/check-components.py against the dev build. Rationale per group in docs/spikes/S2-report.md §6.",
+  "$comment": "Component set for Kinora's trimmed release FFmpeg (P0-05b), the single source of truth for scripts/ffmpeg/release/build.mjs (configure flags) and `verify.mjs --release` (what the static libraries must contain). Built with --disable-everything --disable-autodetect plus these. Names are FFmpeg component names as `ffmpeg -decoders|-encoders|-demuxers|-muxers|-bsfs|-protocols|-filters` print them; release/components.mjs maps the few that configure spells differently (libvpx-vp9 -> libvpx_vp9, demuxer mpeg -> mpegps). Validated by scripts/ffmpeg/check-components.py against the dev build. Rationale per group in docs/spikes/S2-report.md §6; parsers, hwaccels, hwdevices and implicit were added by P0-05b (docs/spikes/P0-05b-report.md).",
   "decoders": {
     "video": [
       "h264",
@@ -140,7 +140,62 @@
     "hwdownload",
     "hwupload"
   ],
-  "hwaccel_devices": ["d3d11va", "d3d12va", "dxva2", "cuda (nvdec)", "qsv (libvpl)", "amf"],
+  "parsers": [
+    "aac",
+    "aac_latm",
+    "ac3",
+    "av1",
+    "bmp",
+    "dnxhd",
+    "ffv1",
+    "flac",
+    "gif",
+    "h264",
+    "hevc",
+    "mjpeg",
+    "mpeg4video",
+    "mpegaudio",
+    "mpegvideo",
+    "opus",
+    "png",
+    "prores",
+    "vorbis",
+    "vp8",
+    "vp9",
+    "webp"
+  ],
+  "hwaccels": [
+    "h264_d3d11va",
+    "h264_d3d11va2",
+    "h264_d3d12va",
+    "h264_dxva2",
+    "h264_nvdec",
+    "hevc_d3d11va",
+    "hevc_d3d11va2",
+    "hevc_d3d12va",
+    "hevc_dxva2",
+    "hevc_nvdec",
+    "av1_d3d11va",
+    "av1_d3d11va2",
+    "av1_d3d12va",
+    "av1_dxva2",
+    "av1_nvdec",
+    "vp9_d3d11va",
+    "vp9_d3d11va2",
+    "vp9_d3d12va",
+    "vp9_dxva2",
+    "vp9_nvdec",
+    "mpeg2_d3d11va",
+    "mpeg2_d3d11va2",
+    "mpeg2_d3d12va",
+    "mpeg2_dxva2",
+    "mpeg2_nvdec",
+    "vp8_nvdec",
+    "mpeg4_nvdec",
+    "mjpeg_nvdec"
+  ],
+  "hwdevices": ["d3d11va", "d3d12va", "dxva2", "cuda", "qsv", "amf"],
+  "platform": ["w32threads", "d3d11va", "d3d12va", "dxva2", "cuda", "nvdec", "nvenc"],
   "external_libraries": {
     "keep": [
       "libdav1d",
@@ -195,5 +250,8 @@
       "libvorbis (native decoder kept)",
       "libopenjpeg"
     ]
+  },
+  "implicit": {
+    "$comment": "Components configure enables on its own because a listed one selects them (`*_select` in FFmpeg's configure). Allowed in the build but never requested; the release gate fails on any other extra, so a version bump that pulls in something new is reviewed here first."
   }
 }

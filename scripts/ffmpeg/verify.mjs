@@ -1,14 +1,20 @@
-// Verifies that vendor/ffmpeg-lgpl is an LGPL build (ADR-0005) and reports
-// what it can do.
+// Verifies that an FFmpeg build is LGPL (ADR-0005) and reports what it can do.
 //
-// Usage: pnpm run ffmpeg:verify [--ship] [--json <path>]
+// Usage:
+//   pnpm run ffmpeg:verify [--ship] [--json <path>]
+//     Development build in vendor/ffmpeg-lgpl (BtbN, shared DLLs), checked by
+//     running its ffmpeg.exe.
+//   node scripts/ffmpeg/verify.mjs --release [<dir>] [--json <path>]
+//     Kinora's static release build (P0-05b, default vendor/ffmpeg-static),
+//     checked without running anything: release/verify-release.mjs reads the
+//     static libraries themselves. Always ship-strict.
 //
-// Always fails on: --enable-gpl, --enable-nonfree, a GPL external library, a
-// licence text other than the LGPL, a static build, or a version different
-// from lock.json. Ship blockers (libraries whose licence or patent position
-// is not cleared for distribution) are warnings for development and
-// failures with --ship, which the release pipeline uses.
-// Missing optional capabilities are reported, not failed.
+// Development mode always fails on: --enable-gpl, --enable-nonfree, a GPL
+// external library, a licence text other than the LGPL, a static build, or a
+// version different from lock.json. Ship blockers (libraries whose licence or
+// patent position is not cleared for distribution) are warnings for
+// development and failures with --ship. Missing optional capabilities are
+// reported, not failed.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -16,35 +22,24 @@ import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { BANNED, SHIP_BLOCKERS } from './policy.mjs';
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const jsonIndex = process.argv.indexOf('--json');
+const jsonPath = jsonIndex === -1 ? null : resolve(process.argv[jsonIndex + 1]);
+
+const releaseIndex = process.argv.indexOf('--release');
+if (releaseIndex !== -1) {
+  const next = process.argv[releaseIndex + 1];
+  const dir =
+    next && !next.startsWith('--') ? resolve(next) : join(root, 'vendor', 'ffmpeg-static');
+  const { verifyRelease } = await import('./release/verify-release.mjs');
+  process.exit(await verifyRelease({ root, dir, jsonPath }));
+}
+
 const lock = JSON.parse(await readFile(join(root, 'scripts', 'ffmpeg', 'lock.json'), 'utf8'));
 const prefix = join(root, 'vendor', 'ffmpeg-lgpl');
 const exe = join(prefix, 'bin', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
-
-// GPL or non-free external libraries (ADR-0005, docs/05). FFmpeg's configure
-// already refuses most of them without --enable-gpl/--enable-nonfree; this
-// list is defence in depth.
-const BANNED = [
-  'libx264',
-  'libx265',
-  'libxavs',
-  'libxavs2',
-  'libxvid',
-  'libvidstab',
-  'librubberband',
-  'libfdk-aac',
-  'libdavs2',
-  'libcdio',
-  'frei0r',
-];
-
-// Allowed for development, not cleared for distribution.
-const SHIP_BLOCKERS = {
-  libzvbi:
-    'zvbi is GPL-2.0-or-later unless a file says otherwise (upstream COPYING.md); FFmpeg 8.1 configure does not flag it as GPL, but Kinora treats it as GPL until proven otherwise. Teletext is not needed: drop it from the shipping build.',
-  libopenh264:
-    "Cisco's patent licence covers only Cisco-built binaries. A statically built OpenH264 is not covered: load Cisco's DLL at runtime or drop it (Spike S2).",
-};
 const ship = process.argv.includes('--ship');
 
 // Capabilities ADR-0005 relies on.
@@ -172,10 +167,7 @@ const report = {
   notes,
 };
 
-const jsonIndex = process.argv.indexOf('--json');
-if (jsonIndex !== -1) {
-  await writeFile(resolve(process.argv[jsonIndex + 1]), `${JSON.stringify(report, null, 2)}\n`);
-}
+if (jsonPath) await writeFile(jsonPath, `${JSON.stringify(report, null, 2)}\n`);
 
 const mb = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 console.log(versionLine);

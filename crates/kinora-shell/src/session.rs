@@ -249,9 +249,9 @@ impl Session {
         let line = entry
             .to_line()
             .map_err(|e| unjournalled(internal_error("writing a journal entry", &e)))?;
-        self.journal.append(&line).map_err(|e| {
-            unjournalled(io_error("appending to the journal", self.journal.path(), e))
-        })
+        self.journal
+            .append(&line)
+            .map_err(|e| unjournalled(io_error("appending to the journal", self.journal.path(), e)))
     }
 
     /// Saves in place: `project.json` is replaced atomically, then the
@@ -304,7 +304,9 @@ impl Session {
         self.migrated_from = None;
         self.editor.mark_saved();
         self.base = base;
-        let started = self.journal.relocate(self.folder.join(JOURNAL_FILE), header);
+        let started = self
+            .journal
+            .relocate(self.folder.join(JOURNAL_FILE), header);
         if let Err(error) = fsx::remove_if_present(&old_journal) {
             log::warn!("could not remove {}: {error}", old_journal.display());
         }

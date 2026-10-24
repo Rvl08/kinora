@@ -76,13 +76,19 @@ fn is_forbidden(c: char) -> bool {
 fn is_reserved(name: &str) -> bool {
     let stem = name.split('.').next().unwrap_or(name).trim_end_matches(' ');
     let stem = stem.to_ascii_uppercase();
-    if matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$") {
+    if matches!(
+        stem.as_str(),
+        "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$"
+    ) {
         return true;
     }
     ["COM", "LPT"].iter().any(|device| {
         stem.strip_prefix(device).is_some_and(|digit| {
             let mut chars = digit.chars();
-            matches!((chars.next(), chars.next()), (Some('0'..='9' | '¹' | '²' | '³'), None))
+            matches!(
+                (chars.next(), chars.next()),
+                (Some('0'..='9' | '¹' | '²' | '³'), None)
+            )
         })
     })
 }

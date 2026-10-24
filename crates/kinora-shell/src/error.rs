@@ -77,7 +77,10 @@ mod tests {
     fn internal_errors_carry_only_an_incident() {
         let error = internal_error("testing", &"C:\\Users\\someone");
         let json = serde_json::to_string(&error).expect("serialises");
-        assert!(json.starts_with(r#"{"code":"internal","incident":""#), "{json}");
+        assert!(
+            json.starts_with(r#"{"code":"internal","incident":""#),
+            "{json}"
+        );
         assert!(!json.contains("someone"));
     }
 }

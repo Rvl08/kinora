@@ -87,10 +87,15 @@ fn a_crash_keeps_unsaved_edits() {
     assert_eq!(opened.snapshot.document, expected);
     assert!(opened.snapshot.state.dirty);
     assert_eq!(opened.snapshot.state.revision, at);
-    assert_eq!(opened.snapshot.state.undo_label.as_deref(), Some("addTrack"));
+    assert_eq!(
+        opened.snapshot.state.undo_label.as_deref(),
+        Some("addTrack")
+    );
 
     // The recovered history works like the original one.
-    shell.undo(HistoryArgs { base_revision: at }).expect("undoes");
+    shell
+        .undo(HistoryArgs { base_revision: at })
+        .expect("undoes");
     assert_eq!(track_names(&document(&shell)), ["A"]);
 }
 
@@ -228,10 +233,7 @@ fn unsaved_changes_block_closing_and_switching() {
         name: "Other".into(),
         settings: ProjectSettings::default(),
     };
-    assert_eq!(
-        shell.create_project(other),
-        Err(IpcError::UnsavedChanges)
-    );
+    assert_eq!(shell.create_project(other), Err(IpcError::UnsavedChanges));
     assert!(!env.folder("Other").exists());
 
     // Discarded changes stay recoverable until the next open.
@@ -371,10 +373,7 @@ fn open_accepts_only_project_folders() {
     let relative = shell.open_project(kinora_ipc::command::OpenProjectArgs {
         path: "Empty.kinora".into(),
     });
-    assert!(matches!(
-        relative,
-        Err(IpcError::InvalidArgument { .. })
-    ));
+    assert!(matches!(relative, Err(IpcError::InvalidArgument { .. })));
 
     fs::write(empty.join(PROJECT_FILE), "{ not json").expect("writes");
     assert!(matches!(

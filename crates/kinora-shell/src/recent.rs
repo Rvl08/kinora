@@ -266,7 +266,11 @@ mod tests {
         fs::create_dir(&project).expect("folder");
         fs::write(project.join(PROJECT_FILE), "{}").expect("file");
         let here = project.to_string_lossy().into_owned();
-        let gone = dir.path().join("Gone.kinora").to_string_lossy().into_owned();
+        let gone = dir
+            .path()
+            .join("Gone.kinora")
+            .to_string_lossy()
+            .into_owned();
 
         let mut list = RecentProjects::new(dir.path());
         list.record(entry(&gone, 1)).expect("records");

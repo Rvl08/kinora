@@ -80,12 +80,18 @@ impl Log for FileLogger {
         );
         // A poisoned lock only means another thread panicked mid-write;
         // the file is still usable. Logging never fails the caller.
-        let mut file = self.file.lock().unwrap_or_else(|poison| poison.into_inner());
+        let mut file = self
+            .file
+            .lock()
+            .unwrap_or_else(|poison| poison.into_inner());
         let _ = file.write_all(line.as_bytes());
     }
 
     fn flush(&self) {
-        let mut file = self.file.lock().unwrap_or_else(|poison| poison.into_inner());
+        let mut file = self
+            .file
+            .lock()
+            .unwrap_or_else(|poison| poison.into_inner());
         let _ = file.flush();
     }
 }

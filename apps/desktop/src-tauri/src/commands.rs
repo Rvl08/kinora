@@ -137,5 +137,7 @@ pub async fn forget_recent_project(
     state: State<'_, AppState>,
     args: Args<ForgetRecentProject>,
 ) -> Output<ForgetRecentProject> {
-    state.run(move |shell| shell.forget_recent_project(args)).await
+    state
+        .run(move |shell| shell.forget_recent_project(args))
+        .await
 }

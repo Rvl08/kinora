@@ -111,7 +111,10 @@ mod tests {
         let mut journal = JournalFile::create(path.clone(), "header\n".into()).expect("creates");
         journal.append("one\n").expect("appends");
         journal.append("two\n").expect("appends");
-        assert_eq!(fs::read_to_string(&path).expect("reads"), "header\none\ntwo\n");
+        assert_eq!(
+            fs::read_to_string(&path).expect("reads"),
+            "header\none\ntwo\n"
+        );
         journal.replace("fresh\n".into()).expect("replaces");
         journal.append("three\n").expect("appends");
         assert_eq!(fs::read_to_string(&path).expect("reads"), "fresh\nthree\n");

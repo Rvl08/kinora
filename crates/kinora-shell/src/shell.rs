@@ -91,7 +91,10 @@ impl Shell {
     /// `projectTooNew`.
     pub fn open_project(&mut self, args: OpenProjectArgs) -> Result<ProjectOpened, IpcError> {
         let folder = existing_folder(&args.path, "path")?;
-        let current = self.session.as_ref().filter(|session| session.folder() == folder);
+        let current = self
+            .session
+            .as_ref()
+            .filter(|session| session.folder() == folder);
         if let Some(session) = current {
             let opened = ProjectOpened {
                 snapshot: session.snapshot(),
@@ -186,7 +189,9 @@ impl Shell {
     /// # Errors
     /// As [`Shell::apply_command`], and `nothingToUndo`.
     pub fn undo(&mut self, args: HistoryArgs) -> Result<ProjectState, IpcError> {
-        self.edit(ChangeReason::Undone, |session| session.undo(args.base_revision))
+        self.edit(ChangeReason::Undone, |session| {
+            session.undo(args.base_revision)
+        })
     }
 
     /// `redo`: re-applies the most recently undone step.
@@ -194,7 +199,9 @@ impl Shell {
     /// # Errors
     /// As [`Shell::apply_command`], and `nothingToRedo`.
     pub fn redo(&mut self, args: HistoryArgs) -> Result<ProjectState, IpcError> {
-        self.edit(ChangeReason::Redone, |session| session.redo(args.base_revision))
+        self.edit(ChangeReason::Redone, |session| {
+            session.redo(args.base_revision)
+        })
     }
 
     /// `cancel_job`: there are no background jobs yet, so every job is

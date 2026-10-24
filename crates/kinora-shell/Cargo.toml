@@ -1,0 +1,24 @@
+[package]
+name = "kinora-shell"
+description = "The Kinora desktop session without a window: project folders, the crash-recovery journal, saving, and the recent-projects list. The Tauri app is a thin layer over it."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+dunce.workspace = true
+kinora-ipc.workspace = true
+kinora-project.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

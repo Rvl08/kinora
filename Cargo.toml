@@ -1,8 +1,11 @@
 [workspace]
 resolver = "3"
 members = ["crates/*"]
-# Phase 0 prototypes are throwaway and build on their own.
-exclude = ["spikes"]
+# Phase 0 prototypes are throwaway and build on their own. The desktop app
+# (apps/desktop/src-tauri) is its own workspace: it needs a built UI and, on
+# Linux, webkit2gtk, so `cargo test --workspace` here stays portable
+# (docs/spikes/sprint-b-shell-report.md).
+exclude = ["spikes", "apps/desktop/src-tauri"]
 
 [workspace.package]
 version = "0.0.0"
@@ -16,6 +19,10 @@ publish = false
 kinora-core = { path = "crates/kinora-core" }
 kinora-ipc = { path = "crates/kinora-ipc" }
 kinora-project = { path = "crates/kinora-project" }
+kinora-shell = { path = "crates/kinora-shell" }
+
+dunce = "1.0.5"
+log = { version = "0.4.34", features = ["std"] }
 
 serde = { version = "1.0.229", features = ["derive"] }
 # `float_roundtrip`: a saved f64 reads back bit for bit (docs/spikes/P0-12-report.md).
@@ -31,6 +38,7 @@ ts-rs = { version = "=12.0.1", default-features = false, features = ["serde-comp
 # Test-only.
 jsonschema = { version = "0.59.0", default-features = false }
 proptest = "1.12.0"
+tempfile = "3.27.0"
 
 [workspace.lints.rust]
 missing_docs = "warn"

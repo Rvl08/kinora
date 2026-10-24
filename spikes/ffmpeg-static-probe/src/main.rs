@@ -313,8 +313,19 @@ fn fill_ints<T: LeBytes>(
     size: usize,
 ) {
     if kind == format::sample::Type::Planar {
+        let len = ints.len() * size;
         for c in 0..2 {
-            let data = f.data_mut(c);
+            // ffmpeg-next's data_mut(c) sizes plane c by linesize[c], but for
+            // planar audio FFmpeg sets only linesize[0] (all planes share it),
+            // so plane 1 came back empty (CI run 40063055337, libmp3lame s32p).
+            // SAFETY: the frame was allocated by av_frame_get_buffer for
+            // ints.len() samples of `size` bytes in each of its 2 planes, so
+            // data[c] points to at least `len` writable bytes.
+            let data = unsafe {
+                let plane = (*f.as_mut_ptr()).data[c];
+                assert!(!plane.is_null(), "audio plane {c} not allocated");
+                std::slice::from_raw_parts_mut(plane, len)
+            };
             for (i, v) in ints.iter().enumerate() {
                 data[i * size..(i + 1) * size].copy_from_slice(&v.le());
             }

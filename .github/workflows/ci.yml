@@ -8,7 +8,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # wip/* branches are where Claude iterates against CI before the owner
+    # opens a pull request (Smart App Control blocks local Rust builds).
+    branches: [main, 'wip/**']
   pull_request:
   workflow_dispatch:
   schedule:

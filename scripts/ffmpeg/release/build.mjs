@@ -745,7 +745,10 @@ async function linkLibraries(ffmpegBuild) {
       .slice(line.indexOf('=') + 1)
       .trim()
       .split(/\s+/)) {
-      const name = /^-l(.+)$/.exec(token)?.[1] ?? /^([^-/:][^/:]*)\.lib$/i.exec(token)?.[1];
+      // Only library names: EXTRALIBS also carries link.exe options such as
+      // -libpath:C:/... (from --extra-ldflags), which a loose -l(.+) read as a
+      // library called "ibpath:C:/..." (CI run 40061900823).
+      const name = /^-l([\w.+-]+)$/.exec(token)?.[1] ?? /^([\w.+-]+)\.lib$/i.exec(token)?.[1];
       if (name && !names.includes(name)) names.push(name);
     }
   }

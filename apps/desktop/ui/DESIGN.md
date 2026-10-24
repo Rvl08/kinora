@@ -171,6 +171,23 @@ components:
   contact-sheet:
     backgroundColor: "{colors.surface-sunken}"
     padding: "32px"
+  text-field:
+    backgroundColor: "{colors.surface-base}"
+    textColor: "{colors.text-primary}"
+    typography: "{typography.title}"
+    rounded: "{rounded.control}"
+    padding: "0 12px"
+    height: "2.25rem"
+  notice:
+    backgroundColor: "transparent"
+    textColor: "{colors.status-danger}"
+    typography: "{typography.body-strong}"
+    padding: "12px 0"
+  dialog:
+    backgroundColor: "{colors.surface-raised}"
+    textColor: "{colors.text-primary}"
+    rounded: "{rounded.control}"
+    padding: "24px"
 ---
 
 # Design System: Kinora
@@ -217,7 +234,7 @@ A warm, low-chroma ground (hue 55) with a single saturated orange; status colour
 ### Status
 - **Safelight Red** (`status-danger`): the edge-print status of a project whose folder is missing. Always paired with text, never colour alone.
 
-`--status-working` (safelight amber), `--status-done`, `--surface-raised` and `--shadow-lift` are defined in tokens.css but no shipped surface uses them yet; they are reserved, not established.
+`--status-working` (safelight amber) and `--status-done` are defined in tokens.css but no shipped surface uses them yet; they are reserved, not established. `--surface-raised`, `--shadow-lift` and `--scrim` belong to the one floating layer so far, the close-confirmation dialog.
 
 ### Named Rules
 **The One Accent Rule.** Orange is the only hue that signals intent: the primary action, selection, hover and focus. No second accent; status colours never stand in for decoration.
@@ -262,7 +279,7 @@ Sizing is driven by container queries, not breakpoints. The three ratio frames s
 
 Flat. No shipped surface casts a shadow. Depth is tonal: the contact sheet sits one lightness step below the base (`surface-sunken`), and the edge-print strips sit back on `surface-base` within it. Separation otherwise comes from 1px hairlines (`border-subtle`).
 
-A `--shadow-lift` token exists but is unused; it is not sanctioned for resting surfaces and should only be adopted, deliberately, by a genuinely floating layer (menu, popover) when one is built.
+`--shadow-lift` is not sanctioned for resting surfaces. Its first and only user is the modal dialog (on `surface-raised`, over a `--scrim` backdrop); a menu or popover may adopt it the same way when one is built.
 
 ### Named Rules
 **The Matte Rule.** No gradients, no glow, no resting shadows. A surface is distinguished by its tone or a hairline, never by light.
@@ -300,13 +317,31 @@ An order-form band, ruled above and below, no box. Title and hint on the left, a
 - **States:** loading as a secondary-text note; error as text, detail and a secondary retry button; first run as the unexposed strip below.
 
 ### Edge Print (signature)
-The strip under every frame and Kinora's reusable signature (intended to become the timeline ruler): two-digit frame number in `text-accent`, ratio, date (ellipsised), and duration pushed to the right edge in `text-secondary`. Label voice throughout on `surface-base`, 1.75rem min height, 4px / 12px padding.
+The strip under every frame and Kinora's reusable signature (intended to become the timeline ruler): two-digit frame number in `text-accent`, ratio, date (ellipsised), and duration pushed to the right edge in `text-secondary`. Label voice throughout on `surface-base`, 1.75rem min height, 4px / 12px padding. A shared primitive (`src/lib/components/EdgePrint.svelte`), used by the contact sheet and the workspace print.
 
 ### Unexposed Strip (empty state)
 Four blank 9:16 frames drawn as `border-subtle` hairlines at 1px corners over numbered edge prints, captioned underneath with the first step in headline voice. The empty state always says what to do first.
 
 ### Inputs / Fields (quick settings)
 Native selects for language and appearance: `border-subtle` hairline, 4px corners, `surface-base` fill, 2rem height, caption type; hover strengthens the stroke to `border-control`. Labels sit inline in caption type, `text-tertiary`.
+
+### Text Field (project name)
+The order-form blank: `border-control` hairline (non-text contrast ≥ 3:1 on the base), 4px corners, `surface-base` fill, 2.25rem height, title-size system text so the name reads as the thing being made. Label above in body strong, hint below in `text-secondary`. Hover strengthens the stroke to `text-tertiary`; focus is the global ring. Invalid: stroke and the message under the field turn `status-danger`, the message always in words; `aria-invalid` and `aria-describedby` carry the same to screen readers. While a request runs the field is read-only (never disabled, so focus stays).
+
+### Naming Step (new project)
+Choosing a ratio swaps the start column's options for one step, not a modal: the chosen frame drawn small with a 2px accent stroke (selected, not filled: the fill belongs to the action), the heading and an edge-print caption beside it on one baseline, the name field, then the primary "choose location and create…" and a quiet cancel. The suggested name ("Proyek 24 Okt 2026", or a dropped video's own name) is selected so typing replaces it. Enter submits, Escape steps back and returns focus to the ratio that started it. A dropped video that cannot be imported yet is stated plainly in a ruled band above the actions; nothing pretends it was added.
+
+### Notice
+A problem reported by an intent: an order-form band (hairline rules above and below, no box), the first line in body strong `status-danger`, the reason from the shell's error in `text-secondary`, and a quiet dismiss button. Lives in an `aria-live="polite"` region under the screen's heading; the next intent clears it. Progress lines ("Membuka proyek…") use the same slot in `text-secondary`.
+
+### Workspace Placeholder (project open, before the editor)
+The start screen's bar with the project name, an edge-print-voice save state (`text-tertiary` when saved, `text-accent` when not), a secondary Save (Ctrl+S) and a quiet Close. The body is the sunken field holding the canvas as one print (paper border, unexposed image, edge print with ratio, size and frame rate) beside the name in display type and one honest sentence about what is not built yet. Recovery and migration notes sit in a ruled list. The Phase 1 editor replaces the body.
+
+### Close Confirmation (the one modal)
+Only for losing unsaved work (docs/07 §8). A native modal `<dialog>`: `surface-raised`, hairline border, 4px corners, `--shadow-lift`, `--scrim` backdrop. Headline-voice question, one secondary-text sentence, then primary "save and close", secondary "close without saving", quiet "cancel". Escape cancels; focus returns to the Close button.
+
+### Focus on view change
+When a project opens, focus moves to its name (h1); when it closes, to the start heading. These headings take `tabindex="-1"` and draw no ring (they are not controls); screen readers start reading there.
 
 ### Open Items (contract ceilings not yet built)
 - **Print-envelope motif:** the "amplop" itself has no visual expression yet; only the contact sheet and edge print are built.

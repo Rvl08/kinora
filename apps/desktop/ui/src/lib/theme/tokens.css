@@ -98,6 +98,8 @@
   --focus-ring: var(--pigment-negative-bright);
   --selection: oklch(0.72 0.155 52 / 0.35);
   --shadow-lift: 0 6px 18px -8px oklch(0.1 0.01 55 / 0.7);
+  /* Dims the window behind a modal dialog (the only floating layer so far). */
+  --scrim: oklch(0.1 0.01 55 / 0.6);
 
   color-scheme: dark;
 }
@@ -138,6 +140,7 @@
   --focus-ring: oklch(0.51 0.15 42);
   --selection: oklch(0.56 0.155 44 / 0.22);
   --shadow-lift: 0 6px 18px -10px oklch(0.3 0.02 55 / 0.35);
+  --scrim: oklch(0.23 0.015 50 / 0.32);
 
   color-scheme: light;
 }

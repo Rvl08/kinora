@@ -1,6 +1,7 @@
 // Ratio presets for new projects and aspect labels for existing ones.
 
 import type { ProjectSettings, VideoFormat } from '$lib/ipc/bindings';
+import { aspectLabel } from '$lib/video/format';
 
 export type RatioPreset = 'vertical' | 'landscape' | 'square';
 
@@ -22,16 +23,7 @@ export function settingsFor(preset: RatioPreset): ProjectSettings {
   };
 }
 
-function gcd(a: number, b: number): number {
-  while (b !== 0) [a, b] = [b, a % b];
-  return a;
-}
-
-/** `9:16`, `16:9`, `1:1`, `4:5`: the canvas ratio in lowest terms. */
-export function aspectLabel(format: Pick<VideoFormat, 'width' | 'height'>): string {
-  const g = gcd(format.width, format.height) || 1;
-  return `${format.width / g}:${format.height / g}`;
-}
+export { aspectLabel };
 
 /** The ratio label of a preset. */
 export function presetLabel(preset: RatioPreset): string {

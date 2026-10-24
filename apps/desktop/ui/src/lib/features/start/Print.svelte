@@ -10,7 +10,7 @@
   import { i18n } from '$lib/i18n/index.svelte';
   import { formatDuration } from '$lib/time/time';
 
-  import EdgePrint from './EdgePrint.svelte';
+  import EdgePrint from '$lib/components/EdgePrint.svelte';
   import { aspectLabel } from './ratio';
 
   interface Props {

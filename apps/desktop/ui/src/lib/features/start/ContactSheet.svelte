@@ -10,7 +10,7 @@
   import { i18n } from '$lib/i18n/index.svelte';
   import type { RecentProjectsStore } from '$lib/state/recent.svelte';
 
-  import EdgePrint from './EdgePrint.svelte';
+  import EdgePrint from '$lib/components/EdgePrint.svelte';
   import Print from './Print.svelte';
 
   interface Props {
@@ -29,7 +29,7 @@
 
 <section class="sheet" aria-labelledby="recent-title" aria-busy={recent.status === 'loading'}>
   <header>
-    <h2 id="recent-title">{i18n.t('start.recentProjects')}</h2>
+    <h2 id="recent-title" tabindex="-1">{i18n.t('start.recentProjects')}</h2>
     {#if recent.status === 'ready' && recent.items.length > 0}
       <span class="count">{i18n.plural('units.projects', recent.items.length)}</span>
     {/if}

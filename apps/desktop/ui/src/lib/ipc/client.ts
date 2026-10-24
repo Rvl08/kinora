@@ -1,7 +1,8 @@
 // The typed IPC client: every command and event of the contract, with the
-// types generated from Rust (bindings.ts).
+// types generated from Rust (bindings.ts, via contract.ts).
 
-import type { Commands, Events } from './bindings';
+import type { Events } from './bindings';
+import type { Commands } from './contract';
 import { toFailure } from './errors';
 import type { Transport, Unlisten } from './transport';
 
@@ -31,8 +32,19 @@ export class IpcClient {
     }
   }
 
-  /** Subscribes to `event`; resolves to a function that unsubscribes. */
-  on<K extends keyof Events>(event: K, handler: (payload: Events[K]) => void): Promise<Unlisten> {
-    return this.#transport.listen(event, (payload) => handler(payload as Events[K]));
+  /**
+   * Subscribes to `event`; resolves to a function that unsubscribes.
+   *
+   * @throws IpcFailure when the subscription is refused.
+   */
+  async on<K extends keyof Events>(
+    event: K,
+    handler: (payload: Events[K]) => void,
+  ): Promise<Unlisten> {
+    try {
+      return await this.#transport.listen(event, (payload) => handler(payload as Events[K]));
+    } catch (reason) {
+      throw toFailure(reason);
+    }
   }
 }

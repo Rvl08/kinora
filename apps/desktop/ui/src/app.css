@@ -72,6 +72,12 @@ button:disabled,
   outline: none;
 }
 
+/* Headings take focus only when a view changes, so screen readers start
+   there; they are not controls and draw no ring. */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
 /* Scrollbars: thin, matte, from the palette. */
 * {
   scrollbar-width: thin;

@@ -68,6 +68,23 @@ export class ProjectStore {
     return this.#edit((baseRevision) => this.#client.call('redo', { baseRevision }));
   }
 
+  /** Writes the project to its folder. @throws IpcFailure when it cannot be saved. */
+  async save(): Promise<void> {
+    if (!this.#state) throw new IpcFailure({ code: 'noProject' });
+    await this.#advance(await this.#client.call('save_project', { saveAs: null }));
+  }
+
+  /**
+   * Closes the project. Without `discardChanges`, the shell refuses with
+   * `unsavedChanges` while there are any.
+   *
+   * @throws IpcFailure when refused.
+   */
+  async close(discardChanges: boolean): Promise<void> {
+    await this.#client.call('close_project', { discardChanges });
+    this.#clear();
+  }
+
   /** Fetches the current document, whatever revision the UI holds. */
   async refresh(): Promise<void> {
     const snapshot = await this.#client.call('get_project', null);

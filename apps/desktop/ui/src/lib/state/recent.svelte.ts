@@ -30,6 +30,16 @@ export class RecentProjectsStore {
     return this.#error;
   }
 
+  /**
+   * Removes a project from the list (the folder itself is not touched).
+   *
+   * @throws IpcFailure when the shell refuses.
+   */
+  async forget(project: RecentProject): Promise<void> {
+    await this.#client.call('forget_recent_project', { path: project.path });
+    this.#items = this.#items.filter((item) => item.path !== project.path);
+  }
+
   /** Fetches the list; failures are kept in `error`, never thrown. */
   async load(): Promise<void> {
     this.#status = 'loading';

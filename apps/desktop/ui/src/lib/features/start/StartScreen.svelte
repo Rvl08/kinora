@@ -1,61 +1,66 @@
 <!--
   The start screen: start a project (a ratio, or a video dropped anywhere on
   the window), open one, or pick up a recent one from the contact sheet.
+  Choosing a ratio swaps the start column for the naming step.
 -->
 <script lang="ts">
   import FolderOpen from '@lucide/svelte/icons/folder-open';
 
   import Button from '$lib/components/Button.svelte';
+  import Notice from '$lib/components/Notice.svelte';
   import QuickSettings from '$lib/features/settings/QuickSettings.svelte';
   import type { RecentProject } from '$lib/ipc/bindings';
+  import { describeError } from '$lib/ipc/errors';
   import { i18n } from '$lib/i18n/index.svelte';
-  import type { RecentProjectsStore } from '$lib/state/recent.svelte';
+  import { ariaShortcut, dispatch, shortcutLabel } from '$lib/keyboard/shortcuts';
+  import type { DroppedItem } from '$lib/platform/drop';
+  import type { CreateOutcome, Session } from '$lib/state/session.svelte';
 
   import ContactSheet from './ContactSheet.svelte';
+  import type { Draft } from './draft';
   import DropBand from './DropBand.svelte';
+  import NewProjectForm from './NewProjectForm.svelte';
   import RatioButton from './RatioButton.svelte';
   import { RATIO_PRESETS, type RatioPreset } from './ratio';
 
   interface Props {
-    recent: RecentProjectsStore;
+    session: Session;
     now: number;
-    oncreate: (preset: RatioPreset) => void;
-    onopen: () => void;
-    onopenrecent: (project: RecentProject) => void;
-    onlocaterecent: (project: RecentProject) => void;
-    onforgetrecent: (project: RecentProject) => void;
-    ondropmedia: (files: readonly File[]) => void;
+    draft: Draft | null;
+    /** Files are dragged over the window (native drag and drop, inside the shell). */
+    nativeDrag: boolean;
+    onbegin: (preset: RatioPreset) => void;
+    oncreate: (name: string) => Promise<CreateOutcome>;
+    oncanceldraft: () => void;
+    ondrop: (items: readonly DroppedItem[]) => void;
     onchoosevideo: () => void;
   }
 
   let {
-    recent,
+    session,
     now,
+    draft,
+    nativeDrag,
+    onbegin,
     oncreate,
-    onopen,
-    onopenrecent,
-    onlocaterecent,
-    onforgetrecent,
-    ondropmedia,
+    oncanceldraft,
+    ondrop,
     onchoosevideo,
   }: Props = $props();
 
-  // Ctrl+N starts the default (vertical) project, Ctrl+O opens one.
   function shortcuts(event: KeyboardEvent) {
-    if (!event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
-    if (event.key === 'n') {
-      event.preventDefault();
-      oncreate('vertical');
-    } else if (event.key === 'o') {
-      event.preventDefault();
-      onopen();
-    }
+    dispatch(event, {
+      newProject: () => onbegin('vertical'),
+      openProject: () => void session.openProject(),
+    });
   }
 
-  // The whole window accepts a dropped video. dragenter/dragleave fire for
-  // every child element, so count them.
-  let dragging = $state(false);
+  // In a browser the page's own drag events carry drops (names only). Inside
+  // the shell, native drag and drop takes over and `nativeDrag` reports it.
+  // dragenter/dragleave fire for every child element, so count them.
+  let htmlDrag = $state(false);
   let depth = 0;
+  const dragging = $derived(htmlDrag || nativeDrag);
 
   const hasFiles = (event: DragEvent) => event.dataTransfer?.types.includes('Files') ?? false;
 
@@ -63,7 +68,7 @@
     if (!hasFiles(event)) return;
     event.preventDefault();
     depth += 1;
-    dragging = true;
+    htmlDrag = true;
   }
 
   function dragover(event: DragEvent) {
@@ -74,15 +79,23 @@
 
   function dragleave() {
     depth = Math.max(0, depth - 1);
-    if (depth === 0) dragging = false;
+    if (depth === 0) htmlDrag = false;
   }
 
   function drop(event: DragEvent) {
     event.preventDefault();
     depth = 0;
-    dragging = false;
+    htmlDrag = false;
     const files = Array.from(event.dataTransfer?.files ?? []);
-    if (files.length > 0) ondropmedia(files);
+    if (files.length > 0) ondrop(files.map((file) => ({ name: file.name, path: null })));
+  }
+
+  const notice = $derived(session.notice);
+
+  /** The removed print took focus with it; hand it to the sheet's heading. */
+  async function forget(project: RecentProject) {
+    await session.forgetRecent(project);
+    if (!session.notice) document.getElementById('recent-title')?.focus();
   }
 </script>
 
@@ -102,46 +115,74 @@
   </header>
 
   <main class="layout">
-    <section class="begin" aria-labelledby="new-title">
+    <section class="begin" aria-labelledby="new-title" aria-busy={session.activity !== null}>
       <div class="intro">
-        <h1 id="new-title">{i18n.t('start.newProject')}</h1>
-        <p>{i18n.t('start.newProjectHint')}</p>
+        <h1 id="new-title" tabindex="-1">{i18n.t('start.newProject')}</h1>
+        {#if !draft}<p>{i18n.t('start.newProjectHint')}</p>{/if}
       </div>
 
-      <div class="ratios">
-        {#each RATIO_PRESETS as preset, index (preset)}
-          <RatioButton
-            {preset}
-            primary={index === 0}
-            shortcut={index === 0 ? 'n' : undefined}
-            showUse={index !== 0}
-            onselect={oncreate}
+      <div class="status" aria-live="polite">
+        {#if notice}
+          <Notice
+            message={i18n.message(notice.message)}
+            detail={notice.error ? i18n.message(describeError(notice.error)) : undefined}
+            dismissLabel={i18n.t('start.notice.dismiss')}
+            ondismiss={() => session.dismissNotice()}
           />
-        {/each}
+        {:else if !draft && session.activity === 'opening'}
+          <p class="working">{i18n.t('start.notice.opening')}</p>
+        {:else if !draft && session.activity === 'choosing'}
+          <p class="working">{i18n.t('start.notice.choosing')}</p>
+        {/if}
       </div>
-      <p class="hint">{i18n.t('start.verticalHint')}</p>
 
-      <DropBand active={dragging} onchoose={onchoosevideo} />
+      {#if draft}
+        {#key draft}
+          <NewProjectForm
+            preset={draft.preset}
+            initialName={draft.name}
+            skippedVideo={draft.skippedVideo}
+            activity={session.activity}
+            {oncreate}
+            oncancel={oncanceldraft}
+          />
+        {/key}
+      {:else}
+        <div class="ratios">
+          {#each RATIO_PRESETS as preset, index (preset)}
+            <RatioButton
+              {preset}
+              primary={index === 0}
+              shortcut={index === 0 ? 'n' : undefined}
+              showUse={index !== 0}
+              onselect={onbegin}
+            />
+          {/each}
+        </div>
+        <p class="hint">{i18n.t('start.verticalHint')}</p>
 
-      <div class="open">
-        <Button
-          variant="secondary"
-          aria-keyshortcuts="Control+O"
-          shortcut={`${i18n.t('keys.ctrl')}+O`}
-          onclick={onopen}
-        >
-          {#snippet icon()}<FolderOpen size={16} strokeWidth={1.75} />{/snippet}
-          {i18n.t('start.openProject')}
-        </Button>
-      </div>
+        <DropBand active={dragging} onchoose={onchoosevideo} />
+
+        <div class="open">
+          <Button
+            variant="secondary"
+            aria-keyshortcuts={ariaShortcut('openProject')}
+            shortcut={shortcutLabel('openProject', i18n.t('keys.ctrl'))}
+            onclick={() => session.openProject()}
+          >
+            {#snippet icon()}<FolderOpen size={16} strokeWidth={1.75} />{/snippet}
+            {i18n.t('start.openProject')}
+          </Button>
+        </div>
+      {/if}
     </section>
 
     <ContactSheet
-      {recent}
+      recent={session.recent}
       {now}
-      onopen={onopenrecent}
-      onlocate={onlocaterecent}
-      onforget={onforgetrecent}
+      onopen={(project) => session.openRecent(project)}
+      onlocate={(project) => session.locateRecent(project)}
+      onforget={forget}
     />
   </main>
 </div>
@@ -200,6 +241,15 @@
   }
 
   .intro p {
+    color: var(--text-secondary);
+  }
+
+  /* Empty until something is reported; then it sits under the heading. */
+  .status:empty {
+    display: none;
+  }
+
+  .working {
     color: var(--text-secondary);
   }
 
